@@ -3,7 +3,7 @@ const stats = [
     value: "9",
     label: "Spreadsheets replaced",
     description:
-      "Per-tech logs, daily gross/net, estimates, P&L, and Orlando jobs — all in one place",
+      "Per-tech logs, daily gross/net, estimates, P&L, and Orlando jobs, all in one place",
   },
   {
     value: "$92K+",
@@ -15,7 +15,7 @@ const stats = [
     value: "50 / 75%",
     label: "Commission splits automated",
     description:
-      "Both rate tiers calculated server-side per technician — no manual formulas",
+      "Both rate tiers calculated server-side per technician, no manual formulas",
   },
   {
     value: "5",

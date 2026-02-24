@@ -12,7 +12,7 @@ const features = [
     icon: ClipboardList,
     title: "Centralized Job Logging",
     description:
-      "Capture every job detail in one place — date, address, technician, parts costs, tips, subtotals, and payment method.",
+      "Capture every job detail in one place, date, address, technician, parts costs, tips, subtotals, and payment method.",
   },
   {
     icon: Calculator,

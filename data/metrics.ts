@@ -4,7 +4,7 @@ import type { DashboardMetrics } from "@/types/metrics";
  * Dashboard metrics derived from real spreadsheet data (DAILY GROSS & NET,
  * individual technician sheets, DAILY ESTIMATES).
  *
- * February 2026 actuals — 4 active techs:
+ * February 2026 actuals, 4 active techs:
  *   Tamir & Yotam  → 50% commission (business keeps 50%)
  *   Shalom & Aviran → 75% commission (business keeps 25%)
  *
@@ -33,7 +33,7 @@ export const dashboardMetrics: DashboardMetrics = {
     { date: "2026-02-18", gross: 5115.0, net: 2198.25, jobCount: 5 },
     { date: "2026-02-19", gross: 7529.0, net: 2163.5, jobCount: 5 },
     { date: "2026-02-20", gross: 3600.35, net: 1212.1, jobCount: 3 },
-    { date: "2026-02-21", gross: 0, net: 0, jobCount: 0 }, // Sunday — no jobs
+    { date: "2026-02-21", gross: 0, net: 0, jobCount: 0 }, // Sunday, no jobs
     { date: "2026-02-22", gross: 952.0, net: 288.0, jobCount: 2 },
   ],
 };

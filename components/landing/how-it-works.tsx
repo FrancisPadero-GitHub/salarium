@@ -9,7 +9,7 @@ const steps = [
     number: "02",
     title: "Log jobs as they complete",
     description:
-      "Enter job details — address, parts cost, tips, subtotal, and payment method — through the unified job entry interface.",
+      "Enter job details, address, parts cost, tips, subtotal, and payment method, through the unified job entry interface.",
   },
   {
     number: "03",
@@ -38,7 +38,7 @@ export default function HowItWorks() {
             Operational in four steps
           </h2>
           <p className="mt-4 text-zinc-500 dark:text-zinc-400">
-            From setup to real-time financial clarity — Salarium is designed to
+            From setup to real-time financial clarity, Salarium is designed to
             get out of your way and let you focus on running the business.
           </p>
         </div>
