@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useForm } from "react-hook-form";
-import { CircleDollarSign, Eye, EyeOff, Loader2 } from "lucide-react";
+import { WalletMinimal, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -58,7 +58,7 @@ export default function SignUpPage() {
         {/* Logo */}
         <div className="mb-8 flex flex-col items-center gap-2">
           <Link href="/" className="flex items-center gap-2">
-            <CircleDollarSign className="h-8 w-8 text-zinc-900 dark:text-zinc-50" />
+            <WalletMinimal className="h-8 w-8 text-zinc-900 dark:text-zinc-50" />
             <span className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
               Salarium
             </span>

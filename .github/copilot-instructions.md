@@ -78,7 +78,7 @@ import { cn } from "@/lib/utils";
 
 **Data fetching** — Use TanStack Query v5 (`useQuery`, `useMutation`) in `"use client"` components for Supabase calls. Server Components can call `supabase` directly.
 
-**Icons** — Use `lucide-react` exclusively. Example: `import { CircleDollarSign } from "lucide-react"`.
+**Icons** — Use `lucide-react` exclusively. Example: `import { WalletMinimal } from "lucide-react"`.
 
 **Fonts** — Geist Sans (`--font-geist-sans`) and Geist Mono (`--font-geist-mono`) are loaded via `next/font/google` in [`app/layout.tsx`](../app/layout.tsx) and exposed as CSS variables.
 

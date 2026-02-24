@@ -2,36 +2,50 @@
 
 ## Project Overview
 
-Salarium is a specialized full stack financial management and operational dashboard built for field service businesses. It centralizes job reporting, automates commission calculations, and provides real time business intelligence.
+Salarium is a specialized full stack financial management and operational dashboard built for a Florida-based field service business (chimney cleaning, HVAC duct cleaning, dryer vent cleaning, UV light systems, and related services). It centralizes job reporting, automates commission calculations, and provides real time business intelligence.
 
-The system replaces fragmented spreadsheet workflows with a secure, database driven architecture that ensures financial accuracy, protects calculation logic, and reduces administrative overhead.
+The system replaces fragmented Google Sheets workflows — one spreadsheet per technician, separate daily gross/net sheets, a separate estimate log — with a secure, database driven architecture that ensures financial accuracy, protects calculation logic, and reduces administrative overhead.
 
 ---
 
-## The Problem
+## The Problem (Real Workflow Being Replaced)
 
-Field service businesses often rely on:
+The business currently operates with these separate spreadsheets:
 
-- Separate spreadsheets per technician
-- Disconnected estimate logs
-- Manual daily gross and net calculations
-- Manually updated year to date revenue tracking
-- Hand computed commission splits
+| Spreadsheet              | Purpose                                         |
+| ------------------------ | ----------------------------------------------- |
+| TAMIR SPREADSHEET        | Individual job log for Tamir                    |
+| YOTAM SPREADSHEET        | Individual job log for Yotam                    |
+| SHALOM SPREADSHEET       | Individual job log for Shalom                   |
+| AVIRAN SPREADSHEET       | Individual job log for Aviran                   |
+| 3 BROS / SUB SPREADSHEET | Jobs run by the subcontractor pool              |
+| DAILY ESTIMATES          | Estimate pipeline (all techs)                   |
+| DAILY GROSS & NET        | Daily revenue totals per tech (50% / 75% split) |
+| DAILY PROFIT AND LOSS    | Daily P&L summary with balances                 |
+| ORLANDOJOBS              | Orlando-market job log                          |
 
-This approach creates:
+### Per-Technician Sheet Columns
 
-- High risk of human error
-- Vulnerability to client side data manipulation
-- Inconsistent reporting
-- Time intensive reconciliation of tips, parts, subtotals, and commissions
+Each individual sheet captures: `Date · Address · Parts · Tip · Review · Subtotal · Total · Mode of Payment · Notes`
+
+### DAILY GROSS & NET Sheet
+
+Tracks each tech's daily gross and their commission cut side-by-side:
+
+- **Tamir & Yotam** — `Net (50%)`: tech earns 50%, business keeps 50%
+- **Shalom & Aviran** — `Net (75%)`: tech earns 75%, business keeps 25%
+
+### DAILY ESTIMATES Sheet
+
+Captures: `Date · Address · Estimate Description · Amount · Tech · Status · Notes · Handled By`
 
 ---
 
 ## The Salarium Solution
 
-Salarium consolidates all financial and operational data into a unified web application.
+Salarium consolidates all of the above into a unified web application.
 
-All financial calculations are executed at the database and server levels. Revenue totals, commission splits, and year to date metrics are automatically generated and updated when a job is recorded. This guarantees mathematical integrity and removes dependency on frontend logic.
+All financial calculations are executed at the database and server levels. Revenue totals, commission splits, and year-to-date metrics are automatically generated and updated when a job is recorded. This guarantees mathematical integrity and removes dependency on manual spreadsheet formulas.
 
 ---
 
@@ -39,56 +53,73 @@ All financial calculations are executed at the database and server levels. Reven
 
 ### 1. Centralized Job Logging
 
-- Unified job entry interface
-- Capture of:
-  - Date
-  - Address
-  - Assigned technician
-  - Parts costs
-  - Tips
-  - Subtotals
-  - Payment method (Cash, Check, Credit Card, Zelle)
+- Unified job entry interface (replaces per-tech sheets)
+- Fields: Date, Address, Technician, Parts, Tips, Subtotal, Gross, Payment Method, Status, Notes
+- `Gross = Subtotal + Parts + Tips`
 
----
+### 2. Secure Commission Calculations
 
-### 2. Secure Server Side Calculations
-
-- Commission splits such as 50 percent and 75 percent handled in the database
-- Automatic summation of:
-  - Subtotal
-  - Parts
-  - Tips
-- Implemented using PostgreSQL constraints and computed columns
-- Protection against client side manipulation
-
----
+- Commission rates stored per technician (50% or 75%)
+- `commissionAmount = gross × commissionRate` (tech's earnings)
+- `net = gross − commissionAmount` (business's share)
+- Calculations enforced server-side / at database level
 
 ### 3. Dynamic Financial Dashboards
 
-Real time aggregation of:
-
-- Daily Gross
-- Daily Net
-- Monthly performance
-- Year to Date revenue
-
-All metrics update instantly when job data changes. No manual formulas required.
-
----
+Real-time aggregation of: Daily Gross, Daily Net, Monthly performance, Year-to-Date revenue. No manual totals.
 
 ### 4. Estimate Pipeline Management
 
-- Dedicated module for tracking job estimates
-- Visibility into pending proposals
-- Seamless conversion of approved estimates into active jobs
-
----
+- Full estimate tracking from creation through approval / rejection / conversion
+- Fields: Date, Address, Description, Amount, Tech, Status, Handled By, Notes
+- One-click conversion of approved estimates into active jobs
 
 ### 5. Technician Management
 
-- Centralized technician directory
-- Configurable commission rates per technician
-- Automatic commission mapping to completed jobs
+- Centralized directory of active technicians
+- Configurable commission rates
+- Per-technician job history and earnings stats
+
+---
+
+## Technician Roster
+
+| Name         | ID          | Commission Rate | Notes                             |
+| ------------ | ----------- | --------------- | --------------------------------- |
+| Tamir        | tech-tamir  | 50%             | Primary tech — chimney & HVAC     |
+| Yotam        | tech-yotam  | 50%             | Primary tech — HVAC & dryer vents |
+| Shalom       | tech-shalom | 75%             | Primary tech — chimney & HVAC     |
+| Aviran       | tech-aviran | 75%             | Tech — dryer vents & HVAC         |
+| 3 Bros (Sub) | tech-sub    | 75%             | Subcontractor pool                |
+
+---
+
+## Service Area & Job Types
+
+**Geography**: Tampa Bay area and Central Florida (Tampa, Clearwater, Sarasota, Brandon, Wesley Chapel, Englewood, Winter Park, Seminole, and surrounding areas).
+
+**Services**:
+
+- Chimney deep cleaning, cap replacement, crown repair, liner installation, rebuild
+- HVAC / air duct deep cleaning and sanitation
+- UV light system installation
+- Duct coating and sealing
+- Dryer vent cleaning, rerouting, pipe replacement
+- New vent / chase installation
+
+---
+
+## Real February 2026 Metrics (from DAILY GROSS & NET)
+
+| Date        | Team Gross  | Team Net (to business) |
+| ----------- | ----------- | ---------------------- |
+| 2/16        | $4,948.52   | $1,642.13              |
+| 2/17        | $3,860.00   | $1,636.00              |
+| 2/18        | $5,115.00   | $2,198.25              |
+| 2/19        | $7,529.00   | $2,163.50              |
+| 2/20        | $3,600.35   | $1,212.10              |
+| 2/22        | $952.00     | $288.00                |
+| **Feb MTD** | **$92,968** | **$34,228**            |
 
 ---
 
@@ -96,31 +127,14 @@ All metrics update instantly when job data changes. No manual formulas required.
 
 ### Frontend
 
-- React
-- Next.js
-- TypeScript
-
-Ensures type safe financial models and scalable component structure.
-
-### UI and Design
-
-- Tailwind CSS
-- shadcn/ui
-
-Provides clean, responsive, and accessible interfaces optimized for fast administrative data entry.
+- React 19 + Next.js 16 App Router (TypeScript, Server Components)
+- Tailwind CSS v4, shadcn/ui (new-york style, zinc base)
 
 ### Backend and Database
 
-- Supabase
-- PostgreSQL
-
-Database level protections include:
-
-- `GENERATED ALWAYS AS STORED` columns
-- Triggers for financial consistency
-- Server enforced calculation logic
-
-The database acts as the single source of truth.
+- Supabase + PostgreSQL
+- Database-level protections: `GENERATED ALWAYS AS STORED` columns, triggers for financial consistency
+- Server-enforced commission calculations (no client-side math trusted)
 
 ---
 
@@ -128,17 +142,18 @@ The database acts as the single source of truth.
 
 ### Role Based Access Control
 
-- Administrator access to full financial dashboard
-- Technician level login
-- Restricted visibility to assigned jobs and earned commissions
+- Administrator: full financial dashboard
+- Technician login: own jobs and commissions only
+
+### Orlando Market Expansion
+
+- Separate market view for the Orlando job pool (currently tracked in ORLANDOJOBS sheet)
 
 ### Data Exporting
 
 - CSV exports for accounting
 - PDF generation for reporting and tax documentation
 
----
+### Missing Data Backfill
 
-## Summary
-
-Salarium transforms fragmented spreadsheet workflows into a secure, automated financial orchestration system. By enforcing all mathematical logic at the database level and centralizing operations in a single platform, it delivers accuracy, transparency, and operational efficiency for field service businesses.
+- Import historical spreadsheet data into Supabase for full YTD accuracy

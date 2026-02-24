@@ -7,7 +7,7 @@ import {
   Briefcase,
   FileText,
   Users,
-  CircleDollarSign,
+  WalletMinimal,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ModeToggle } from "@/components/mode-toggle";
@@ -32,7 +32,7 @@ export default function DashboardLayout({
       <aside className="hidden w-60 flex-col border-r border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 lg:flex">
         {/* Logo */}
         <div className="flex h-16 items-center gap-2 border-b border-zinc-200 px-6 dark:border-zinc-800">
-          <CircleDollarSign className="h-6 w-6 text-zinc-700 dark:text-zinc-300" />
+          <WalletMinimal className="h-6 w-6 text-zinc-700 dark:text-zinc-300" />
           <span className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
             Salarium
           </span>

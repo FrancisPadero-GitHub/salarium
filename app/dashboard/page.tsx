@@ -20,10 +20,8 @@ const kpis = [
     label: "Daily Gross",
     value: fmt(dashboardMetrics.dailyGross),
     icon: DollarSign,
-    sub: `${dashboardMetrics.dailyTrend[5].gross > dashboardMetrics.dailyTrend[6].gross ? "↓" : "↑"} vs yesterday`,
-    up:
-      dashboardMetrics.dailyTrend[6].gross >=
-      dashboardMetrics.dailyTrend[5].gross,
+    sub: "Last logged business day (2/22)",
+    up: dashboardMetrics.dailyGross > 0,
   },
   {
     label: "Daily Net",
@@ -33,10 +31,10 @@ const kpis = [
     up: true,
   },
   {
-    label: "Monthly Revenue",
+    label: "Monthly Gross",
     value: fmt(dashboardMetrics.monthlyRevenue),
-    icon: TrendingDown,
-    sub: "February 2026",
+    icon: TrendingUp,
+    sub: "February 2026 (through 2/22)",
     up: true,
   },
   {
@@ -79,7 +77,7 @@ export default function DashboardPage() {
           Overview
         </h2>
         <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-          Financial snapshot for February 24, 2026
+          Financial snapshot for February 25, 2026 — last logged day: 2/22
         </p>
       </div>
 

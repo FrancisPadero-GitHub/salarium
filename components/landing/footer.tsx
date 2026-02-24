@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CircleDollarSign } from "lucide-react";
+import { WalletMinimal } from "lucide-react";
 
 export default function Footer() {
   const year = new Date().getFullYear();
@@ -11,7 +11,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="col-span-2 lg:col-span-1">
             <Link href="/" className="flex items-center gap-2">
-              <CircleDollarSign className="h-6 w-6 text-zinc-900 dark:text-zinc-50" />
+              <WalletMinimal className="h-6 w-6 text-zinc-900 dark:text-zinc-50" />
               <span className="text-lg font-bold text-zinc-900 dark:text-zinc-50">
                 Salarium
               </span>
@@ -28,7 +28,7 @@ export default function Footer() {
               Product
             </h4>
             <ul className="space-y-2">
-              {["Features", "How It Works", "Results"].map((item) => (
+              {["Features", "How It Works", "Stats"].map((item) => (
                 <li key={item}>
                   <Link
                     href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}

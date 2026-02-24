@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useForm } from "react-hook-form";
-import { CircleDollarSign, Eye, EyeOff, Loader2 } from "lucide-react";
+import { WalletMinimal, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -43,7 +43,7 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="mb-8 flex flex-col items-center gap-2">
           <Link href="/" className="flex items-center gap-2">
-            <CircleDollarSign className="h-8 w-8 text-zinc-900 dark:text-zinc-50" />
+            <WalletMinimal className="h-8 w-8 text-zinc-900 dark:text-zinc-50" />
             <span className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
               Salarium
             </span>
@@ -182,12 +182,13 @@ export default function LoginPage() {
         {/* Footer link */}
         <p className="mt-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
           Don&apos;t have an account?{" "}
-          <Link
+          {/* <Link
             href="/auth/signup"
             className="font-medium text-zinc-900 underline-offset-2 hover:underline dark:text-zinc-50"
           >
             Sign up
-          </Link>
+          </Link> */}
+          Contact admin
         </p>
       </div>
     </div>

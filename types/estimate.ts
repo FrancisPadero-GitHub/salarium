@@ -11,5 +11,7 @@ export interface Estimate {
   status: EstimateStatus;
   /** Set when status === "Converted" */
   convertedJobId?: string;
+  /** Admin or office person who handled the estimate */
+  handledBy?: string;
   notes?: string;
 }

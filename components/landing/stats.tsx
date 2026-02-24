@@ -1,23 +1,27 @@
 const stats = [
   {
-    value: "100%",
-    label: "Server-side calculations",
-    description: "Every commission and total computed in the database",
+    value: "9",
+    label: "Spreadsheets replaced",
+    description:
+      "Per-tech logs, daily gross/net, estimates, P&L, and Orlando jobs — all in one place",
   },
   {
-    value: "0",
-    label: "Manual spreadsheets",
-    description: "Salarium replaces all disconnected spreadsheet workflows",
+    value: "$92K+",
+    label: "Monthly team gross tracked",
+    description:
+      "February 2026 actuals, updating in real time as jobs are logged",
   },
   {
-    value: "4",
-    label: "Payment methods supported",
-    description: "Cash, Check, Credit Card, and Zelle",
+    value: "50 / 75%",
+    label: "Commission splits automated",
+    description:
+      "Both rate tiers calculated server-side per technician — no manual formulas",
   },
   {
-    value: "Real-time",
-    label: "Financial dashboards",
-    description: "Daily gross, net, monthly, and year-to-date metrics",
+    value: "5",
+    label: "Technicians managed",
+    description:
+      "Tamir, Yotam, Shalom, Aviran, and the 3 Bros sub crew tracked individually",
   },
 ];
 

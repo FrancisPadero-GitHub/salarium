@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Menu, X, CircleDollarSign } from "lucide-react";
+import { Menu, X, WalletMinimal } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function Navbar() {
@@ -13,7 +13,7 @@ export default function Navbar() {
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <CircleDollarSign className="h-7 w-7 text-zinc-900 dark:text-zinc-50" />
+          <WalletMinimal className="h-7 w-7 text-zinc-900 dark:text-zinc-50" />
           <span className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
             Salarium
           </span>

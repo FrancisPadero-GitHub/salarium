@@ -1,40 +1,55 @@
 import type { Technician } from "@/types/technician";
 
+/**
+ * Real technicians sourced from individual spreadsheets.
+ * Commission rates confirmed via DAILY GROSS & NET spreadsheet:
+ *   - 50% rate: Tamir, Yotam  (columns labeled "Net (50%)")
+ *   - 75% rate: Shalom, Aviran, Sub  (columns labeled "Net (75%)")
+ */
 export const technicians: Technician[] = [
   {
-    id: "tech-1",
-    name: "Marcus Rivera",
-    email: "marcus.r@salarium.local",
-    phone: "(555) 201-4433",
+    id: "tech-tamir",
+    name: "Tamir",
+    email: "tamir@salarium.local",
+    phone: "",
     commissionRate: 0.5,
     active: true,
-    hiredAt: "2022-03-15",
+    hiredAt: "2024-01-01",
   },
   {
-    id: "tech-2",
-    name: "Diana Chen",
-    email: "diana.c@salarium.local",
-    phone: "(555) 304-8812",
-    commissionRate: 0.75,
-    active: true,
-    hiredAt: "2021-07-01",
-  },
-  {
-    id: "tech-3",
-    name: "Jordan Wells",
-    email: "jordan.w@salarium.local",
-    phone: "(555) 412-6677",
+    id: "tech-yotam",
+    name: "Yotam",
+    email: "yotam@salarium.local",
+    phone: "",
     commissionRate: 0.5,
     active: true,
-    hiredAt: "2023-01-10",
+    hiredAt: "2024-01-01",
   },
   {
-    id: "tech-4",
-    name: "Priya Nair",
-    email: "priya.n@salarium.local",
-    phone: "(555) 519-2290",
+    id: "tech-shalom",
+    name: "Shalom",
+    email: "shalom@salarium.local",
+    phone: "",
     commissionRate: 0.75,
-    active: false,
-    hiredAt: "2020-11-20",
+    active: true,
+    hiredAt: "2024-01-01",
+  },
+  {
+    id: "tech-aviran",
+    name: "Aviran",
+    email: "aviran@salarium.local",
+    phone: "",
+    commissionRate: 0.75,
+    active: true,
+    hiredAt: "2024-06-01",
+  },
+  {
+    id: "tech-sub",
+    name: "3 Bros (Sub)",
+    email: "sub@salarium.local",
+    phone: "",
+    commissionRate: 0.75,
+    active: true,
+    hiredAt: "2024-01-01",
   },
 ];
