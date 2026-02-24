@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Menu, X, WalletMinimal } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ModeToggle } from "@/components/mode-toggle";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
@@ -58,6 +59,7 @@ export default function Navbar() {
         </div>
 
         {/* Mobile menu toggle */}
+        <ModeToggle />
         <button
           onClick={() => setOpen(!open)}
           className="rounded-md p-2 text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800 md:hidden"
