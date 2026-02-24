@@ -1,10 +1,10 @@
-import { Briefcase } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { jobs } from "@/data/jobs";
 import type { PaymentMethod } from "@/types/job";
 import { PaymentMethodChart } from "@/components/dashboard/payment-method-chart";
 import { TechRevenueBarChart } from "@/components/dashboard/tech-revenue-bar-chart";
 import { TopJobsChart } from "@/components/dashboard/top-jobs-chart";
+import { LogJobDialog } from "@/components/dashboard/log-job-dialog";
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
@@ -35,10 +35,7 @@ export default function JobsPage() {
             {jobs.length} jobs logged
           </p>
         </div>
-        <button className="inline-flex items-center gap-2 rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200">
-          <Briefcase className="h-4 w-4" />
-          Log Job
-        </button>
+        <LogJobDialog />
       </div>
 
       {/* Summary strip */}

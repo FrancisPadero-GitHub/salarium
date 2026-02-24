@@ -1,10 +1,10 @@
-import { Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { technicians } from "@/data/technicians";
 import { jobs } from "@/data/jobs";
 import { TechPerformanceChart } from "@/components/dashboard/tech-performance-chart";
 import { TechMonthlyChart } from "@/components/dashboard/tech-monthly-chart";
 import { TechJobsDonut } from "@/components/dashboard/tech-jobs-donut";
+import { AddTechnicianDialog } from "@/components/dashboard/add-technician-dialog";
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
@@ -34,10 +34,7 @@ export default function TechniciansPage() {
             {technicians.filter((t) => !t.active).length} inactive
           </p>
         </div>
-        <button className="inline-flex items-center gap-2 rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200">
-          <Users className="h-4 w-4" />
-          Add Technician
-        </button>
+        <AddTechnicianDialog />
       </div>
 
       {/* Charts */}

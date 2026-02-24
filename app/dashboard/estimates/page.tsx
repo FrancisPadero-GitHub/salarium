@@ -1,9 +1,9 @@
-import { FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { estimates } from "@/data/estimates";
 import type { EstimateStatus } from "@/types/estimate";
 import { EstimateStatusChart } from "@/components/dashboard/estimate-status-chart";
 import { EstimatesByTechChart } from "@/components/dashboard/estimates-by-tech-chart";
+import { NewEstimateDialog } from "@/components/dashboard/new-estimate-dialog";
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
@@ -38,10 +38,7 @@ export default function EstimatesPage() {
             {estimates.length} estimates in pipeline
           </p>
         </div>
-        <button className="inline-flex items-center gap-2 rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200">
-          <FileText className="h-4 w-4" />
-          New Estimate
-        </button>
+        <NewEstimateDialog />
       </div>
 
       {/* Status summary */}
