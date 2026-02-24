@@ -2,6 +2,9 @@ import { Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { technicians } from "@/data/technicians";
 import { jobs } from "@/data/jobs";
+import { TechPerformanceChart } from "@/components/dashboard/tech-performance-chart";
+import { TechMonthlyChart } from "@/components/dashboard/tech-monthly-chart";
+import { TechJobsDonut } from "@/components/dashboard/tech-jobs-donut";
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
@@ -36,6 +39,14 @@ export default function TechniciansPage() {
           Add Technician
         </button>
       </div>
+
+      {/* Charts */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <TechPerformanceChart />
+        <TechMonthlyChart />
+      </div>
+
+      <TechJobsDonut />
 
       {/* Cards */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">

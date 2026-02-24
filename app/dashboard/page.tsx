@@ -5,10 +5,16 @@ import {
   Users,
   FileText,
   DollarSign,
+  Percent,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { dashboardMetrics } from "@/data/metrics";
+import { ytdSummary } from "@/data/chart-data";
 import { jobs } from "@/data/jobs";
+import { RevenueTrendChart } from "@/components/dashboard/revenue-trend-chart";
+import { MonthlyComparisonChart } from "@/components/dashboard/monthly-comparison-chart";
+import { TechRevenueDonut } from "@/components/dashboard/tech-revenue-donut";
+import { ProfitSplitChart } from "@/components/dashboard/profit-split-chart";
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
@@ -17,17 +23,17 @@ const fmt = (n: number) =>
 
 const kpis = [
   {
-    label: "Daily Gross",
-    value: fmt(dashboardMetrics.dailyGross),
+    label: "YTD Gross Revenue",
+    value: fmt(ytdSummary.totalGross),
     icon: DollarSign,
-    sub: "Last logged business day (2/22)",
-    up: dashboardMetrics.dailyGross > 0,
+    sub: "Jan 1 — Feb 20, 2026",
+    up: true,
   },
   {
-    label: "Daily Net",
-    value: fmt(dashboardMetrics.dailyNet),
+    label: "Company Net",
+    value: fmt(ytdSummary.companyNet),
     icon: TrendingUp,
-    sub: "Business net after commissions",
+    sub: "After tech payouts & parts",
     up: true,
   },
   {
@@ -38,17 +44,24 @@ const kpis = [
     up: true,
   },
   {
-    label: "Year to Date",
-    value: fmt(dashboardMetrics.yearToDate),
-    icon: DollarSign,
-    sub: "Jan 1 — today",
+    label: "Net Margin",
+    value: `${ytdSummary.companyNetMargin}%`,
+    icon: Percent,
+    sub: "Company net / gross",
     up: true,
   },
   {
     label: "Total Jobs",
-    value: dashboardMetrics.totalJobs.toString(),
+    value: ytdSummary.totalJobs.toString(),
     icon: Briefcase,
-    sub: "All time logged jobs",
+    sub: "YTD across all techs",
+    up: true,
+  },
+  {
+    label: "Avg Revenue / Job",
+    value: fmt(ytdSummary.avgRevenuePerJob),
+    icon: DollarSign,
+    sub: "Based on 383 jobs",
     up: true,
   },
   {
@@ -111,6 +124,17 @@ export default function DashboardPage() {
             </p>
           </div>
         ))}
+      </div>
+
+      {/* Charts */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <RevenueTrendChart />
+        <MonthlyComparisonChart />
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <TechRevenueDonut />
+        <ProfitSplitChart />
       </div>
 
       {/* Recent Jobs */}

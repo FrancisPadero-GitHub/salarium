@@ -2,6 +2,9 @@ import { Briefcase } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { jobs } from "@/data/jobs";
 import type { PaymentMethod } from "@/types/job";
+import { PaymentMethodChart } from "@/components/dashboard/payment-method-chart";
+import { TechRevenueBarChart } from "@/components/dashboard/tech-revenue-bar-chart";
+import { TopJobsChart } from "@/components/dashboard/top-jobs-chart";
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
@@ -58,6 +61,14 @@ export default function JobsPage() {
           </div>
         ))}
       </div>
+
+      {/* Charts */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <PaymentMethodChart />
+        <TechRevenueBarChart />
+      </div>
+
+      <TopJobsChart />
 
       {/* Table */}
       <div className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">

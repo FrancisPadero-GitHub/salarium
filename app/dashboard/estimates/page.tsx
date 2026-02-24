@@ -2,6 +2,8 @@ import { FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { estimates } from "@/data/estimates";
 import type { EstimateStatus } from "@/types/estimate";
+import { EstimateStatusChart } from "@/components/dashboard/estimate-status-chart";
+import { EstimatesByTechChart } from "@/components/dashboard/estimates-by-tech-chart";
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
@@ -74,6 +76,12 @@ export default function EstimatesPage() {
         <p className="mt-1 text-2xl font-bold tabular-nums text-zinc-900 dark:text-zinc-50">
           {fmt(totalValue)}
         </p>
+      </div>
+
+      {/* Charts */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <EstimateStatusChart />
+        <EstimatesByTechChart />
       </div>
 
       {/* Table */}
