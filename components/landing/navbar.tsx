@@ -50,11 +50,19 @@ export default function Navbar() {
           >
             Log In
           </Link>
-          <Link
+          {/* <Link
             href="/auth/signup"
-            className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+            className="rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
           >
             Get Started
+          </Link> */}
+
+          <Link
+            href="/dashboard"
+            title="Temporary, will remove it till auth is ready"
+            className="rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+          >
+            Go to Dashboard
           </Link>
         </div>
 
@@ -73,7 +81,7 @@ export default function Navbar() {
       <div
         className={cn(
           "border-t border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950 md:hidden",
-          open ? "block" : "hidden",
+          open ? "block" : "hidden", // Show/hide based on state and is if mobile
         )}
       >
         <div className="flex flex-col gap-1 px-6 py-4">
@@ -106,12 +114,19 @@ export default function Navbar() {
             >
               Log In
             </Link>
-            <Link
+            {/* <Link
               href="/auth/signup"
               onClick={() => setOpen(false)}
-              className="rounded-lg bg-zinc-900 px-4 py-2 text-center text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900"
+              className="rounded-lg bg-zinc-800 px-4 py-2 text-center text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900"
             >
               Get Started
+            </Link> */}
+            <Link
+              href="/dashboard"
+              title="Temporary"
+              className="rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+            >
+              Go to Dashboard
             </Link>
           </div>
         </div>
