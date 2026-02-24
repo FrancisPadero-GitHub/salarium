@@ -81,3 +81,5 @@ import { cn } from "@/lib/utils";
 **Icons** — Use `lucide-react` exclusively. Example: `import { CircleDollarSign } from "lucide-react"`.
 
 **Fonts** — Geist Sans (`--font-geist-sans`) and Geist Mono (`--font-geist-mono`) are loaded via `next/font/google` in [`app/layout.tsx`](../app/layout.tsx) and exposed as CSS variables.
+
+**Forms** — Use React Hook Form v7 for form state management in client components. Server Components should not contain forms.
