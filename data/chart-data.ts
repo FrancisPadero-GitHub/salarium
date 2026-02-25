@@ -76,8 +76,8 @@ export const technicianBreakdown = [
 
 // ── Revenue split (company vs tech) ────────────────────────────────────
 export const revenueSplit = [
-  { name: "Company Net", value: 81342.27 },
-  { name: "Tech Pay", value: 146706.32 },
+  { name: "Tech Pay", value: 171262.44 }, // 75%
+  { name: "Company Net", value: 57087.48 }, // 25%
 ];
 
 // ── Profit breakdown ───────────────────────────────────────────────────

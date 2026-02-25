@@ -12,11 +12,11 @@ import {
 import { revenueSplit } from "@/data/chart-data";
 
 const chartConfig = {
-  "Company Net": { label: "Company Net", color: "var(--chart-2)" },
-  "Tech Pay": { label: "Tech Pay", color: "var(--chart-1)" },
+  "Company Net": { label: "Company Net", color: "var(--chart-1)" },
+  "Tech Pay": { label: "Tech Pay", color: "var(--chart-2)" },
 } satisfies ChartConfig;
 
-const COLORS = ["var(--color-Company Net)", "var(--color-Tech Pay)"];
+const COLORS = ["var(--chart-1)", "var(--chart-2)"];
 
 export function ProfitSplitChart() {
   return (

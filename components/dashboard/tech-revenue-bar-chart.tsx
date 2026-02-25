@@ -14,11 +14,11 @@ import { technicianBreakdown } from "@/data/chart-data";
 const chartConfig = {
   companyNet: {
     label: "Company Net",
-    color: "var(--chart-2)",
+    color: "var(--chart-4)", // lighter green-yellow
   },
   techPay: {
     label: "Tech Pay",
-    color: "var(--chart-1)",
+    color: "var(--chart-5)", // lighter orange
   },
 } satisfies ChartConfig;
 
