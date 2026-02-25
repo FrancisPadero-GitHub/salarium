@@ -1,0 +1,105 @@
+"use client";
+
+import { cn } from "@/lib/utils";
+import type { TechnicianSummaryRow } from "@/hooks/technicians/useFetchTechSummary";
+
+interface TechnicianCardsGridProps {
+  technicians: TechnicianSummaryRow[];
+}
+
+const fmt = (n: number) =>
+  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
+    n,
+  );
+
+export function TechnicianCardsGrid({ technicians }: TechnicianCardsGridProps) {
+  return (
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      {technicians.map((tech) => {
+        const initials = (tech.name || "?")
+          .split(" ")
+          .map((n) => n[0])
+          .join("");
+        return (
+          <div
+            key={tech.technician_id}
+            className={cn(
+              "rounded-xl border bg-white p-6 dark:bg-zinc-900",
+              "border-zinc-200 dark:border-zinc-800",
+            )}
+          >
+            {/* Header */}
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-100 text-sm font-semibold text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+                  {initials}
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+                    {tech.name || "Unknown"}
+                  </p>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    {tech.email || "—"}
+                  </p>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    {tech.phone || "—"}
+                  </p>
+                </div>
+              </div>
+              <span className="inline-flex rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                Active
+              </span>
+            </div>
+
+            {/* Details */}
+            <div className="mt-4 grid grid-cols-2 gap-3 border-t border-zinc-100 pt-4 dark:border-zinc-800">
+              <div>
+                <p className="text-xs text-zinc-400 dark:text-zinc-500">
+                  Commission Rate
+                </p>
+                <p className="mt-0.5 text-lg font-bold text-zinc-900 dark:text-zinc-50">
+                  {Math.round(tech.commission_rate ?? 0)}%
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-zinc-400 dark:text-zinc-500">
+                  Jobs Completed
+                </p>
+                <p className="mt-0.5 text-lg font-bold text-zinc-900 dark:text-zinc-50">
+                  {tech.total_jobs ?? 0}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-zinc-400 dark:text-zinc-500">
+                  Total Gross
+                </p>
+                <p className="mt-0.5 text-sm font-semibold tabular-nums text-zinc-800 dark:text-zinc-200">
+                  {fmt(tech.total_gross ?? 0)}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-zinc-400 dark:text-zinc-500">
+                  Total Earned
+                </p>
+                <p className="mt-0.5 text-sm font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">
+                  {fmt(tech.total_earned ?? 0)}
+                </p>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="mt-4 border-t border-zinc-100 pt-4 text-xs text-zinc-400 dark:border-zinc-800 dark:text-zinc-500">
+              <span className="mx-2">·</span>
+              <span>
+                Hired{" "}
+                {tech.hired_date
+                  ? new Date(tech.hired_date).toLocaleDateString()
+                  : "N/A"}
+              </span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
