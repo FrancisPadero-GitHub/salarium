@@ -58,7 +58,10 @@ export function TechnicianCardsGrid({ technicians }: TechnicianCardsGridProps) {
                   Commission Rate
                 </p>
                 <p className="mt-0.5 text-lg font-bold text-zinc-900 dark:text-zinc-50">
-                  {Math.round(tech.commission_rate ?? 0)}%
+                  {/* Multiplies to 100 because the value is in decimal form (e.g. 0.25 = 25%) */}
+                  {tech.commission_rate
+                    ? (tech.commission_rate * 100).toFixed(2) + "%"
+                    : "0%"}
                 </p>
               </div>
               <div>
@@ -79,7 +82,15 @@ export function TechnicianCardsGrid({ technicians }: TechnicianCardsGridProps) {
               </div>
               <div>
                 <p className="text-xs text-zinc-400 dark:text-zinc-500">
-                  Total Earned
+                  Company Net Revenue Gained
+                </p>
+                <p className="mt-0.5 text-sm font-semibold tabular-nums text-cyan-800 dark:text-cyan-200">
+                  {fmt(tech.total_company_earned ?? 0)}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-zinc-400 dark:text-zinc-500">
+                  Tech Total Earned
                 </p>
                 <p className="mt-0.5 text-sm font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">
                   {fmt(tech.total_earned ?? 0)}
