@@ -44,7 +44,7 @@ export default async function TechniciansPage() {
         <TechMonthlyChart />
       </div>
 
-      <TechJobsDonut />
+      <TechJobsDonut initialTechSummary={techSummary} />
 
       {/* Error state */}
       {error && (

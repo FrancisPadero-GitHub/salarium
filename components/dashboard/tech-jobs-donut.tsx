@@ -9,28 +9,65 @@ import {
   ChartLegendContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-import { technicianBreakdown } from "@/data/chart-data";
+import {
+  useFetchTechSummary,
+  type TechnicianSummaryRow,
+} from "@/hooks/technicians/useFetchTechSummary";
+import { Spinner } from "@/components/ui/spinner";
 
-const pieData = technicianBreakdown.map((t) => ({
-  name: t.name,
-  value: t.jobs,
-}));
+// Yotam: { label: "Yotam", color: "var(--chart-1)" },
+// Tamir: { label: "Tamir", color: "var(--chart-2)" },
+// Shalom: { label: "Shalom", color: "var(--chart-3)" },
+// Subs: { label: "Subs", color: "var(--chart-4)" },
 
-const chartConfig = {
-  Yotam: { label: "Yotam", color: "var(--chart-1)" },
-  Tamir: { label: "Tamir", color: "var(--chart-2)" },
-  Shalom: { label: "Shalom", color: "var(--chart-3)" },
-  Subs: { label: "Subs", color: "var(--chart-4)" },
-} satisfies ChartConfig;
+type Props = {
+  initialTechSummary?: TechnicianSummaryRow[];
+};
 
-const COLORS = [
-  "var(--color-Yotam)",
-  "var(--color-Tamir)",
-  "var(--color-Shalom)",
-  "var(--color-Subs)",
-];
+export function TechJobsDonut({ initialTechSummary }: Props) {
+  const {
+    data: technicians = [],
+    isLoading,
+    isError,
+  } = useFetchTechSummary(initialTechSummary);
 
-export function TechJobsDonut() {
+  if (isLoading)
+    return (
+      <div className="flex items-center justify-center">
+        <Spinner />
+      </div>
+    );
+
+  if (isError)
+    return (
+      <div className="rounded-lg border border-zinc-200 bg-red-100 p-6 text-center dark:border-zinc-800 dark:bg-red-900/20">
+        <p className="text-sm text-red-700 dark:text-red-400">
+          Failed to load chart
+        </p>
+      </div>
+    );
+
+  // Filters out technicians with zero jobs to avoid cluttering the chart with empty slices
+  const filteredTechs = technicians.filter((t) => (t.total_jobs ?? 0) > 0);
+
+  // Prepares the data for the PieChart by mapping each technician to an object with name and value properties
+  const pieData = filteredTechs.map((t) => ({
+    name: t.name ?? "Unknown",
+    value: t.total_jobs ?? 0,
+  }));
+
+  // Generates the chart configuration dynamically based on the filtered technicians, assigning a unique color to each technician slice in the chart
+  const chartConfig = filteredTechs.reduce(
+    (acc, t, i) => {
+      acc[t.name ?? `Tech${i}`] = {
+        label: t.name ?? "Unknown",
+        color: `var(--chart-${(i % 4) + 1})`,
+      };
+      return acc;
+    },
+    {} as Record<string, { label: string; color: string }>,
+  ) as ChartConfig;
+
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
       <div className="mb-4">
@@ -38,7 +75,7 @@ export function TechJobsDonut() {
           Jobs Distribution
         </h3>
         <p className="text-xs text-zinc-500 dark:text-zinc-400">
-          Total jobs per technician — YTD
+          Total jobs per technician - YTD
         </p>
       </div>
       <ChartContainer config={chartConfig} className="mx-auto h-70 w-full">
@@ -64,7 +101,10 @@ export function TechJobsDonut() {
             label={({ name, value }) => `${name}: ${value}`}
           >
             {pieData.map((_, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index]} />
+              <Cell
+                key={`cell-${index}`}
+                fill={chartConfig[pieData[index].name]?.color || "#000"}
+              />
             ))}
           </Pie>
           <ChartLegend content={<ChartLegendContent nameKey="name" />} />
