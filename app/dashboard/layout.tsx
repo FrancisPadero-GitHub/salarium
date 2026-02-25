@@ -27,16 +27,18 @@ export default function DashboardLayout({
   const pathname = usePathname();
 
   return (
-    <div className="flex min-h-screen bg-zinc-50 dark:bg-zinc-950">
+    <div className="flex h-screen overflow-hidden bg-zinc-50 dark:bg-zinc-950">
       {/* Sidebar */}
       <aside className="hidden w-60 flex-col border-r border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 lg:flex">
         {/* Logo */}
-        <div className="flex h-16 items-center gap-2 border-b border-zinc-200 px-6 dark:border-zinc-800">
-          <WalletMinimal className="h-6 w-6 text-zinc-700 dark:text-zinc-300" />
-          <span className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-            Salarium
-          </span>
-        </div>
+        <Link href="/">
+          <div className="flex h-16 items-center gap-2 border-b border-zinc-200 px-6 dark:border-zinc-800">
+            <WalletMinimal className="h-6 w-6 text-zinc-700 dark:text-zinc-300" />
+            <span className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+              Salarium
+            </span>
+          </div>
+        </Link>
 
         {/* Nav */}
         <nav className="flex flex-1 flex-col gap-1 p-3">
@@ -72,7 +74,7 @@ export default function DashboardLayout({
       </aside>
 
       {/* Main */}
-      <div className="flex flex-1 flex-col">
+      <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
         {/* Top bar */}
         <header className="flex h-16 items-center justify-between border-b border-zinc-200 bg-white px-6 dark:border-zinc-800 dark:bg-zinc-900">
           <h1 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
@@ -85,7 +87,7 @@ export default function DashboardLayout({
           <ModeToggle />
         </header>
 
-        <main className="flex-1 p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto p-6">{children}</main>
       </div>
     </div>
   );

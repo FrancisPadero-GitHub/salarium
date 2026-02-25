@@ -1,22 +1,16 @@
 "use client";
-
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactNode } from "react";
 
-const queryClient = new QueryClient();
-
 export function QueryProvider({ children }: { children: ReactNode }) {
+  const queryClient = new QueryClient();
   return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+      {children}
+      {process.env.NODE_ENV === "development" && (
+        <ReactQueryDevtools initialIsOpen={false} />
+      )}
+    </QueryClientProvider>
   );
 }
-
-// This code is only for TypeScript
-declare global {
-  interface Window {
-    __TANSTACK_QUERY_CLIENT__: import("@tanstack/query-core").QueryClient;
-  }
-}
-
-// This code is for all users
-window.__TANSTACK_QUERY_CLIENT__ = queryClient;

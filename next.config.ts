@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  devIndicators: {
+    position: "bottom-left", // Or 'bottom-right' | 'top-right' | 'top-left'
+  },
 };
 
 export default nextConfig;
