@@ -1,10 +1,17 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import type { TechnicianSummaryRow } from "@/hooks/technicians/useFetchTechSummary";
+
+import { Spinner } from "@/components/ui/spinner";
+
+// Hooks client side
+import {
+  useFetchTechSummary,
+  type TechnicianSummaryRow,
+} from "@/hooks/technicians/useFetchTechSummary";
 
 interface TechnicianCardsGridProps {
-  technicians: TechnicianSummaryRow[];
+  initialTechSummary: TechnicianSummaryRow[];
 }
 
 const fmt = (n: number) =>
@@ -12,7 +19,24 @@ const fmt = (n: number) =>
     n,
   );
 
-export function TechnicianCardsGrid({ technicians }: TechnicianCardsGridProps) {
+export function TechnicianCardsGrid({
+  initialTechSummary,
+}: TechnicianCardsGridProps) {
+  // Client side hydration and data fetching with Tanstack Query
+  const {
+    data: technicians = [],
+    isLoading,
+    isError,
+  } = useFetchTechSummary(initialTechSummary);
+
+  if (isLoading)
+    return (
+      <div className="flex items-center justify-center">
+        <Spinner />
+      </div>
+    );
+  if (isError) return <div>Error loading technicians</div>;
+
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {technicians.map((tech) => {

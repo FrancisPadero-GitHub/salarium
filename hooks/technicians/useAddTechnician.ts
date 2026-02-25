@@ -29,6 +29,10 @@ export function useAddTechnician() {
         queryKey: ["technicians"],
         exact: false,
       });
+      queryClient.invalidateQueries({
+        queryKey: ["technicians", "summary"],
+        exact: false,
+      });
     },
     onError: (error) => {
       console.error("Error adding technician:", error.message || error);

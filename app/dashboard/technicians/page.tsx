@@ -57,7 +57,7 @@ export default async function TechniciansPage() {
 
       {/* Technician Cards Grid - passed as client component */}
       {techSummary.length > 0 ? (
-        <TechnicianCardsGrid technicians={techSummary} />
+        <TechnicianCardsGrid initialTechSummary={techSummary} />
       ) : (
         <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-8 text-center dark:border-zinc-800 dark:bg-zinc-900/50">
           <p className="text-sm text-zinc-600 dark:text-zinc-400">

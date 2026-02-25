@@ -257,8 +257,8 @@ export function AddTechnicianDialog() {
                         {...register("phone", {
                           required: "Phone is required",
                           pattern: {
-                            value: /^[0-9-]+$/,
-                            message: "Only numbers and hyphens allowed",
+                            value: /^[0-9 ]+$/,
+                            message: "Only numbers and spaces allowed",
                           },
                           minLength: {
                             value: 7,
