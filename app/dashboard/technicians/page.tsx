@@ -4,7 +4,7 @@ import { TriangleAlert } from "lucide-react";
 import { TechPerformanceChart } from "@/components/dashboard/tech-performance-chart";
 import { TechMonthlyChart } from "@/components/dashboard/tech-monthly-chart";
 import { TechJobsDonut } from "@/components/dashboard/tech-jobs-donut";
-import { AddTechnicianDialog } from "@/components/dashboard/add-technician-dialog";
+import { AddTechnicianDialog } from "@/components/dashboard/form-technician-dialog";
 import { TechnicianCardsGrid } from "@/components/dashboard/technician-cards-grid";
 import { TechnicianTable } from "@/components/dashboard/technician-table";
 

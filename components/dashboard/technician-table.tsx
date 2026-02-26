@@ -8,6 +8,10 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 import { useFilterTechTable } from "@/features/store/technician/useFilterTechTable";
+import { useTechnicianStore } from "@/features/store/technician/useFormTechnicianStore";
+import type { Database } from "@/database.types";
+
+type TechnicianRow = Database["public"]["Tables"]["technicians"]["Row"];
 
 interface TechnicianTableProps {
   initialTechSummary: TechnicianSummaryRow[];
@@ -36,6 +40,8 @@ export function TechnicianTable({ initialTechSummary }: TechnicianTableProps) {
     isLoading,
     isError,
   } = useFetchTechSummary(initialTechSummary);
+
+  const openEdit = useTechnicianStore((state) => state.openEdit);
 
   // Get filter state from Zustand store
   const search = useFilterTechTable((state) => state.search);
@@ -245,7 +251,17 @@ export function TechnicianTable({ initialTechSummary }: TechnicianTableProps) {
                 return (
                   <tr
                     key={tech.technician_id}
-                    className="transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                    onClick={() =>
+                      openEdit({
+                        id: tech.technician_id,
+                        name: tech.name,
+                        email: tech.email,
+                        phone: tech.phone,
+                        default_commission_rate: tech.commission_rate,
+                        hired_date: tech.hired_date,
+                      } as TechnicianRow)
+                    }
+                    className="cursor-pointer transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
                   >
                     {/* Name */}
                     <td className="px-4 py-3">
