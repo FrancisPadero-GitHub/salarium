@@ -9,7 +9,8 @@ export type TechnicianSummaryRow =
 export const fetchTechSummary = async (): Promise<TechnicianSummaryRow[]> => {
   const { data: result, error } = await supabase
     .from("v_technician_summary")
-    .select("*");
+    .select("*")
+    .order("created_at", { ascending: false });
 
   if (error) {
     throw new Error(error.message || "Failed to fetch technician summary");

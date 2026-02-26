@@ -118,8 +118,15 @@ export function TechnicianTable({ initialTechSummary }: TechnicianTableProps) {
         return matchesSearch && matchesCommission;
       })
       .sort((a, b) => {
-        const av = a[sortKey] ?? "";
-        const bv = b[sortKey] ?? "";
+        let av = a[sortKey] ?? "";
+        let bv = b[sortKey] ?? "";
+
+        // Invert commission_rate values for sorting since display shows 100 - value
+        if (sortKey === "commission_rate") {
+          av = typeof av === "number" ? 100 - av : av;
+          bv = typeof bv === "number" ? 100 - bv : bv;
+        }
+
         let cmp = 0;
         if (typeof av === "number" && typeof bv === "number") {
           cmp = av - bv;

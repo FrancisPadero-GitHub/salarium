@@ -79,7 +79,7 @@ export function TechPerformanceChart({
           Technician Performance
         </h3>
         <p className="text-xs text-zinc-500 dark:text-zinc-400">
-          Gross, company net, and parts — YTD
+          Gross, company net, and parts - YTD
         </p>
       </div>
       <ChartContainer config={chartConfig} className="h-75 w-full">
