@@ -9,20 +9,23 @@ import {
   ChartLegendContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-import { technicianBreakdown } from "@/data/chart-data";
 
 const chartConfig = {
   companyNet: {
     label: "Company Net",
-    color: "var(--chart-4)", // lighter green-yellow
+    color: "var(--chart-4)",
   },
   techPay: {
     label: "Tech Pay",
-    color: "var(--chart-5)", // lighter orange
+    color: "var(--chart-5)",
   },
 } satisfies ChartConfig;
 
-export function TechRevenueBarChart() {
+interface TechRevenueBarChartProps {
+  data: { name: string; companyNet: number; techPay: number }[];
+}
+
+export function TechRevenueBarChart({ data }: TechRevenueBarChartProps) {
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
       <div className="mb-4">
@@ -34,7 +37,7 @@ export function TechRevenueBarChart() {
         </p>
       </div>
       <ChartContainer config={chartConfig} className="h-70 w-full">
-        <BarChart data={technicianBreakdown} margin={{ left: 12, right: 12 }}>
+        <BarChart data={data} margin={{ left: 12, right: 12 }}>
           <CartesianGrid vertical={false} />
           <XAxis
             dataKey="name"

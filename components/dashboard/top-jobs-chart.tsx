@@ -1,22 +1,59 @@
 "use client";
 
-import { Bar, BarChart, XAxis, YAxis, CartesianGrid } from "recharts";
+import { useMemo } from "react";
+import { Bar, BarChart, XAxis, YAxis, CartesianGrid, Cell } from "recharts";
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-import { topJobs } from "@/data/chart-data";
 
-const chartConfig = {
-  gross: {
-    label: "Gross Revenue",
-    color: "var(--chart-1)",
-  },
-} satisfies ChartConfig;
+const PALETTE = [
+  "var(--chart-1)",
+  "var(--chart-2)",
+  "var(--chart-3)",
+  "var(--chart-4)",
+  "var(--chart-5)",
+  "var(--chart-6, oklch(0.6 0.2 280))",
+  "var(--chart-7, oklch(0.6 0.2 320))",
+  "var(--chart-8, oklch(0.6 0.2 60))",
+];
 
-export function TopJobsChart() {
+interface TopJobsChartProps {
+  data: {
+    label: string;
+    address: string;
+    tech: string;
+    gross: number;
+    category: string;
+  }[];
+}
+
+export function TopJobsChart({ data }: TopJobsChartProps) {
+  const categoryColorMap = useMemo(() => {
+    const map = new Map<string, string>();
+    let i = 0;
+    for (const d of data) {
+      if (!map.has(d.category)) {
+        map.set(d.category, PALETTE[i % PALETTE.length]);
+        i++;
+      }
+    }
+    return map;
+  }, [data]);
+
+  const chartConfig = useMemo(
+    () =>
+      Object.fromEntries(
+        Array.from(categoryColorMap.entries()).map(([cat, color]) => [
+          cat,
+          { label: cat, color },
+        ]),
+      ) satisfies ChartConfig,
+    [categoryColorMap],
+  );
+
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
       <div className="mb-4">
@@ -28,14 +65,10 @@ export function TopJobsChart() {
         </p>
       </div>
       <ChartContainer config={chartConfig} className="h-75 w-full">
-        <BarChart
-          data={topJobs}
-          layout="vertical"
-          margin={{ left: 0, right: 12 }}
-        >
+        <BarChart data={data} layout="vertical" margin={{ left: 0, right: 12 }}>
           <CartesianGrid horizontal={false} />
           <YAxis
-            dataKey="address"
+            dataKey="label"
             type="category"
             tickLine={false}
             axisLine={false}
@@ -57,16 +90,21 @@ export function TopJobsChart() {
                 }
                 labelFormatter={(_, payload) => {
                   const item = payload?.[0]?.payload;
-                  return item ? `${item.address} (${item.tech})` : "";
+                  return item
+                    ? `${item.address} (${item.tech}) · ${item.category}`
+                    : "";
                 }}
               />
             }
           />
-          <Bar
-            dataKey="gross"
-            fill="var(--color-gross)"
-            radius={[0, 4, 4, 0]}
-          />
+          <Bar dataKey="gross" radius={[0, 4, 4, 0]}>
+            {data.map((entry, index) => (
+              <Cell
+                key={`cell-${index}`}
+                fill={categoryColorMap.get(entry.category) ?? PALETTE[0]}
+              />
+            ))}
+          </Bar>
         </BarChart>
       </ChartContainer>
     </div>

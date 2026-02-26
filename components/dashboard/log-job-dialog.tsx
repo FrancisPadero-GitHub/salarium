@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { Briefcase } from "lucide-react";
+import { useState, useMemo } from "react";
+import { useForm, useFieldArray } from "react-hook-form";
+import { Briefcase, Plus, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -23,24 +23,118 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { technicians } from "@/data/technicians";
-import type { PaymentMethod, JobStatus } from "@/types/job";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
+import { useFetchTechSummary } from "@/hooks/technicians/useFetchTechSummary";
+import type { Database } from "@/database.types";
+
+type JobInsert = Database["public"]["Tables"]["jobs"]["Insert"];
+type PartInsert = Database["public"]["Tables"]["parts"]["Insert"];
+type PaymentMode = Database["public"]["Enums"]["payment_mode_enum"];
+
+interface PartRow {
+  name: string;
+  quantity: string;
+  unit_cost: string;
+}
 
 interface JobFormValues {
-  date: string;
+  job_date: string;
+  job_name: string;
+  category: string;
+  description: string;
   address: string;
-  technicianId: string;
-  parts: string;
-  tips: string;
+  region: string;
+  technician_id: string;
   subtotal: string;
-  paymentMethod: PaymentMethod;
-  status: JobStatus;
+  tip_amount: string;
+  cash_on_hand: string;
+  payment_mode: PaymentMode;
+  status: string;
   notes: string;
+  parts: PartRow[];
+}
+
+const DEFAULT_VALUES: JobFormValues = {
+  job_date: new Date().toISOString().slice(0, 10),
+  job_name: "",
+  category: "",
+  description: "",
+  address: "",
+  region: "",
+  technician_id: "",
+  subtotal: "",
+  tip_amount: "0",
+  cash_on_hand: "0",
+  payment_mode: "cash",
+  status: "done",
+  notes: "",
+  parts: [],
+};
+
+const fmt = (n: number) =>
+  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
+    n,
+  );
+
+async function insertJob(values: JobFormValues): Promise<string> {
+  const subtotal = parseFloat(values.subtotal) || 0;
+  const tip_amount = parseFloat(values.tip_amount) || 0;
+  const cash_on_hand = parseFloat(values.cash_on_hand) || 0;
+  const parts_total_cost = values.parts.reduce(
+    (s, p) =>
+      s + (parseFloat(p.unit_cost) || 0) * (parseFloat(p.quantity) || 0),
+    0,
+  );
+  const total_amount = subtotal + tip_amount + parts_total_cost;
+
+  const payload: JobInsert = {
+    job_date: values.job_date,
+    job_name: values.job_name || null,
+    category: values.category || null,
+    description: values.description || null,
+    address: values.address || null,
+    region: values.region || null,
+    technician_id: values.technician_id || null,
+    subtotal,
+    tip_amount,
+    cash_on_hand,
+    parts_total_cost,
+    total_amount,
+    payment_mode: values.payment_mode,
+    status: values.status,
+    notes: values.notes || null,
+  };
+
+  const { data, error } = await supabase
+    .from("jobs")
+    .insert([payload])
+    .select("id")
+    .single();
+
+  if (error) throw new Error(error.message);
+  return data.id;
+}
+
+async function insertParts(jobId: string, parts: PartRow[]): Promise<void> {
+  if (!parts.length) return;
+  const rows: PartInsert[] = parts.map((p) => ({
+    job_id: jobId,
+    name: p.name,
+    quantity: parseFloat(p.quantity) || 0,
+    unit_cost: parseFloat(p.unit_cost) || 0,
+    amount: (parseFloat(p.quantity) || 0) * (parseFloat(p.unit_cost) || 0),
+  }));
+  const { error } = await supabase.from("parts").insert(rows);
+  if (error) throw new Error(error.message);
 }
 
 export function LogJobDialog() {
   const [open, setOpen] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const queryClient = useQueryClient();
+
+  const { data: technicians = [] } = useFetchTechSummary();
 
   const {
     register,
@@ -48,69 +142,53 @@ export function LogJobDialog() {
     reset,
     setValue,
     watch,
+    control,
     formState: { errors },
-  } = useForm<JobFormValues>({
-    defaultValues: {
-      date: new Date().toISOString().slice(0, 10),
-      address: "",
-      technicianId: "",
-      parts: "0",
-      tips: "0",
-      subtotal: "",
-      paymentMethod: "Credit Card",
-      status: "Done",
-      notes: "",
+  } = useForm<JobFormValues>({ defaultValues: DEFAULT_VALUES });
+
+  const {
+    fields: partFields,
+    append: appendPart,
+    remove: removePart,
+  } = useFieldArray({ control, name: "parts" });
+
+  const watchedParts = watch("parts");
+  const partsTotalCost = useMemo(
+    () =>
+      (watchedParts ?? []).reduce(
+        (s, p) =>
+          s + (parseFloat(p.unit_cost) || 0) * (parseFloat(p.quantity) || 0),
+        0,
+      ),
+    [watchedParts],
+  );
+
+  const selectedTechId = watch("technician_id");
+  const subtotalVal = parseFloat(watch("subtotal") || "0");
+  const tipVal = parseFloat(watch("tip_amount") || "0");
+  const gross = subtotalVal + partsTotalCost + tipVal;
+  const tech = technicians.find((t) => t.technician_id === selectedTechId);
+  const commissionRate = tech?.commission_rate ?? 0;
+  const commissionAmount = gross * (commissionRate / 100);
+  const net = gross - commissionAmount;
+
+  const { mutateAsync, isPending } = useMutation({
+    mutationFn: async (values: JobFormValues) => {
+      const jobId = await insertJob(values);
+      await insertParts(jobId, values.parts);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["jobs"], exact: false });
     },
   });
 
-  const selectedTechId = watch("technicianId");
-  const subtotalVal = parseFloat(watch("subtotal") || "0");
-  const partsVal = parseFloat(watch("parts") || "0");
-  const tipsVal = parseFloat(watch("tips") || "0");
-  const gross = subtotalVal + partsVal + tipsVal;
-  const tech = technicians.find((t) => t.id === selectedTechId);
-  const commissionRate = tech?.commissionRate ?? 0;
-  const commissionAmount = gross * commissionRate;
-  const net = gross - commissionAmount;
-
-  const fmt = (n: number) =>
-    new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(n);
-
-  const onSubmit = (data: JobFormValues) => {
-    const techData = technicians.find((t) => t.id === data.technicianId);
-    const parts = parseFloat(data.parts) || 0;
-    const tips = parseFloat(data.tips) || 0;
-    const subtotal = parseFloat(data.subtotal) || 0;
-    const grossAmount = subtotal + parts + tips;
-    const rate = techData?.commissionRate ?? 0;
-
-    const job = {
-      id: `job-${Date.now()}`,
-      date: data.date,
-      address: data.address,
-      technicianId: data.technicianId,
-      technicianName: techData?.name ?? "",
-      parts,
-      tips,
-      subtotal,
-      gross: grossAmount,
-      commissionRate: rate,
-      commissionAmount: grossAmount * rate,
-      net: grossAmount - grossAmount * rate,
-      paymentMethod: data.paymentMethod,
-      status: data.status,
-      notes: data.notes || undefined,
-    };
-
-    console.log("New job recorded:", job);
+  const onSubmit = async (data: JobFormValues) => {
+    await mutateAsync(data);
     setSubmitted(true);
     setTimeout(() => {
       setSubmitted(false);
       setOpen(false);
-      reset();
+      reset(DEFAULT_VALUES);
     }, 1500);
   };
 
@@ -122,7 +200,7 @@ export function LogJobDialog() {
           Log Job
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>Log New Job</DialogTitle>
           <DialogDescription>
@@ -144,66 +222,95 @@ export function LogJobDialog() {
             {/* Date & Technician */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="job-date">Date</Label>
+                <Label htmlFor="job-date">Date *</Label>
                 <Input
                   id="job-date"
                   type="date"
-                  {...register("date", { required: "Date is required" })}
+                  {...register("job_date", { required: "Date is required" })}
                 />
-                {errors.date && (
-                  <p className="text-xs text-red-500">{errors.date.message}</p>
+                {errors.job_date && (
+                  <p className="text-xs text-red-500">
+                    {errors.job_date.message}
+                  </p>
                 )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="job-tech">Technician</Label>
                 <Select
                   value={selectedTechId}
-                  onValueChange={(v) => setValue("technicianId", v)}
+                  onValueChange={(v) => setValue("technician_id", v)}
                 >
                   <SelectTrigger id="job-tech">
                     <SelectValue placeholder="Select tech" />
                   </SelectTrigger>
                   <SelectContent>
-                    {technicians
-                      .filter((t) => t.active)
-                      .map((t) => (
-                        <SelectItem key={t.id} value={t.id}>
-                          {t.name} ({Math.round(t.commissionRate * 100)}%)
-                        </SelectItem>
-                      ))}
+                    {technicians.map((t) => (
+                      <SelectItem
+                        key={t.technician_id!}
+                        value={t.technician_id!}
+                      >
+                        {t.name} ({t.commission_rate}%)
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
-                <input
-                  type="hidden"
-                  {...register("technicianId", {
-                    required: "Select a technician",
-                  })}
-                />
-                {errors.technicianId && (
-                  <p className="text-xs text-red-500">
-                    {errors.technicianId.message}
-                  </p>
-                )}
               </div>
             </div>
 
-            {/* Address */}
-            <div className="space-y-2">
-              <Label htmlFor="job-address">Address</Label>
-              <Input
-                id="job-address"
-                placeholder="123 Main St, Tampa, FL"
-                {...register("address", { required: "Address is required" })}
-              />
-              {errors.address && (
-                <p className="text-xs text-red-500">{errors.address.message}</p>
-              )}
+            {/* Job Name & Category */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="job-name">Job Name</Label>
+                <Input
+                  id="job-name"
+                  placeholder="e.g. AC Repair"
+                  {...register("job_name")}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="job-category">Category</Label>
+                <Input
+                  id="job-category"
+                  placeholder="e.g. HVAC, Plumbing"
+                  {...register("category")}
+                />
+              </div>
             </div>
 
-            {/* Subtotal, Parts, Tips */}
+            {/* Description */}
+            <div className="space-y-2">
+              <Label htmlFor="job-description">Description</Label>
+              <Input
+                id="job-description"
+                placeholder="Short service description"
+                {...register("description")}
+              />
+            </div>
+
+            {/* Address & Region */}
+            <div className="grid grid-cols-3 gap-4">
+              <div className="col-span-2 space-y-2">
+                <Label htmlFor="job-address">Address</Label>
+                <Input
+                  id="job-address"
+                  placeholder="123 Main St, Tampa, FL"
+                  {...register("address")}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="job-region">Region</Label>
+                <Input
+                  id="job-region"
+                  placeholder="e.g. South"
+                  {...register("region")}
+                />
+              </div>
+            </div>
+
+            {/* Subtotal, Tips, Cash on Hand */}
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="job-subtotal">Subtotal ($)</Label>
+                <Label htmlFor="job-subtotal">Subtotal ($) *</Label>
                 <Input
                   id="job-subtotal"
                   type="number"
@@ -222,32 +329,130 @@ export function LogJobDialog() {
                 )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="job-parts">Parts ($)</Label>
-                <Input
-                  id="job-parts"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  placeholder="0.00"
-                  {...register("parts")}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="job-tips">Tips ($)</Label>
+                <Label htmlFor="job-tips">Tip ($)</Label>
                 <Input
                   id="job-tips"
                   type="number"
                   step="0.01"
                   min="0"
                   placeholder="0.00"
-                  {...register("tips")}
+                  {...register("tip_amount")}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="job-cash">Cash on Hand ($)</Label>
+                <Input
+                  id="job-cash"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                  {...register("cash_on_hand")}
                 />
               </div>
             </div>
 
-            {/* Calculated fields */}
+            {/* Parts */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label>Parts</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-7 gap-1 text-xs"
+                  onClick={() =>
+                    appendPart({ name: "", quantity: "1", unit_cost: "" })
+                  }
+                >
+                  <Plus className="h-3 w-3" />
+                  Add Part
+                </Button>
+              </div>
+
+              {partFields.length > 0 && (
+                <div className="rounded-lg border border-zinc-200 dark:border-zinc-700">
+                  {/* Header */}
+                  <div className="grid grid-cols-[1fr_80px_100px_32px] gap-2 border-b border-zinc-200 px-3 py-2 dark:border-zinc-700">
+                    <span className="text-xs font-medium text-zinc-500">
+                      Name
+                    </span>
+                    <span className="text-xs font-medium text-zinc-500">
+                      Qty
+                    </span>
+                    <span className="text-xs font-medium text-zinc-500">
+                      Unit Cost
+                    </span>
+                    <span />
+                  </div>
+                  {/* Rows */}
+                  {partFields.map((field, index) => {
+                    const qty = parseFloat(
+                      watchedParts?.[index]?.quantity || "0",
+                    );
+                    const uc = parseFloat(
+                      watchedParts?.[index]?.unit_cost || "0",
+                    );
+                    const rowTotal = qty * uc;
+                    return (
+                      <div
+                        key={field.id}
+                        className="grid grid-cols-[1fr_80px_100px_32px] items-center gap-2 border-b border-zinc-100 px-3 py-2 last:border-0 dark:border-zinc-800"
+                      >
+                        <Input
+                          placeholder="Part name"
+                          className="h-7 text-xs"
+                          {...register(`parts.${index}.name`, {
+                            required: true,
+                          })}
+                        />
+                        <Input
+                          type="number"
+                          min="1"
+                          step="1"
+                          placeholder="1"
+                          className="h-7 text-xs"
+                          {...register(`parts.${index}.quantity`)}
+                        />
+                        <div className="relative">
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            placeholder="0.00"
+                            className="h-7 text-xs"
+                            {...register(`parts.${index}.unit_cost`)}
+                          />
+                          {rowTotal > 0 && (
+                            <span className="absolute -bottom-4 left-0 text-[10px] tabular-nums text-zinc-400">
+                              = {fmt(rowTotal)}
+                            </span>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removePart(index)}
+                          className="flex h-7 w-7 items-center justify-center rounded text-zinc-400 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    );
+                  })}
+                  {/* Parts total */}
+                  <div className="flex items-center justify-between rounded-b-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-800/50">
+                    <span className="text-xs text-zinc-500">Parts Total</span>
+                    <span className="text-sm font-semibold tabular-nums text-zinc-900 dark:text-zinc-50">
+                      {fmt(partsTotalCost)}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Calculated summary */}
             <div className="rounded-lg bg-zinc-50 p-3 dark:bg-zinc-800/50">
-              <div className="grid grid-cols-3 gap-2 text-sm">
+              <div className="grid grid-cols-4 gap-2 text-sm">
                 <div>
                   <p className="text-xs text-zinc-400 dark:text-zinc-500">
                     Gross
@@ -258,7 +463,15 @@ export function LogJobDialog() {
                 </div>
                 <div>
                   <p className="text-xs text-zinc-400 dark:text-zinc-500">
-                    Commission ({Math.round(commissionRate * 100)}%)
+                    Parts Cost
+                  </p>
+                  <p className="font-semibold tabular-nums text-zinc-700 dark:text-zinc-300">
+                    {fmt(partsTotalCost)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-zinc-400 dark:text-zinc-500">
+                    Commission ({commissionRate}%)
                   </p>
                   <p className="font-semibold tabular-nums text-amber-600 dark:text-amber-400">
                     {fmt(commissionAmount)}
@@ -280,19 +493,19 @@ export function LogJobDialog() {
               <div className="space-y-2">
                 <Label htmlFor="job-payment">Payment Method</Label>
                 <Select
-                  value={watch("paymentMethod")}
+                  value={watch("payment_mode")}
                   onValueChange={(v) =>
-                    setValue("paymentMethod", v as PaymentMethod)
+                    setValue("payment_mode", v as PaymentMode)
                   }
                 >
                   <SelectTrigger id="job-payment">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Credit Card">Credit Card</SelectItem>
-                    <SelectItem value="Cash">Cash</SelectItem>
-                    <SelectItem value="Zelle">Zelle</SelectItem>
-                    <SelectItem value="Check">Check</SelectItem>
+                    <SelectItem value="credit card">Credit Card</SelectItem>
+                    <SelectItem value="cash">Cash</SelectItem>
+                    <SelectItem value="zelle">Zelle</SelectItem>
+                    <SelectItem value="check">Check</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -300,15 +513,15 @@ export function LogJobDialog() {
                 <Label htmlFor="job-status">Status</Label>
                 <Select
                   value={watch("status")}
-                  onValueChange={(v) => setValue("status", v as JobStatus)}
+                  onValueChange={(v) => setValue("status", v)}
                 >
                   <SelectTrigger id="job-status">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Done">Done</SelectItem>
-                    <SelectItem value="Pending">Pending</SelectItem>
-                    <SelectItem value="Cancelled">Cancelled</SelectItem>
+                    <SelectItem value="done">Done</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="cancelled">Cancelled</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -331,12 +544,14 @@ export function LogJobDialog() {
                 variant="outline"
                 onClick={() => {
                   setOpen(false);
-                  reset();
+                  reset(DEFAULT_VALUES);
                 }}
               >
                 Cancel
               </Button>
-              <Button type="submit">Save Job</Button>
+              <Button type="submit" disabled={isPending}>
+                {isPending ? "Saving…" : "Save Job"}
+              </Button>
             </DialogFooter>
           </form>
         )}

@@ -78,9 +78,7 @@ export function TechnicianCardsGrid({
                 </p>
                 <p className="mt-0.5 text-lg font-bold text-zinc-900 dark:text-zinc-50">
                   {/* Multiplies to 100 because the value is in decimal form (e.g. 0.25 = 25%) */}
-                  {tech.commission_rate
-                    ? (tech.commission_rate * 100).toFixed(2) + "%"
-                    : "0%"}
+                  {tech.commission_rate} %
                 </p>
               </div>
               <div>
