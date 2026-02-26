@@ -206,7 +206,7 @@ export function TechnicianTable({ initialTechSummary }: TechnicianTableProps) {
       <div className="overflow-x-auto min-h-96 max-h-96">
         <table className="w-full min-w-225 text-sm">
           <thead>
-            <tr className="border-b border-zinc-200 dark:border-zinc-800">
+            <tr className="border-b border-zinc-200 dark:border-zinc-800 sticky top-0 bg-white dark:bg-zinc-900">
               {(
                 [
                   { key: "name", label: "Name" },
