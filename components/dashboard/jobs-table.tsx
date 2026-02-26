@@ -12,11 +12,8 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
-import {
-  useFetchJobFinancialBreakdown,
-  type JobFinancialBreakdownRow,
-} from "@/hooks/jobs/useFetchJobsFinanceBreakdown";
 import { useJobsStore } from "@/features/store/jobs/useFormJobStore";
+import { JobDetailedRow, useFetchJobDetailed } from "@/hooks/jobs/useFetchJobs";
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
@@ -54,18 +51,11 @@ const statusColors: Record<string, string> = {
 };
 
 interface JobsTableProps {
-  initialJobs: JobFinancialBreakdownRow[];
+  initialJobs: JobDetailedRow[];
 }
 
 export function JobsTable({ initialJobs }: JobsTableProps) {
-  const {
-    data: jobs = [],
-    isLoading,
-    isError,
-  } = useFetchJobFinancialBreakdown({
-    status: undefined, // Don't filter by status on the client since we have all data available
-    initialData: initialJobs,
-  });
+  const { data: jobs = [], isLoading, isError } = useFetchJobDetailed();
   const { openEdit } = useJobsStore();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");

@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { Bar, BarChart, XAxis, YAxis, CartesianGrid } from "recharts";
 import {
   ChartContainer,
@@ -9,6 +10,8 @@ import {
   ChartLegendContent,
   type ChartConfig,
 } from "@/components/ui/chart";
+import { useFetchJobFinancialBreakdown } from "@/hooks/jobs/useFetchJobsFinanceBreakdown";
+import type { JobFinancialBreakdownRow } from "@/hooks/jobs/useFetchJobsFinanceBreakdown";
 
 const chartConfig = {
   companyNet: {
@@ -22,10 +25,28 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 interface TechRevenueBarChartProps {
-  data: { name: string; companyNet: number; techPay: number }[];
+  initialData?: JobFinancialBreakdownRow[];
 }
 
-export function TechRevenueBarChart({ data }: TechRevenueBarChartProps) {
+export function TechRevenueBarChart({ initialData }: TechRevenueBarChartProps) {
+  const { data: jobs = [] } = useFetchJobFinancialBreakdown(initialData);
+
+  const data = useMemo(() => {
+    const techRevenueMap: Record<
+      string,
+      { companyNet: number; techPay: number }
+    > = {};
+    for (const j of jobs) {
+      const name = j.technician_name ?? "Unknown";
+      if (!techRevenueMap[name])
+        techRevenueMap[name] = { companyNet: 0, techPay: 0 };
+      techRevenueMap[name].companyNet += j.company_net ?? 0;
+      techRevenueMap[name].techPay += j.commission ?? 0;
+    }
+    return Object.entries(techRevenueMap)
+      .map(([name, v]) => ({ name, ...v }))
+      .sort((a, b) => b.companyNet + b.techPay - (a.companyNet + a.techPay));
+  }, [jobs]);
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
       <div className="mb-4">
@@ -33,7 +54,7 @@ export function TechRevenueBarChart({ data }: TechRevenueBarChartProps) {
           Revenue Split by Technician
         </h3>
         <p className="text-xs text-zinc-500 dark:text-zinc-400">
-          Company net vs tech pay — YTD
+          Company net vs tech pay - YTD
         </p>
       </div>
       <ChartContainer config={chartConfig} className="h-70 w-full">

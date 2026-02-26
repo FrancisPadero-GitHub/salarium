@@ -8,6 +8,8 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
+import { useFetchJobFinancialBreakdown } from "@/hooks/jobs/useFetchJobsFinanceBreakdown";
+import type { JobFinancialBreakdownRow } from "@/hooks/jobs/useFetchJobsFinanceBreakdown";
 
 const PALETTE = [
   "var(--chart-1)",
@@ -21,16 +23,26 @@ const PALETTE = [
 ];
 
 interface TopJobsChartProps {
-  data: {
-    label: string;
-    address: string;
-    tech: string;
-    gross: number;
-    category: string;
-  }[];
+  initialData?: JobFinancialBreakdownRow[];
 }
 
-export function TopJobsChart({ data }: TopJobsChartProps) {
+export function TopJobsChart({ initialData }: TopJobsChartProps) {
+  const { data: jobs = [] } = useFetchJobFinancialBreakdown(initialData);
+
+  const data = useMemo(
+    () =>
+      [...jobs]
+        .sort((a, b) => (b.gross ?? 0) - (a.gross ?? 0))
+        .slice(0, 10)
+        .map((j) => ({
+          label: j.job_name ?? j.category ?? "Unknown",
+          address: j.address ?? "Unknown",
+          tech: j.technician_name ?? "?",
+          gross: j.gross ?? 0,
+          category: j.category ?? "Uncategorized",
+        })),
+    [jobs],
+  );
   const categoryColorMap = useMemo(() => {
     const map = new Map<string, string>();
     let i = 0;
@@ -61,7 +73,7 @@ export function TopJobsChart({ data }: TopJobsChartProps) {
           Top Jobs by Revenue
         </h3>
         <p className="text-xs text-zinc-500 dark:text-zinc-400">
-          Highest grossing jobs — YTD
+          Highest grossing jobs - YTD
         </p>
       </div>
       <ChartContainer config={chartConfig} className="h-75 w-full">

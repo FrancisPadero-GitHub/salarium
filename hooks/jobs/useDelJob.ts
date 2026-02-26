@@ -19,7 +19,7 @@ const dbSoftDeleteJob = async (id: string) => {
   return result as JobRow;
 };
 
-export function useSoftDeleteJob() {
+export function useDelJob() {
   const queryClient = useQueryClient();
   return useMutation<JobRow, Error, string>({
     mutationFn: dbSoftDeleteJob,
@@ -27,6 +27,10 @@ export function useSoftDeleteJob() {
       console.log("Job soft-deleted successfully:", result);
       queryClient.invalidateQueries({
         queryKey: ["jobs", "financial-breakdown"],
+        exact: false,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["jobs", "table-detailed"],
         exact: false,
       });
     },

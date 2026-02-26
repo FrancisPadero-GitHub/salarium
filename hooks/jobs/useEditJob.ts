@@ -30,6 +30,10 @@ export function useEditJob() {
         queryKey: ["jobs", "financial-breakdown"],
         exact: false,
       });
+      queryClient.invalidateQueries({
+        queryKey: ["jobs", "table-detailed"],
+        exact: false,
+      });
     },
     onError: (error) => {
       console.error("Error editing job:", error.message || error);
