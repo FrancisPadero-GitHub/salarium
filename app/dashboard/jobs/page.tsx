@@ -3,6 +3,11 @@ import {
   fetchJobDetailed,
   type JobDetailedRow,
 } from "@/hooks/jobs/useFetchJobs";
+import {
+  fetchJobFinancialBreakdown,
+  type JobFinancialBreakdownRow,
+} from "@/hooks/jobs/useFetchJobsFinanceBreakdown";
+
 import { TopCategoriesChart } from "@/components/dashboard/job-top-categories";
 import { TechRevenueBarChart } from "@/components/dashboard/tech-revenue-bar-chart";
 import { TopJobsChart } from "@/components/dashboard/top-jobs-chart";
@@ -12,11 +17,13 @@ import { JobsErrorToast } from "@/components/toasts/jobs-error";
 import { JobSummaryCards } from "@/components/dashboard/job-summary-cards";
 
 export default async function JobsPage() {
-  let jobs: JobDetailedRow[] = [];
+  let jobsDetailedTable: JobDetailedRow[] = [];
+  let jobFinancialBreakdown: JobFinancialBreakdownRow[] = [];
   let error = null;
 
   try {
-    jobs = await fetchJobDetailed();
+    jobsDetailedTable = await fetchJobDetailed();
+    jobFinancialBreakdown = await fetchJobFinancialBreakdown();
   } catch (err) {
     error = err instanceof Error ? err.message : "Failed to fetch jobs";
     console.error("Error fetching job financial breakdown:", error);
@@ -47,24 +54,24 @@ export default async function JobsPage() {
             Jobs
           </h2>
           <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-            {jobs.length} jobs logged
+            {jobFinancialBreakdown.length} jobs logged
           </p>
         </div>
         <LogJobDialog />
       </div>
 
       {/* Summary cards */}
-      <JobSummaryCards initialData={jobs} />
+      <JobSummaryCards initialData={jobFinancialBreakdown} />
 
-      <JobsTable initialJobs={jobs} />
+      <JobsTable initialJobs={jobsDetailedTable} />
 
       {/* Charts */}
       <div className="grid gap-6 lg:grid-cols-2">
         <TopCategoriesChart />
-        <TechRevenueBarChart initialData={jobs} />
+        <TechRevenueBarChart initialData={jobFinancialBreakdown} />
       </div>
 
-      <TopJobsChart initialData={jobs} />
+      <TopJobsChart initialData={jobFinancialBreakdown} />
     </div>
   );
 }
