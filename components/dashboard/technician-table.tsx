@@ -203,7 +203,7 @@ export function TechnicianTable({ initialTechSummary }: TechnicianTableProps) {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto min-h-96">
+      <div className="overflow-x-auto min-h-96 max-h-96">
         <table className="w-full min-w-225 text-sm">
           <thead>
             <tr className="border-b border-zinc-200 dark:border-zinc-800">
