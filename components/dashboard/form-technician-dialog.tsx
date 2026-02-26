@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Users } from "lucide-react";
+import { Users, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -12,6 +12,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,6 +42,7 @@ import type { Database } from "@/database.types";
 // Hooks
 import { useAddTechnician } from "@/hooks/technicians/useAddTechnician";
 import { useEditTechnician } from "@/hooks/technicians/useEditTechnician";
+import { useDelTechnician } from "@/hooks/technicians/useDelTechnicians";
 
 // data
 import { countryCodes } from "@/data/country-code";
@@ -71,6 +82,14 @@ export function AddTechnicianDialog() {
     isSuccess: isEditSuccess,
     reset: resetEditMutation,
   } = useEditTechnician();
+
+  const {
+    mutate: deleteTechnician,
+    isPending: isDeletePending,
+    isSuccess: isDeleteSuccess,
+  } = useDelTechnician();
+
+  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
 
   const isEdit = mode === "edit";
   const error = isEdit ? editError : addError;
@@ -170,7 +189,24 @@ export function AddTechnicianDialog() {
     }
   };
 
+  const handleDelete = () => {
+    if (!form.id) return;
+    deleteTechnician(form.id as string, {
+      onSuccess: () => {
+        setIsConfirmDeleteOpen(false);
+        setTimeout(() => {
+          closeDialog();
+          setTimeout(() => {
+            resetForm();
+            reset();
+          }, 300);
+        }, 2000);
+      },
+    });
+  };
+
   return (
+    <>
     <Dialog
       open={isDialogOpen}
       onOpenChange={(newOpen) => {
@@ -192,37 +228,55 @@ export function AddTechnicianDialog() {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {isSuccess
-              ? isEdit
-                ? "Technician Updated!"
-                : "Technician Added!"
-              : isError
+            {isDeleteSuccess
+              ? "Technician Hidden"
+              : isSuccess
                 ? isEdit
-                  ? "Error Updating Technician"
-                  : "Error Adding Technician"
-                : isEdit
-                  ? "Edit Technician"
-                  : "Add New Technician"}
+                  ? "Technician Updated!"
+                  : "Technician Added!"
+                : isError
+                  ? isEdit
+                    ? "Error Updating Technician"
+                    : "Error Adding Technician"
+                  : isEdit
+                    ? "Edit Technician"
+                    : "Add New Technician"}
           </DialogTitle>
           <DialogDescription>
-            {isSuccess
-              ? isEdit
-                ? "Updated"
-                : "Registered"
-              : isError
+            {isDeleteSuccess
+              ? "The technician has been hidden from all views."
+              : isSuccess
                 ? isEdit
-                  ? "Error updating technician"
-                  : "Error registering technician"
-                : isEdit
-                  ? "Update"
-                  : "Register"}{" "}
-            {isEdit
-              ? "technician details."
-              : "a new technician or sub-contractor."}
+                  ? "Updated"
+                  : "Registered"
+                : isError
+                  ? isEdit
+                    ? "Error updating technician"
+                    : "Error registering technician"
+                  : isEdit
+                    ? "Update"
+                    : "Register"}{" "}
+            {!isDeleteSuccess &&
+              (isEdit
+                ? "technician details."
+                : "a new technician or sub-contractor.")}
           </DialogDescription>
         </DialogHeader>
 
-        {isSuccess ? (
+        {isDeleteSuccess ? (
+          <div className="flex flex-col items-center gap-2 py-8">
+            <div className="rounded-full bg-amber-100 p-3 dark:bg-amber-900/30">
+              <Trash2 className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+            </div>
+            <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
+              Technician hidden successfully.
+            </p>
+            <p className="text-xs text-center text-zinc-500 dark:text-zinc-400">
+              They have been removed from all views and reports but their data
+              remains in the database.
+            </p>
+          </div>
+        ) : isSuccess ? (
           <div className="flex flex-col items-center gap-2 py-8">
             <div className="rounded-full bg-emerald-100 p-3 dark:bg-emerald-900/30">
               <Users className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
@@ -397,35 +451,77 @@ export function AddTechnicianDialog() {
               </div>
             </div>
 
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                disabled={isSubmitting || isPending}
-                onClick={() => {
-                  closeDialog();
-                  resetForm();
-                  reset();
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={isSubmitting || isPending || isSuccess || !isDirty}
-              >
-                {isSubmitting || isPending
-                  ? isEdit
-                    ? "Saving..."
-                    : "Adding..."
-                  : isEdit
-                    ? "Save Changes"
-                    : "Add Technician"}
-              </Button>
+            <DialogFooter className="flex-row items-center justify-between sm:justify-between">
+              {isEdit && (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  disabled={isSubmitting || isPending || isDeletePending}
+                  onClick={() => setIsConfirmDeleteOpen(true)}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </Button>
+              )}
+              <div className="flex gap-2 ml-auto">
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={isSubmitting || isPending}
+                  onClick={() => {
+                    closeDialog();
+                    resetForm();
+                    reset();
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting || isPending || isSuccess || !isDirty}
+                >
+                  {isSubmitting || isPending
+                    ? isEdit
+                      ? "Saving..."
+                      : "Adding..."
+                    : isEdit
+                      ? "Save Changes"
+                      : "Add Technician"}
+                </Button>
+              </div>
             </DialogFooter>
           </form>
         )}
       </DialogContent>
     </Dialog>
+
+    <AlertDialog open={isConfirmDeleteOpen} onOpenChange={setIsConfirmDeleteOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Hide this technician?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This technician will be hidden from all views and reports but{" "}
+            <span className="font-medium text-zinc-900 dark:text-zinc-50">
+              not permanently deleted
+            </span>
+            . Their data will remain in the database and can be restored if
+            needed.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={isDeletePending}>
+            Cancel
+          </AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleDelete}
+            disabled={isDeletePending}
+            className="bg-red-600 hover:bg-red-700 focus:ring-red-600 dark:bg-red-700 dark:hover:bg-red-800"
+          >
+            {isDeletePending ? "Hiding..." : "Yes, hide technician"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }
