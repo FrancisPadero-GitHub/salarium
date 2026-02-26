@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { Bar, BarChart, XAxis, YAxis, CartesianGrid } from "recharts";
 import {
   ChartContainer,
@@ -9,7 +10,11 @@ import {
   ChartLegendContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-import { technicianBreakdown } from "@/data/chart-data";
+import {
+  useFetchTechSummary,
+  type TechnicianSummaryRow,
+} from "@/hooks/technicians/useFetchTechSummary";
+import { Spinner } from "@/components/ui/spinner";
 
 const chartConfig = {
   gross: {
@@ -26,7 +31,47 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function TechPerformanceChart() {
+interface TechPerformanceChartProps {
+  initialTechSummary?: TechnicianSummaryRow[];
+}
+
+export function TechPerformanceChart({
+  initialTechSummary,
+}: TechPerformanceChartProps) {
+  const {
+    data: technicians,
+    isLoading,
+    isError,
+  } = useFetchTechSummary(initialTechSummary);
+
+  const chartData = useMemo(() => {
+    if (!technicians) return [];
+    return technicians.map((tech) => ({
+      name: tech.name || "Unknown",
+      gross: tech.total_gross || 0,
+      companyNet: tech.total_company_earned || 0,
+      parts: tech.total_parts_cost || 0,
+    }));
+  }, [technicians]);
+
+  if (isLoading) {
+    return (
+      <div className="flex h-96 items-center justify-center rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+        <p className="text-sm text-red-600 dark:text-red-400">
+          Failed to load chart data
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
       <div className="mb-4">
@@ -38,7 +83,7 @@ export function TechPerformanceChart() {
         </p>
       </div>
       <ChartContainer config={chartConfig} className="h-75 w-full">
-        <BarChart data={technicianBreakdown} margin={{ left: 12, right: 12 }}>
+        <BarChart data={chartData} margin={{ left: 12, right: 12 }}>
           <CartesianGrid vertical={false} />
           <XAxis
             dataKey="name"

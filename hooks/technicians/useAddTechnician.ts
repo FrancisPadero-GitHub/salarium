@@ -30,6 +30,10 @@ export function useAddTechnician() {
         exact: false,
       });
       queryClient.invalidateQueries({
+        queryKey: ["technicians", "monthly-summary"],
+        exact: false,
+      });
+      queryClient.invalidateQueries({
         queryKey: ["technicians", "summary"],
         exact: false,
       });

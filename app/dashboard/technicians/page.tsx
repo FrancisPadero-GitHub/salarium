@@ -10,18 +10,24 @@ import { TechnicianTable } from "@/components/dashboard/technician-table";
 
 // Server-side data fetching
 import { fetchTechSummary } from "@/hooks/technicians/useFetchTechSummary";
+import { fetchTechMonthlySummary } from "@/hooks/technicians/useFetchTechMonthlySummary";
 
 // types
 import type { TechnicianSummaryRow } from "@/hooks/technicians/useFetchTechSummary";
+import type { TechnicianMonthlySummaryRow } from "@/hooks/technicians/useFetchTechMonthlySummary";
+
+// toasts
 import { TechniciansErrorToast } from "@/components/toasts/technicians-error";
 
 export default async function TechniciansPage() {
   // Fetch data server-side during render
   let techSummary: TechnicianSummaryRow[] = [];
+  let techMontlySummary: TechnicianMonthlySummaryRow[] = [];
   let error = null;
 
   try {
     techSummary = await fetchTechSummary();
+    techMontlySummary = await fetchTechMonthlySummary();
   } catch (err) {
     error = err instanceof Error ? err.message : "Failed to fetch technicians";
     console.error("Error fetching technician summary:", error);
@@ -71,8 +77,8 @@ export default async function TechniciansPage() {
       <TechnicianTable initialTechSummary={techSummary} />
       {/* Charts */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <TechPerformanceChart />
-        <TechMonthlyChart />
+        <TechPerformanceChart initialTechSummary={techSummary} />
+        <TechMonthlyChart initialMonthlySummary={techMontlySummary} />
       </div>
 
       <div className="grid h-105 gap-6 lg:grid-cols-2">

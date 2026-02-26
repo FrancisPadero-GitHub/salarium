@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/select";
 
 // Zustand store
-import { useAddTechnicianStore } from "@/features/store/useAddTechnicianStore";
+import { useAddTechnicianStore } from "@/features/store/technician/useAddTechnicianStore";
 
 // Db types from supabase generted types
 import type { Database } from "@/database.types";
