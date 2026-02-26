@@ -28,10 +28,10 @@ export const DEFAULT_VALUES: JobFormValues = {
   region: "",
   technician_id: "",
   parts_total_cost: "0",
-  subtotal: "",
+  subtotal: "0",
   tip_amount: "0",
   cash_on_hand: "0",
-  payment_mode: "cash",
+  payment_mode: "credit card",
   status: "done",
   notes: "",
 };

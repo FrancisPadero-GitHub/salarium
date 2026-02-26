@@ -9,7 +9,7 @@ interface JobFinancialsSummaryProps {
   companyNet: number;
   totalCollected: number;
   netPlusTip: number;
-  balance: number;
+  // balance: number;
   isNetNegative: boolean;
 }
 
@@ -22,26 +22,26 @@ export function JobFinancialsSummary({
   companyNet,
   totalCollected,
   netPlusTip,
-  balance,
+  // balance,
   isNetNegative,
 }: JobFinancialsSummaryProps) {
   return (
     <div className="space-y-2 rounded-lg bg-zinc-50 p-3 dark:bg-zinc-800/50">
       {/* Row 1: Gross / Parts Cost / Net Revenue */}
       <div className="grid grid-cols-3 gap-2 text-sm">
-        <div>
+        <div className="text-center">
           <p className="text-xs text-zinc-400 dark:text-zinc-500">Gross</p>
           <p className="font-semibold tabular-nums text-zinc-900 dark:text-zinc-50">
             {fmt(gross)}
           </p>
         </div>
-        <div>
+        <div className="text-center">
           <p className="text-xs text-zinc-400 dark:text-zinc-500">Parts Cost</p>
           <p className="font-semibold tabular-nums text-zinc-600 dark:text-zinc-400">
             {fmt(partsTotal)}
           </p>
         </div>
-        <div>
+        <div className="text-center">
           <p className="text-xs text-zinc-400 dark:text-zinc-500">
             Net Revenue
           </p>
@@ -54,8 +54,8 @@ export function JobFinancialsSummary({
       <div className="border-t border-zinc-200 dark:border-zinc-700" />
 
       {/* Row 2: Commission / Company Net */}
-      <div className="grid grid-cols-3 gap-2 text-sm">
-        <div>
+      <div className="grid grid-cols-2 gap-2 text-sm">
+        <div className="text-center">
           <p className="text-xs text-zinc-400 dark:text-zinc-500">
             Commission ({commissionRate}%)
           </p>
@@ -63,9 +63,9 @@ export function JobFinancialsSummary({
             {fmt(commissionAmount)}
           </p>
         </div>
-        <div>
+        <div className="text-center">
           <p className="text-xs text-zinc-400 dark:text-zinc-500">
-            Company Net
+            Company Net ({100 - commissionRate}%)
           </p>
           <p
             className={`font-semibold tabular-nums ${
@@ -82,8 +82,8 @@ export function JobFinancialsSummary({
       <div className="border-t border-zinc-200 dark:border-zinc-700" />
 
       {/* Row 3: Total Collected / Net + Tip / Balance */}
-      <div className="grid grid-cols-3 gap-2 text-sm">
-        <div>
+      <div className="grid grid-cols-2 items gap-2 text-sm">
+        <div className="text-center">
           <p className="text-xs text-zinc-400 dark:text-zinc-500">
             Total Collected
           </p>
@@ -91,13 +91,13 @@ export function JobFinancialsSummary({
             {fmt(totalCollected)}
           </p>
         </div>
-        <div>
+        <div className="text-center">
           <p className="text-xs text-zinc-400 dark:text-zinc-500">Net + Tip</p>
           <p className="font-semibold tabular-nums text-zinc-900 dark:text-zinc-50">
             {fmt(netPlusTip)}
           </p>
         </div>
-        <div>
+        {/* <div>
           <p className="text-xs text-zinc-400 dark:text-zinc-500">Balance</p>
           <p
             className={`font-semibold tabular-nums ${
@@ -108,7 +108,7 @@ export function JobFinancialsSummary({
           >
             {fmt(balance)}
           </p>
-        </div>
+        </div> */}
       </div>
     </div>
   );

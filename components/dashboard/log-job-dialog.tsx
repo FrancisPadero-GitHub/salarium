@@ -105,7 +105,7 @@ export function LogJobDialog() {
         subtotal: String(storeForm.subtotal ?? 0),
         tip_amount: String(storeForm.tip_amount ?? 0),
         cash_on_hand: String(storeForm.cash_on_hand ?? 0),
-        payment_mode: storeForm.payment_mode ?? "cash",
+        payment_mode: storeForm.payment_mode ?? "credit card",
         status: storeForm.status ?? "done",
         notes: storeForm.notes ?? "",
       });
@@ -113,6 +113,18 @@ export function LogJobDialog() {
       reset(DEFAULT_VALUES);
     }
   }, [isDialogOpen]);
+
+  // Auto-fill cash_on_hand when payment_mode is cash
+  useEffect(() => {
+    const subscription = watch((value, { name }) => {
+      if (name === "payment_mode" || name === "subtotal") {
+        if (value.payment_mode === "cash" && value.subtotal) {
+          setValue("cash_on_hand", value.subtotal, { shouldDirty: true });
+        }
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, setValue]);
 
   const selectedTechId = watch("technician_id");
   const subtotalVal = parseFloat(watch("subtotal") || "0");
@@ -129,7 +141,7 @@ export function LogJobDialog() {
   const companyNet = netRevenue - commissionAmount; // company_net
   const totalCollected = subtotalVal + tipVal; // total_amount
   const netPlusTip = totalCollected - partsTotal; // net_plus_tip
-  const balance = subtotalVal - cashOnHandVal; // balance
+  // const balance = subtotalVal - cashOnHandVal; // balance
   const isNetNegative = companyNet < 0;
 
   const handleDelete = () => {
@@ -310,7 +322,7 @@ export function LogJobDialog() {
                   companyNet={companyNet}
                   totalCollected={totalCollected}
                   netPlusTip={netPlusTip}
-                  balance={balance}
+                  // balance={balance}
                   isNetNegative={isNetNegative}
                 />
                 {/* Notes */}

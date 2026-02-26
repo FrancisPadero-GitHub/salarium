@@ -103,7 +103,7 @@ export function JobFinancialsFields({
           {...register("tip_amount")}
         />
       </div>
-      <div className="space-y-2">
+      {/* <div className="space-y-2">
         <Label htmlFor="job-cash">Cash on Hand ($)</Label>
         <Input
           id="job-cash"
@@ -114,7 +114,7 @@ export function JobFinancialsFields({
           disabled={isSubmitting}
           {...register("cash_on_hand")}
         />
-      </div>
+      </div> */}
       {/* Payment & Status */}
 
       <div className="space-y-2">

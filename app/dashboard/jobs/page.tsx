@@ -1,5 +1,8 @@
 import { TriangleAlert } from "lucide-react";
-import { fetchJobFinancialBreakdown } from "@/hooks/jobs/useFetchJobsFinanceBreakdown";
+import {
+  fetchJobDetailed,
+  type JobDetailedRow,
+} from "@/hooks/jobs/useFetchJobs";
 import { TopCategoriesChart } from "@/components/dashboard/job-top-categories";
 import { TechRevenueBarChart } from "@/components/dashboard/tech-revenue-bar-chart";
 import { TopJobsChart } from "@/components/dashboard/top-jobs-chart";
@@ -7,14 +10,13 @@ import { LogJobDialog } from "@/components/dashboard/log-job-dialog";
 import { JobsTable } from "@/components/dashboard/jobs-table";
 import { JobsErrorToast } from "@/components/toasts/jobs-error";
 import { JobSummaryCards } from "@/components/dashboard/job-summary-cards";
-import type { JobFinancialBreakdownRow } from "@/hooks/jobs/useFetchJobsFinanceBreakdown";
 
 export default async function JobsPage() {
-  let jobs: JobFinancialBreakdownRow[] = [];
+  let jobs: JobDetailedRow[] = [];
   let error = null;
 
   try {
-    jobs = await fetchJobFinancialBreakdown();
+    jobs = await fetchJobDetailed();
   } catch (err) {
     error = err instanceof Error ? err.message : "Failed to fetch jobs";
     console.error("Error fetching job financial breakdown:", error);
