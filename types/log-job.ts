@@ -10,6 +10,7 @@ export interface JobFormValues {
   address: string;
   region: string;
   technician_id: string;
+  parts_total_cost: string;
   subtotal: string;
   tip_amount: string;
   cash_on_hand: string;
@@ -26,6 +27,7 @@ export const DEFAULT_VALUES: JobFormValues = {
   address: "",
   region: "",
   technician_id: "",
+  parts_total_cost: "0",
   subtotal: "",
   tip_amount: "0",
   cash_on_hand: "0",

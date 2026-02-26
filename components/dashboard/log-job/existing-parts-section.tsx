@@ -3,7 +3,7 @@
 import { Check, Pencil, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
-import { fmt } from "./types";
+import { fmt } from "../../../types/log-job";
 import type { Database } from "@/database.types";
 
 type Part = Database["public"]["Tables"]["parts"]["Row"];

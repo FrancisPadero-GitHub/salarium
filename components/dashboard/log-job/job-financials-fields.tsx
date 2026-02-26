@@ -3,7 +3,7 @@
 import { UseFormRegister, FieldErrors } from "react-hook-form";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import type { JobFormValues } from "./types";
+import type { JobFormValues } from "../../../types/log-job";
 
 interface JobFinancialsFieldsProps {
   register: UseFormRegister<JobFormValues>;
@@ -19,7 +19,36 @@ export function JobFinancialsFields({
   isNetNegative,
 }: JobFinancialsFieldsProps) {
   return (
-    <div className="grid grid-cols-3 gap-4">
+    <div className="grid grid-cols-2 gap-4">
+      <div className="space-y-2">
+        <Label htmlFor="job-parts-costs">Parts Costs ($) *</Label>
+        <Input
+          id="job-parts-costs"
+          type="number"
+          step="0.01"
+          min="0"
+          placeholder="0.00"
+          disabled={isSubmitting}
+          className={
+            isNetNegative ? "border-red-300 focus-visible:ring-red-500" : ""
+          }
+          {...register("parts_total_cost", {
+            required: "Required",
+            min: { value: 0, message: "Must be ≥ 0" },
+          })}
+        />
+        {errors.parts_total_cost && (
+          <p className="text-xs text-red-500">
+            {errors.parts_total_cost.message}
+          </p>
+        )}
+        {!errors.parts_total_cost && isNetNegative && (
+          <p className="text-xs text-red-600 dark:text-red-400">
+            Cannot be zero
+          </p>
+        )}
+      </div>
+
       <div className="space-y-2">
         <Label htmlFor="job-subtotal">Subtotal ($) *</Label>
         <Input
@@ -42,7 +71,7 @@ export function JobFinancialsFields({
         )}
         {!errors.subtotal && isNetNegative && (
           <p className="text-xs text-red-600 dark:text-red-400">
-            Subtotal too low
+            Cannot be zero
           </p>
         )}
       </div>

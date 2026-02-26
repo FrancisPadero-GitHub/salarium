@@ -5,7 +5,7 @@ import { UseFormRegister, FieldArrayWithId } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { fmt, type JobFormValues, type PartRow } from "./types";
+import { fmt, type JobFormValues, type PartRow } from "../../../types/log-job";
 
 interface NewPartsSectionProps {
   partFields: FieldArrayWithId<JobFormValues, "parts", "id">[];

@@ -1,6 +1,6 @@
 import { AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { fmt } from "./types";
+import { fmt } from "../../../types/log-job";
 
 interface NegativeNetWarningProps {
   partsTotalCost: number;

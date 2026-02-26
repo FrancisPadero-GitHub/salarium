@@ -2,10 +2,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import type { Database } from "@/database.types";
 
-type JobInsert = Database["public"]["Tables"]["jobs"]["Insert"];
+type JobFormValues = Database["public"]["Tables"]["jobs"]["Insert"];
 type JobRow = Database["public"]["Tables"]["jobs"]["Row"];
 
-const dbAddJob = async (data: JobInsert) => {
+const dbAddJob = async (data: JobFormValues) => {
   const { data: result, error } = await supabase
     .from("jobs")
     .insert([data])
@@ -21,7 +21,7 @@ const dbAddJob = async (data: JobInsert) => {
 
 export function useAddJob() {
   const queryClient = useQueryClient();
-  return useMutation<JobRow, Error, JobInsert>({
+  return useMutation<JobRow, Error, JobFormValues>({
     mutationFn: dbAddJob,
     onSuccess: async (result) => {
       console.log("Job added successfully:", result);

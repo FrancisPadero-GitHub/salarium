@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { JobFormValues, PaymentMode } from "./types";
+import type { JobFormValues, PaymentMode } from "@/types/log-job";
 
 interface PaymentStatusNotesProps {
   register: UseFormRegister<JobFormValues>;

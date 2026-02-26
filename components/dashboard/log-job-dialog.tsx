@@ -8,6 +8,9 @@ import {
   DialogContent,
   DialogFooter,
   DialogTrigger,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import type { Database } from "@/database.types";
@@ -22,14 +25,13 @@ import { useDelJob } from "@/hooks/jobs/useDelJob";
 import { useJobsStore } from "@/features/store/jobs/useFormJobStore";
 
 // Components
-import { JobDialogHeader } from "./log-job/job-dialog-header";
 import { JobStatusFeedback } from "./log-job/job-status-feedback";
 import { JobBasicFields } from "./log-job/job-basic-fields";
 import { JobFinancialsFields } from "./log-job/job-financials-fields";
 import { JobFinancialsSummary } from "./log-job/job-financials-summary";
 import { PaymentStatusNotes } from "./log-job/payment-status-notes";
 import { DeleteJobDialog } from "./log-job/delete-job-dialog";
-import { DEFAULT_VALUES, type JobFormValues } from "./log-job/types";
+import { DEFAULT_VALUES, type JobFormValues } from "@/types/log-job";
 
 type JobInsert = Database["public"]["Tables"]["jobs"]["Insert"];
 type JobUpdate = Database["public"]["Tables"]["jobs"]["Update"];
@@ -84,7 +86,7 @@ export function LogJobDialog() {
     reset,
     setValue,
     watch,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<JobFormValues>({ defaultValues: DEFAULT_VALUES });
 
   useEffect(() => {
@@ -98,6 +100,7 @@ export function LogJobDialog() {
         address: storeForm.address ?? "",
         region: storeForm.region ?? "",
         technician_id: storeForm.technician_id ?? "",
+        parts_total_cost: String(storeForm.parts_total_cost ?? 0),
         subtotal: String(storeForm.subtotal ?? 0),
         tip_amount: String(storeForm.tip_amount ?? 0),
         cash_on_hand: String(storeForm.cash_on_hand ?? 0),
@@ -113,12 +116,22 @@ export function LogJobDialog() {
   const selectedTechId = watch("technician_id");
   const subtotalVal = parseFloat(watch("subtotal") || "0");
   const tipVal = parseFloat(watch("tip_amount") || "0");
-  const gross = subtotalVal + tipVal;
+  const cashOnHandVal = parseFloat(watch("cash_on_hand") || "0");
+
+  // parts_total_cost comes from the store when editing an existing job
+  const partsTotal = isEdit ? (storeForm.parts_total_cost ?? 0) : 0;
+
+  // Mirror the v_job_table_detailed view calculations
+  const gross = subtotalVal; // gross = subtotal
+  const netRevenue = gross - partsTotal; // net_revenue = subtotal - parts_total_cost
   const tech = technicians.find((t) => t.technician_id === selectedTechId);
   const commissionRate = tech?.commission_rate ?? 0;
-  const commissionAmount = gross * (commissionRate / 100);
-  const net = gross - commissionAmount;
-  const isNetNegative = net < 0;
+  const commissionAmount = netRevenue * (commissionRate / 100); // commission on net_revenue
+  const companyNet = netRevenue - commissionAmount; // company_net
+  const totalCollected = subtotalVal + tipVal; // total_amount
+  const netPlusTip = totalCollected - partsTotal; // net_plus_tip
+  const balance = subtotalVal - cashOnHandVal; // balance
+  const isNetNegative = companyNet < 0;
 
   const handleDelete = () => {
     if (!storeForm.id) return;
@@ -163,6 +176,7 @@ export function LogJobDialog() {
           address: data.address || null,
           region: data.region || null,
           technician_id: data.technician_id || null,
+          parts_total_cost: partsTotal,
           subtotal,
           tip_amount,
           cash_on_hand,
@@ -180,6 +194,7 @@ export function LogJobDialog() {
           address: data.address || null,
           region: data.region || null,
           technician_id: data.technician_id || null,
+          parts_total_cost: partsTotal,
           subtotal,
           tip_amount,
           cash_on_hand,
@@ -223,15 +238,39 @@ export function LogJobDialog() {
           </Button>
         </DialogTrigger>
         <DialogContent
-          className="max-h-[90vh] overflow-y-auto sm:max-w-xl"
+          className="sm:max-w-xl"
           onCloseAutoFocus={(e) => e.preventDefault()}
         >
-          <JobDialogHeader
-            isDeleteSuccess={isDeleteSuccess}
-            isJobSuccess={isJobSuccess}
-            isJobError={isJobError}
-            isEdit={isEdit}
-          />
+          <DialogHeader>
+            <DialogTitle>
+              {isDeleteSuccess
+                ? "Job Removed"
+                : isJobSuccess
+                  ? isEdit
+                    ? "Job Updated!"
+                    : "Job Logged!"
+                  : isJobError
+                    ? isEdit
+                      ? "Error Updating Job"
+                      : "Error Logging Job"
+                    : isEdit
+                      ? "Edit Job"
+                      : "Log New Job"}
+            </DialogTitle>
+            <DialogDescription>
+              {isDeleteSuccess
+                ? "The job has been removed from all views."
+                : isJobSuccess
+                  ? isEdit
+                    ? "Job has been updated successfully."
+                    : "Job has been recorded successfully."
+                  : isJobError
+                    ? "Something went wrong while saving the job."
+                    : isEdit
+                      ? "Update the details for this job."
+                      : "Record a completed or pending job for a technician."}
+            </DialogDescription>
+          </DialogHeader>
 
           {showFeedback ? (
             <JobStatusFeedback
@@ -242,39 +281,45 @@ export function LogJobDialog() {
               jobError={jobError}
             />
           ) : (
-            <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 py-2">
-              <JobBasicFields
-                register={register}
-                errors={errors}
-                isSubmitting={isSubmitting}
-                technicians={technicians}
-                selectedTechId={selectedTechId}
-                setValue={setValue}
-              />
+            <form onSubmit={handleSubmit(onSubmit)} className="grid">
+              <div className="overflow-y-auto max-h-[80vh] space-y-6 py-2 px-2">
+                <JobBasicFields
+                  register={register}
+                  errors={errors}
+                  isSubmitting={isSubmitting}
+                  technicians={technicians}
+                  selectedTechId={selectedTechId}
+                  setValue={setValue}
+                />
 
-              <JobFinancialsFields
-                register={register}
-                errors={errors}
-                isSubmitting={isSubmitting}
-                isNetNegative={isNetNegative}
-              />
+                <JobFinancialsFields
+                  register={register}
+                  errors={errors}
+                  isSubmitting={isSubmitting}
+                  isNetNegative={isNetNegative}
+                />
 
-              <JobFinancialsSummary
-                gross={gross}
-                commissionRate={commissionRate}
-                commissionAmount={commissionAmount}
-                net={net}
-                isNetNegative={isNetNegative}
-              />
+                <JobFinancialsSummary
+                  gross={gross}
+                  partsTotal={partsTotal}
+                  netRevenue={netRevenue}
+                  commissionRate={commissionRate}
+                  commissionAmount={commissionAmount}
+                  companyNet={companyNet}
+                  totalCollected={totalCollected}
+                  netPlusTip={netPlusTip}
+                  balance={balance}
+                  isNetNegative={isNetNegative}
+                />
 
-              <PaymentStatusNotes
-                register={register}
-                watch={watch}
-                setValue={setValue}
-                isSubmitting={isSubmitting}
-              />
-
-              <DialogFooter className="flex-row items-center justify-between sm:justify-between">
+                <PaymentStatusNotes
+                  register={register}
+                  watch={watch}
+                  setValue={setValue}
+                  isSubmitting={isSubmitting}
+                />
+              </div>
+              <DialogFooter className="flex-row pt-3 items-center justify-between sm:justify-between">
                 {isEdit && (
                   <Button
                     type="button"
@@ -298,7 +343,7 @@ export function LogJobDialog() {
                   >
                     Cancel
                   </Button>
-                  <Button type="submit" disabled={isSubmitting}>
+                  <Button type="submit" disabled={isSubmitting || !isDirty}>
                     {isSubmitting
                       ? "Saving…"
                       : isEdit

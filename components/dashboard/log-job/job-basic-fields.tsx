@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { TechnicianSummaryRow } from "@/hooks/technicians/useFetchTechSummary";
-import type { JobFormValues } from "./types";
+import type { JobFormValues } from "@/types/log-job";
 
 interface JobBasicFieldsProps {
   register: UseFormRegister<JobFormValues>;
