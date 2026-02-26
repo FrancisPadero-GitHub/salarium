@@ -2,12 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import {
   LayoutDashboard,
   Briefcase,
   FileText,
   Users,
   WalletMinimal,
+  Menu,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ModeToggle } from "@/components/mode-toggle";
@@ -25,52 +28,85 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const SidebarContent = () => (
+    <>
+      {/* Logo */}
+      <Link href="/" onClick={() => setSidebarOpen(false)}>
+        <div className="flex h-16 items-center gap-2 border-b border-zinc-200 px-6 dark:border-zinc-800">
+          <WalletMinimal className="h-6 w-6 text-zinc-700 dark:text-zinc-300" />
+          <span className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+            Salarium
+          </span>
+        </div>
+      </Link>
+
+      {/* Nav */}
+      <nav className="flex flex-1 flex-col gap-1 p-3">
+        {navItems.map(({ href, label, icon: Icon }) => {
+          const active =
+            href === "/dashboard"
+              ? pathname === "/dashboard"
+              : pathname.startsWith(href);
+          return (
+            <Link
+              key={href}
+              href={href}
+              onClick={() => setSidebarOpen(false)}
+              className={cn(
+                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                active
+                  ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-50"
+                  : "text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50",
+              )}
+            >
+              <Icon className="h-4 w-4 shrink-0" />
+              {label}
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* Footer */}
+      <div className="border-t border-zinc-200 p-4 dark:border-zinc-800">
+        <p className="text-xs text-zinc-400 dark:text-zinc-600">
+          Field Service Platform
+        </p>
+      </div>
+    </>
+  );
 
   return (
     <div className="flex h-screen overflow-hidden bg-zinc-50 dark:bg-zinc-950">
-      {/* Sidebar */}
+      {/* Desktop Sidebar */}
       <aside className="hidden w-60 flex-col border-r border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 lg:flex">
-        {/* Logo */}
-        <Link href="/">
-          <div className="flex h-16 items-center gap-2 border-b border-zinc-200 px-6 dark:border-zinc-800">
-            <WalletMinimal className="h-6 w-6 text-zinc-700 dark:text-zinc-300" />
-            <span className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-              Salarium
-            </span>
-          </div>
-        </Link>
+        <SidebarContent />
+      </aside>
 
-        {/* Nav */}
-        <nav className="flex flex-1 flex-col gap-1 p-3">
-          {navItems.map(({ href, label, icon: Icon }) => {
-            const active =
-              href === "/dashboard"
-                ? pathname === "/dashboard"
-                : pathname.startsWith(href);
-            return (
-              <Link
-                key={href}
-                href={href}
-                className={cn(
-                  "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                  active
-                    ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-50"
-                    : "text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50",
-                )}
-              >
-                <Icon className="h-4 w-4 shrink-0" />
-                {label}
-              </Link>
-            );
-          })}
-        </nav>
+      {/* Mobile Sidebar Overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
-        {/* Footer */}
-        <div className="border-t border-zinc-200 p-4 dark:border-zinc-800">
-          <p className="text-xs text-zinc-400 dark:text-zinc-600">
-            Field Service Platform
-          </p>
-        </div>
+      {/* Mobile Sidebar Drawer */}
+      <aside
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 flex w-60 flex-col border-r border-zinc-200 bg-white transition-transform duration-300 dark:border-zinc-800 dark:bg-zinc-900 lg:hidden",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full",
+        )}
+      >
+        <button
+          onClick={() => setSidebarOpen(false)}
+          className="absolute right-3 top-4 rounded-md p-1 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
+          aria-label="Close sidebar"
+        >
+          <X className="h-5 w-5" />
+        </button>
+        <SidebarContent />
       </aside>
 
       {/* Main */}
@@ -89,6 +125,15 @@ export default function DashboardLayout({
 
         <main className="flex-1 overflow-y-auto p-6">{children}</main>
       </div>
+
+      {/* Floating toggle button — mobile only */}
+      <button
+        onClick={() => setSidebarOpen((prev) => !prev)}
+        className="fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-zinc-900 text-white shadow-lg transition-colors hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300 lg:hidden"
+        aria-label="Toggle sidebar"
+      >
+        {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+      </button>
     </div>
   );
 }
