@@ -1,6 +1,6 @@
 import { TriangleAlert, DollarSign, TrendingUp, Briefcase } from "lucide-react";
 import { fetchJobFinancialBreakdown } from "@/hooks/jobs/useFetchJobsFinanceBreakdown";
-import { TopCategoriesChart } from "@/components/dashboard/payment-method-chart";
+import { TopCategoriesChart } from "@/components/dashboard/job-top-categories";
 import { TechRevenueBarChart } from "@/components/dashboard/tech-revenue-bar-chart";
 import { TopJobsChart } from "@/components/dashboard/top-jobs-chart";
 import { LogJobDialog } from "@/components/dashboard/log-job-dialog";
@@ -18,7 +18,7 @@ export default async function JobsPage() {
   let error = null;
 
   try {
-    jobs = await fetchJobFinancialBreakdown();
+    jobs = await fetchJobFinancialBreakdown({ status: "done" });
   } catch (err) {
     error = err instanceof Error ? err.message : "Failed to fetch jobs";
     console.error("Error fetching job financial breakdown:", error);
@@ -44,16 +44,6 @@ export default async function JobsPage() {
   const totalGross = jobs.reduce((s, j) => s + (j.gross ?? 0), 0);
   const totalCommission = jobs.reduce((s, j) => s + (j.commission ?? 0), 0);
   const totalCompanyNet = jobs.reduce((s, j) => s + (j.company_net ?? 0), 0);
-
-  // ── Chart data ────────────────────────────────────────────────────────────
-  const categoryCounts: Record<string, number> = {};
-  for (const j of jobs) {
-    const c = j.category ?? "Uncategorized";
-    categoryCounts[c] = (categoryCounts[c] ?? 0) + 1;
-  }
-  const categoryChartData = Object.entries(categoryCounts)
-    .map(([category, count]) => ({ category, count }))
-    .sort((a, b) => b.count - a.count);
 
   const techRevenueMap: Record<
     string,
@@ -139,7 +129,7 @@ export default async function JobsPage() {
 
       {/* Charts */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <TopCategoriesChart data={categoryChartData} />
+        <TopCategoriesChart />
         <TechRevenueBarChart data={techRevenueData} />
       </div>
 

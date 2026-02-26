@@ -16,6 +16,7 @@ import {
   useFetchJobFinancialBreakdown,
   type JobFinancialBreakdownRow,
 } from "@/hooks/jobs/useFetchJobsFinanceBreakdown";
+import { useJobsStore } from "@/features/store/jobs/useFormJobStore";
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
@@ -61,7 +62,11 @@ export function JobsTable({ initialJobs }: JobsTableProps) {
     data: jobs = [],
     isLoading,
     isError,
-  } = useFetchJobFinancialBreakdown(initialJobs);
+  } = useFetchJobFinancialBreakdown({
+    status: undefined, // Don't filter by status on the client since we have all data available
+    initialData: initialJobs,
+  });
+  const { openEdit } = useJobsStore();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [paymentFilter, setPaymentFilter] = useState<PaymentFilter>("all");
@@ -338,7 +343,8 @@ export function JobsTable({ initialJobs }: JobsTableProps) {
                   return (
                     <tr
                       key={job.id}
-                      className="transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                      onClick={() => openEdit(job)}
+                      className="cursor-pointer transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
                     >
                       {/* Job Name */}
                       <td className="px-4 py-3 font-medium text-zinc-800 dark:text-zinc-200">

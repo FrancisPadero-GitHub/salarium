@@ -1,5 +1,5 @@
 "use client";
-
+import { Spinner } from "@/components/ui/spinner";
 import { Pie, PieChart, Cell } from "recharts";
 import {
   ChartContainer,
@@ -18,17 +18,40 @@ const PALETTE = [
   "var(--chart-5)",
 ];
 
-interface TopCategoriesChartProps {
-  data: { category: string; count: number }[];
-}
+// hooks
+import { useFetchJobFinancialBreakdown } from "@/hooks/jobs/useFetchJobsFinanceBreakdown";
 
-export function TopCategoriesChart({ data }: TopCategoriesChartProps) {
+export function TopCategoriesChart() {
+  const {
+    data: jobsData,
+    isError,
+    isLoading,
+  } = useFetchJobFinancialBreakdown();
+
+  // ── Chart data ────────────────────────────────────────────────────────────
+  const categoryCounts: Record<string, number> = {};
+  for (const j of jobsData || []) {
+    const c = j.category ?? "Uncategorized";
+    categoryCounts[c] = (categoryCounts[c] ?? 0) + 1;
+  }
+  const categoryChartData = Object.entries(categoryCounts)
+    .map(([category, count]) => ({ category, count }))
+    .sort((a, b) => b.count - a.count);
+
   const chartConfig = Object.fromEntries(
-    data.map((d, i) => [
+    categoryChartData.map((d, i) => [
       d.category,
       { label: d.category, color: PALETTE[i % PALETTE.length] },
     ]),
   ) satisfies ChartConfig;
+
+  if (isLoading)
+    return (
+      <div className="flex items-center justify-center">
+        <Spinner />
+      </div>
+    );
+  if (isError) return <div>Error loading technicians</div>;
 
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
@@ -51,7 +74,7 @@ export function TopCategoriesChart({ data }: TopCategoriesChartProps) {
             }
           />
           <Pie
-            data={data}
+            data={categoryChartData}
             cx="50%"
             cy="50%"
             innerRadius={50}
@@ -61,7 +84,7 @@ export function TopCategoriesChart({ data }: TopCategoriesChartProps) {
             nameKey="category"
             strokeWidth={2}
           >
-            {data.map((_, index) => (
+            {categoryChartData.map((_, index) => (
               <Cell
                 key={`cell-${index}`}
                 fill={PALETTE[index % PALETTE.length]}
