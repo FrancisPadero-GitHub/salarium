@@ -29,7 +29,7 @@ const defaultForm: TechnicianInsert = {
   name: "",
   email: "",
   phone: "",
-  default_commission_rate: 0.75,
+  default_commission_rate: 0.0,
   hired_date: new Date().toISOString().slice(0, 10),
 };
 

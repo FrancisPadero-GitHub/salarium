@@ -35,6 +35,7 @@ import { useEditTechnician } from "@/hooks/technicians/useEditTechnician";
 
 // data
 import { countryCodes } from "@/data/country-code";
+import { Area } from "recharts";
 
 type TechnicianFormValues =
   Database["public"]["Tables"]["technicians"]["Insert"];
@@ -83,19 +84,20 @@ export function AddTechnicianDialog() {
     reset,
     setValue,
     watch,
-    formState: { errors },
+
+    formState: { errors, isDirty },
   } = useForm<TechnicianFormValues & { country_code?: string }>({
     defaultValues: {
       name: "",
       email: "",
       phone: "",
       country_code: "+63",
-      default_commission_rate: 0.75,
+      default_commission_rate: 0,
       hired_date: new Date().toISOString().slice(0, 10),
     },
   });
 
-  const default_commision_rate = watch("default_commission_rate");
+  const default_commission_rate = watch("default_commission_rate");
 
   // When the dialog opens, reset form with the current store values
   useEffect(() => {
@@ -111,7 +113,7 @@ export function AddTechnicianDialog() {
       email: form.email ?? "",
       phone: phoneNum,
       country_code: countryCode,
-      default_commission_rate: form.default_commission_rate ?? 0.75,
+      default_commission_rate: form.default_commission_rate ?? 0,
       hired_date: form.hired_date ?? new Date().toISOString().slice(0, 10),
       id: form.id,
     });
@@ -167,12 +169,6 @@ export function AddTechnicianDialog() {
       });
     }
   };
-
-  const commisionDropdown = [
-    { value: "0.75", label: "75% - Own Technician" },
-    { value: "0.5", label: "50% - Sub Contractor" },
-    { value: "1", label: "100% - Full Commission" },
-  ];
 
   return (
     <Dialog
@@ -342,37 +338,47 @@ export function AddTechnicianDialog() {
 
             {/* Commission Rate & Hire Date */}
             <div className="grid grid-cols-2 gap-4">
+              {/* commission rate */}
               <div className="space-y-2">
-                <Label htmlFor="tech-commission">Commission Rate</Label>
-                <Select
-                  value={default_commision_rate?.toString() ?? "0"} // somehow this needs to be string for the select component to work
-                  onValueChange={
-                    (value) =>
-                      setValue("default_commission_rate", parseFloat(value)) // value here needs to be converted to string as it was being converted first
-                  }
+                <Label htmlFor="tech-commission">Commission Rate %</Label>
+                <Input
+                  id="tech-commission"
+                  type="number"
+                  inputMode="numeric"
+                  min="0"
+                  max="100"
+                  placeholder="e.g. 75"
                   disabled={isPending}
-                >
-                  <SelectTrigger id="tech-commission">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {commisionDropdown.map((item) => (
-                      <SelectItem key={item.value} value={item.value}>
-                        {item.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  {...register("default_commission_rate", {
+                    required: "Commission rate is required",
+                    min: {
+                      value: 0,
+                      message: "Commission rate must be at least 0",
+                    },
+                    max: {
+                      value: 100,
+                      message: "Commission rate must be no more than 100",
+                    },
+                  })}
+                />
+                {errors.default_commission_rate && (
+                  <p className="text-xs text-red-500">
+                    {errors.default_commission_rate.message}
+                  </p>
+                )}
                 <p className="text-xs text-zinc-400 dark:text-zinc-500">
                   Business keeps{" "}
-                  {Math.round(
-                    (1 -
-                      parseFloat(default_commision_rate?.toString() ?? "0")) *
-                      100,
-                  )}
-                  %
+                  {(() => {
+                    const result = Math.round(
+                      100 -
+                        parseFloat(default_commission_rate?.toString() ?? "0"),
+                    );
+                    return isNaN(result) ? "" : `${result}%`;
+                  })()}
                 </p>
               </div>
+
+              {/* Hire Date */}
               <div className="space-y-2">
                 <Label htmlFor="tech-hired">Hire Date</Label>
                 <Input
@@ -406,7 +412,7 @@ export function AddTechnicianDialog() {
               </Button>
               <Button
                 type="submit"
-                disabled={isSubmitting || isPending || isSuccess}
+                disabled={isSubmitting || isPending || isSuccess || !isDirty}
               >
                 {isSubmitting || isPending
                   ? isEdit

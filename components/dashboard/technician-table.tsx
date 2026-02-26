@@ -65,7 +65,7 @@ export function TechnicianTable({ initialTechSummary }: TechnicianTableProps) {
   // compute dynamic thresholds (33rd and 66th percentiles) for commission rate percentages
   const [p33, p66] = useMemo(() => {
     const rates = technicians
-      .map((t) => (t.commission_rate ?? 0) * 100)
+      .map((t) => t.commission_rate ?? 0)
       .sort((a, b) => a - b);
     if (rates.length === 0) return [20, 30];
     const percentile = (q: number) => {
@@ -108,7 +108,7 @@ export function TechnicianTable({ initialTechSummary }: TechnicianTableProps) {
           (t.email ?? "").toLowerCase().includes(q) ||
           (t.phone ?? "").toLowerCase().includes(q);
 
-        const rate = (t.commission_rate ?? 0) * 100;
+        const rate = t.commission_rate ?? 0;
         const matchesCommission =
           commissionFilter === "all" ||
           (commissionFilter === "low" && rate < p33) ||
@@ -276,9 +276,7 @@ export function TechnicianTable({ initialTechSummary }: TechnicianTableProps) {
                     </td>
                     {/* Commission */}
                     <td className="px-4 py-3 text-zinc-700 dark:text-zinc-300">
-                      {tech.commission_rate
-                        ? (tech.commission_rate * 100).toFixed(2) + "%"
-                        : "0%"}
+                      {tech.commission_rate} %
                     </td>
                     {/* Jobs */}
                     <td className="px-4 py-3 font-semibold text-zinc-900 dark:text-zinc-50">
