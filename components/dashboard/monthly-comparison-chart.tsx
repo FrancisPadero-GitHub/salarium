@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { Bar, BarChart, XAxis, YAxis, CartesianGrid } from "recharts";
 import {
   ChartContainer,
@@ -9,7 +10,8 @@ import {
   ChartLegendContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-import { monthlyRevenue } from "@/data/chart-data";
+import { useFetchJobDetailed } from "@/hooks/jobs/useFetchJobs";
+import type { JobDetailedRow } from "@/hooks/jobs/useFetchJobs";
 
 const chartConfig = {
   gross: {
@@ -26,7 +28,74 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function MonthlyComparisonChart() {
+interface MonthlyComparisonChartProps {
+  initialJobs: JobDetailedRow[];
+}
+
+export function MonthlyComparisonChart({
+  initialJobs,
+}: MonthlyComparisonChartProps) {
+  const { data: jobs = initialJobs } = useFetchJobDetailed(initialJobs);
+
+  const chartData = useMemo(() => {
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth();
+
+    // Get current month and previous month
+    const months = [
+      { month: "January", index: 0 },
+      { month: "February", index: 1 },
+      { month: "March", index: 2 },
+      { month: "April", index: 3 },
+      { month: "May", index: 4 },
+      { month: "June", index: 5 },
+      { month: "July", index: 6 },
+      { month: "August", index: 7 },
+      { month: "September", index: 8 },
+      { month: "October", index: 9 },
+      { month: "November", index: 10 },
+      { month: "December", index: 11 },
+    ];
+
+    const comparisonData: Record<
+      string,
+      { month: string; gross: number; companyNet: number; parts: number }
+    > = {};
+
+    // Include current and previous month
+    const monthsToShow = [
+      currentMonth > 0 ? currentMonth - 1 : 11,
+      currentMonth,
+    ];
+
+    monthsToShow.forEach((monthIdx) => {
+      const monthName = months[monthIdx].month;
+      comparisonData[monthName] = {
+        month: monthName,
+        gross: 0,
+        companyNet: 0,
+        parts: 0,
+      };
+    });
+
+    jobs.forEach((job) => {
+      if (job.job_date) {
+        const jobDate = new Date(job.job_date);
+        const jobYear = jobDate.getFullYear();
+        const jobMonth = jobDate.getMonth();
+
+        if (jobYear === currentYear && monthsToShow.includes(jobMonth)) {
+          const monthName = months[jobMonth].month;
+          comparisonData[monthName].gross += job.gross || 0;
+          comparisonData[monthName].companyNet += job.company_net || 0;
+          comparisonData[monthName].parts += job.parts_total_cost || 0;
+        }
+      }
+    });
+
+    return monthsToShow.map((idx) => comparisonData[months[idx].month]);
+  }, [jobs]);
+
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
       <div className="mb-4">
@@ -34,17 +103,18 @@ export function MonthlyComparisonChart() {
           Monthly Comparison
         </h3>
         <p className="text-xs text-zinc-500 dark:text-zinc-400">
-          January vs February 2026
+          {new Date().getFullYear()} — Month over Month
         </p>
       </div>
       <ChartContainer config={chartConfig} className="h-70 w-full">
-        <BarChart data={monthlyRevenue} margin={{ left: 12, right: 12 }}>
+        <BarChart data={chartData} margin={{ left: 12, right: 12 }}>
           <CartesianGrid vertical={false} />
           <XAxis
             dataKey="month"
             tickLine={false}
             axisLine={false}
             tickMargin={8}
+            tickFormatter={(v) => v.slice(0, 3)}
           />
           <YAxis
             tickLine={false}
@@ -65,17 +135,17 @@ export function MonthlyComparisonChart() {
           <Bar
             dataKey="gross"
             fill="var(--color-gross)"
-            radius={[4, 4, 0, 0]}
+            radius={[8, 8, 0, 0]}
           />
           <Bar
             dataKey="companyNet"
             fill="var(--color-companyNet)"
-            radius={[4, 4, 0, 0]}
+            radius={[8, 8, 0, 0]}
           />
           <Bar
             dataKey="parts"
             fill="var(--color-parts)"
-            radius={[4, 4, 0, 0]}
+            radius={[8, 8, 0, 0]}
           />
         </BarChart>
       </ChartContainer>

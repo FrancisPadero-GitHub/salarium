@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { Pie, PieChart, Cell } from "recharts";
 import {
   ChartContainer,
@@ -9,33 +10,54 @@ import {
   ChartLegendContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-import { technicianBreakdown } from "@/data/chart-data";
+import { useFetchJobDetailed } from "@/hooks/jobs/useFetchJobs";
+import type { JobDetailedRow } from "@/hooks/jobs/useFetchJobs";
 
-const pieData = technicianBreakdown.map((t) => ({
-  name: t.name,
-  value: t.gross,
-}));
-
-const chartConfig = {
-  Yotam: { label: "Yotam", color: "var(--chart-1)" },
-  Tamir: { label: "Tamir", color: "var(--chart-2)" },
-  Shalom: { label: "Shalom", color: "var(--chart-3)" },
-  Subs: { label: "Subs", color: "var(--chart-4)" },
-} satisfies ChartConfig;
+interface TechRevenueDonutProps {
+  initialJobs: JobDetailedRow[];
+}
 
 const COLORS = [
-  "var(--color-Yotam)",
-  "var(--color-Tamir)",
-  "var(--color-Shalom)",
-  "var(--color-Subs)",
+  "var(--chart-1)",
+  "var(--chart-2)",
+  "var(--chart-3)",
+  "var(--chart-4)",
+  "var(--chart-5)",
 ];
 
-export function TechRevenueDonut() {
+export function TechRevenueDonut({ initialJobs }: TechRevenueDonutProps) {
+  const { data: jobs = initialJobs } = useFetchJobDetailed(initialJobs);
+
+  const chartData = useMemo(() => {
+    const techData: Record<string, number> = {};
+
+    jobs.forEach((job) => {
+      const tech = job.technician_name || "Unassigned";
+      techData[tech] = (techData[tech] || 0) + (job.gross || 0);
+    });
+
+    return Object.entries(techData).map(([name, value]) => ({
+      name,
+      value,
+    }));
+  }, [jobs]);
+
+  const chartConfig: ChartConfig = useMemo(() => {
+    const config: ChartConfig = {};
+    chartData.forEach((item, idx) => {
+      config[item.name] = {
+        label: item.name,
+        color: COLORS[idx % COLORS.length],
+      };
+    });
+    return config;
+  }, [chartData]);
+
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
       <div className="mb-4">
         <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
-          Revenue by Technician
+          Gross Revenue by Technician
         </h3>
         <p className="text-xs text-zinc-500 dark:text-zinc-400">
           YTD gross revenue share
@@ -54,7 +76,7 @@ export function TechRevenueDonut() {
             }
           />
           <Pie
-            data={pieData}
+            data={chartData}
             cx="50%"
             cy="50%"
             innerRadius={60}
@@ -64,8 +86,11 @@ export function TechRevenueDonut() {
             nameKey="name"
             strokeWidth={2}
           >
-            {pieData.map((_, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index]} />
+            {chartData.map((_, index) => (
+              <Cell
+                key={`cell-${index}`}
+                fill={COLORS[index % COLORS.length]}
+              />
             ))}
           </Pie>
           <ChartLegend content={<ChartLegendContent nameKey="name" />} />
