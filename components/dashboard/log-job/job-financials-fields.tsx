@@ -121,7 +121,9 @@ export function JobFinancialsFields({
         <Label htmlFor="job-payment">Payment Method</Label>
         <Select
           value={watch("payment_mode")}
-          onValueChange={(v) => setValue("payment_mode", v as PaymentMode)}
+          onValueChange={(v) =>
+            setValue("payment_mode", v as PaymentMode, { shouldDirty: true })
+          }
           disabled={isSubmitting}
         >
           <SelectTrigger id="job-payment" className="w-full">
@@ -139,7 +141,7 @@ export function JobFinancialsFields({
         <Label htmlFor="job-status">Status</Label>
         <Select
           value={watch("status")}
-          onValueChange={(v) => setValue("status", v)}
+          onValueChange={(v) => setValue("status", v, { shouldDirty: true })}
           disabled={isSubmitting}
         >
           <SelectTrigger id="job-status" className="w-full">

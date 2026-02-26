@@ -344,7 +344,9 @@ export function AddTechnicianDialog() {
                     <Select
                       value={watch("country_code") ?? "+63"}
                       onValueChange={(value) =>
-                        setValue("country_code" as any, value)
+                        setValue("country_code" as any, value, {
+                          shouldDirty: true,
+                        })
                       }
                       disabled={isPending}
                     >

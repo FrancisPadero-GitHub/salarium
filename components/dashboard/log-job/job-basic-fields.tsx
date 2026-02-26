@@ -51,7 +51,9 @@ export function JobBasicFields({
           <Label htmlFor="job-tech">Technician</Label>
           <Select
             value={selectedTechId}
-            onValueChange={(v) => setValue("technician_id", v)}
+            onValueChange={(v) =>
+              setValue("technician_id", v, { shouldDirty: true })
+            }
             disabled={isSubmitting}
           >
             <SelectTrigger id="job-tech" className="w-full">
