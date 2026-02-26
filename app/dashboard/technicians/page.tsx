@@ -6,6 +6,7 @@ import { TechMonthlyChart } from "@/components/dashboard/tech-monthly-chart";
 import { TechJobsDonut } from "@/components/dashboard/tech-jobs-donut";
 import { AddTechnicianDialog } from "@/components/dashboard/add-technician-dialog";
 import { TechnicianCardsGrid } from "@/components/dashboard/technician-cards-grid";
+import { TechnicianTable } from "@/components/dashboard/technician-table";
 
 // Server-side data fetching
 import { fetchTechSummary } from "@/hooks/technicians/useFetchTechSummary";
@@ -41,6 +42,16 @@ export default async function TechniciansPage() {
       </>
     );
   }
+  if (techSummary.length < 0) {
+    return (
+      <div className="flex h-full items-center justify-center rounded-lg border border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/50">
+        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+          No technicians found. Add one to get started.
+        </p>
+      </div>
+    );
+  }
+
   const activeCount = techSummary.length;
 
   return (
@@ -56,30 +67,21 @@ export default async function TechniciansPage() {
         </div>
         <AddTechnicianDialog />
       </div>
-
+      {/* Technician Table */}
+      <TechnicianTable initialTechSummary={techSummary} />
       {/* Charts */}
       <div className="grid gap-6 lg:grid-cols-2">
         <TechPerformanceChart />
         <TechMonthlyChart />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid h-105 gap-6 lg:grid-cols-2">
         <TechJobsDonut initialTechSummary={techSummary} />
         {/* Technician Cards Grid */}
-        <div>
-          {techSummary.length > 0 ? (
-            <TechnicianCardsGrid initialTechSummary={techSummary} />
-          ) : (
-            <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-8 text-center dark:border-zinc-800 dark:bg-zinc-900/50">
-              <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                No technicians found. Add one to get started.
-              </p>
-            </div>
-          )}
+        <div className="h-full overflow-hidden p-2 bg-zinc-200/50 dark:bg-zinc-800 rounded-xl">
+          <TechnicianCardsGrid initialTechSummary={techSummary} />
         </div>
       </div>
-
-      {/* Technician Table here  */}
     </div>
   );
 }

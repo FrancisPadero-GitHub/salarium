@@ -1,7 +1,5 @@
 "use client";
-
 import { cn } from "@/lib/utils";
-
 import { Spinner } from "@/components/ui/spinner";
 
 // Hooks client side
@@ -38,7 +36,7 @@ export function TechnicianCardsGrid({
   if (isError) return <div>Error loading technicians</div>;
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+    <div className="flex h-full gap-4 overflow-x-auto pb-2">
       {technicians.map((tech) => {
         const initials = (tech.name || "?")
           .split(" ")
@@ -48,7 +46,7 @@ export function TechnicianCardsGrid({
           <div
             key={tech.technician_id}
             className={cn(
-              "rounded-xl border bg-white p-6 dark:bg-zinc-900",
+              "w-md shrink-0 rounded-xl border bg-white p-6 dark:bg-zinc-900",
               "border-zinc-200 dark:border-zinc-800",
             )}
           >
@@ -64,9 +62,6 @@ export function TechnicianCardsGrid({
                   </p>
                   <p className="text-xs text-zinc-500 dark:text-zinc-400">
                     {tech.email || "—"}
-                  </p>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                    {tech.phone || "—"}
                   </p>
                 </div>
               </div>
