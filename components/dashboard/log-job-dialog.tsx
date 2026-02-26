@@ -29,9 +29,10 @@ import { JobStatusFeedback } from "./log-job/job-status-feedback";
 import { JobBasicFields } from "./log-job/job-basic-fields";
 import { JobFinancialsFields } from "./log-job/job-financials-fields";
 import { JobFinancialsSummary } from "./log-job/job-financials-summary";
-import { PaymentStatusNotes } from "./log-job/payment-status-notes";
 import { DeleteJobDialog } from "./log-job/delete-job-dialog";
 import { DEFAULT_VALUES, type JobFormValues } from "@/types/log-job";
+import { Label } from "../ui/label";
+import { Textarea } from "../ui/textarea";
 
 type JobInsert = Database["public"]["Tables"]["jobs"]["Insert"];
 type JobUpdate = Database["public"]["Tables"]["jobs"]["Update"];
@@ -117,9 +118,7 @@ export function LogJobDialog() {
   const subtotalVal = parseFloat(watch("subtotal") || "0");
   const tipVal = parseFloat(watch("tip_amount") || "0");
   const cashOnHandVal = parseFloat(watch("cash_on_hand") || "0");
-
-  // parts_total_cost comes from the store when editing an existing job
-  const partsTotal = isEdit ? (storeForm.parts_total_cost ?? 0) : 0;
+  const partsTotal = parseFloat(watch("parts_total_cost") || "0");
 
   // Mirror the v_job_table_detailed view calculations
   const gross = subtotalVal; // gross = subtotal
@@ -159,6 +158,7 @@ export function LogJobDialog() {
   };
 
   const onSubmit = async (data: JobFormValues) => {
+    const parts_total_cost = parseFloat(data.parts_total_cost) || 0;
     const subtotal = parseFloat(data.subtotal) || 0;
     const tip_amount = parseFloat(data.tip_amount) || 0;
     const cash_on_hand = parseFloat(data.cash_on_hand) || 0;
@@ -176,7 +176,7 @@ export function LogJobDialog() {
           address: data.address || null,
           region: data.region || null,
           technician_id: data.technician_id || null,
-          parts_total_cost: partsTotal,
+          parts_total_cost,
           subtotal,
           tip_amount,
           cash_on_hand,
@@ -194,7 +194,7 @@ export function LogJobDialog() {
           address: data.address || null,
           region: data.region || null,
           technician_id: data.technician_id || null,
-          parts_total_cost: partsTotal,
+          parts_total_cost,
           subtotal,
           tip_amount,
           cash_on_hand,
@@ -282,7 +282,7 @@ export function LogJobDialog() {
             />
           ) : (
             <form onSubmit={handleSubmit(onSubmit)} className="grid">
-              <div className="overflow-y-auto max-h-[80vh] space-y-6 py-2 px-2">
+              <div className="overflow-y-auto max-h-[75vh] space-y-4 py-2 px-2">
                 <JobBasicFields
                   register={register}
                   errors={errors}
@@ -294,6 +294,8 @@ export function LogJobDialog() {
 
                 <JobFinancialsFields
                   register={register}
+                  watch={watch}
+                  setValue={setValue}
                   errors={errors}
                   isSubmitting={isSubmitting}
                   isNetNegative={isNetNegative}
@@ -311,13 +313,17 @@ export function LogJobDialog() {
                   balance={balance}
                   isNetNegative={isNetNegative}
                 />
-
-                <PaymentStatusNotes
-                  register={register}
-                  watch={watch}
-                  setValue={setValue}
-                  isSubmitting={isSubmitting}
-                />
+                {/* Notes */}
+                <div className="space-y-2">
+                  <Label htmlFor="job-notes">Notes</Label>
+                  <Textarea
+                    id="job-notes"
+                    placeholder="Service details, observations..."
+                    rows={2}
+                    disabled={isSubmitting}
+                    {...register("notes")}
+                  />
+                </div>
               </div>
               <DialogFooter className="flex-row pt-3 items-center justify-between sm:justify-between">
                 {isEdit && (

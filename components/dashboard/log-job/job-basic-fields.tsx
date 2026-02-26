@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import type { TechnicianSummaryRow } from "@/hooks/technicians/useFetchTechSummary";
 import type { JobFormValues } from "@/types/log-job";
+import { Textarea } from "@/components/ui/textarea";
 
 interface JobBasicFieldsProps {
   register: UseFormRegister<JobFormValues>;
@@ -53,7 +54,7 @@ export function JobBasicFields({
             onValueChange={(v) => setValue("technician_id", v)}
             disabled={isSubmitting}
           >
-            <SelectTrigger id="job-tech">
+            <SelectTrigger id="job-tech" className="w-full">
               <SelectValue placeholder="Select tech" />
             </SelectTrigger>
             <SelectContent>
@@ -70,21 +71,21 @@ export function JobBasicFields({
       {/* Job Name & Category */}
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="job-name">Job Name</Label>
+          <Label htmlFor="job-name">Job Name *</Label>
           <Input
             id="job-name"
             placeholder="e.g. AC Repair"
             disabled={isSubmitting}
-            {...register("job_name")}
+            {...register("job_name", { required: true })}
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="job-category">Category</Label>
+          <Label htmlFor="job-category">Category *</Label>
           <Input
             id="job-category"
             placeholder="e.g. HVAC, Plumbing"
             disabled={isSubmitting}
-            {...register("category")}
+            {...register("category", { required: true })}
           />
         </div>
       </div>
@@ -92,7 +93,7 @@ export function JobBasicFields({
       {/* Description */}
       <div className="space-y-2">
         <Label htmlFor="job-description">Description</Label>
-        <Input
+        <Textarea
           id="job-description"
           placeholder="Short service description"
           disabled={isSubmitting}

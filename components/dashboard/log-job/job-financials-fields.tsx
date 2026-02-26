@@ -1,19 +1,36 @@
 "use client";
 
-import { UseFormRegister, FieldErrors } from "react-hook-form";
+import {
+  UseFormRegister,
+  FieldErrors,
+  UseFormWatch,
+  UseFormSetValue,
+} from "react-hook-form";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import type { JobFormValues } from "../../../types/log-job";
+import type { JobFormValues, PaymentMode } from "@/types/log-job";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface JobFinancialsFieldsProps {
   register: UseFormRegister<JobFormValues>;
   errors: FieldErrors<JobFormValues>;
+  watch: UseFormWatch<JobFormValues>;
+  setValue: UseFormSetValue<JobFormValues>;
   isSubmitting: boolean;
   isNetNegative: boolean;
 }
 
 export function JobFinancialsFields({
   register,
+  watch,
+  setValue,
   errors,
   isSubmitting,
   isNetNegative,
@@ -21,7 +38,7 @@ export function JobFinancialsFields({
   return (
     <div className="grid grid-cols-2 gap-4">
       <div className="space-y-2">
-        <Label htmlFor="job-parts-costs">Parts Costs ($) *</Label>
+        <Label htmlFor="job-parts-costs">Parts Costs ($)</Label>
         <Input
           id="job-parts-costs"
           type="number"
@@ -33,7 +50,6 @@ export function JobFinancialsFields({
             isNetNegative ? "border-red-300 focus-visible:ring-red-500" : ""
           }
           {...register("parts_total_cost", {
-            required: "Required",
             min: { value: 0, message: "Must be ≥ 0" },
           })}
         />
@@ -98,6 +114,43 @@ export function JobFinancialsFields({
           disabled={isSubmitting}
           {...register("cash_on_hand")}
         />
+      </div>
+      {/* Payment & Status */}
+
+      <div className="space-y-2">
+        <Label htmlFor="job-payment">Payment Method</Label>
+        <Select
+          value={watch("payment_mode")}
+          onValueChange={(v) => setValue("payment_mode", v as PaymentMode)}
+          disabled={isSubmitting}
+        >
+          <SelectTrigger id="job-payment" className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="credit card">Credit Card</SelectItem>
+            <SelectItem value="cash">Cash</SelectItem>
+            <SelectItem value="zelle">Zelle</SelectItem>
+            <SelectItem value="check">Check</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="job-status">Status</Label>
+        <Select
+          value={watch("status")}
+          onValueChange={(v) => setValue("status", v)}
+          disabled={isSubmitting}
+        >
+          <SelectTrigger id="job-status" className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="done">Done</SelectItem>
+            <SelectItem value="pending">Pending</SelectItem>
+            <SelectItem value="cancelled">Cancelled</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
     </div>
   );
