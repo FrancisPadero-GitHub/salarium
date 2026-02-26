@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import {
   useFetchTechSummary,
@@ -7,6 +7,7 @@ import {
 } from "@/hooks/technicians/useFetchTechSummary";
 import { Spinner } from "@/components/ui/spinner";
 import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
+import { useFilterTechTable } from "@/features/store/technician/useFilterTechTable";
 
 interface TechnicianTableProps {
   initialTechSummary: TechnicianSummaryRow[];
@@ -23,14 +24,10 @@ type SortKey = keyof Pick<
   | "hired_date"
 >;
 
-type SortDir = "asc" | "desc";
-
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
     n,
   );
-
-type CommissionFilter = "all" | "low" | "mid" | "high";
 
 export function TechnicianTable({ initialTechSummary }: TechnicianTableProps) {
   // Fetch technicians with SWR, using initialTechSummary as the initial data
@@ -39,6 +36,20 @@ export function TechnicianTable({ initialTechSummary }: TechnicianTableProps) {
     isLoading,
     isError,
   } = useFetchTechSummary(initialTechSummary);
+
+  // Get filter state from Zustand store
+  const search = useFilterTechTable((state) => state.search);
+  const commissionFilter = useFilterTechTable(
+    (state) => state.commissionFilter,
+  );
+  const sortKey = useFilterTechTable((state) => state.sortKey);
+  const sortDir = useFilterTechTable((state) => state.sortDir);
+  const setSearch = useFilterTechTable((state) => state.setSearch);
+  const setCommissionFilter = useFilterTechTable(
+    (state) => state.setCommissionFilter,
+  );
+  const setSortKey = useFilterTechTable((state) => state.setSortKey);
+  const setSortDir = useFilterTechTable((state) => state.setSortDir);
 
   const techCommissionRates = technicians.map((t) => ({
     name: t.name,
@@ -62,7 +73,10 @@ export function TechnicianTable({ initialTechSummary }: TechnicianTableProps) {
     return [percentile(0.33), percentile(0.66)];
   }, [technicians]);
 
-  console.log("Technician commission rates:", techCommissionRates, { p33, p66 });
+  console.log("Technician commission rates:", techCommissionRates, {
+    p33,
+    p66,
+  });
 
   const COMMISSION_FILTERS = useMemo(
     () => [
@@ -76,12 +90,6 @@ export function TechnicianTable({ initialTechSummary }: TechnicianTableProps) {
     ],
     [p33, p66],
   );
-
-  const [search, setSearch] = useState("");
-  const [commissionFilter, setCommissionFilter] =
-    useState<CommissionFilter>("all");
-  const [sortKey, setSortKey] = useState<SortKey>("name");
-  const [sortDir, setSortDir] = useState<SortDir>("asc");
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
@@ -118,7 +126,7 @@ export function TechnicianTable({ initialTechSummary }: TechnicianTableProps) {
 
   function handleSort(key: SortKey) {
     if (sortKey === key) {
-      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+      setSortDir(sortDir === "asc" ? "desc" : "asc");
     } else {
       setSortKey(key);
       setSortDir("asc");
