@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import type { Database } from "@/database.types";
 
@@ -22,6 +23,7 @@ const dbEditJob = async (data: JobUpdate) => {
 
 export function useEditJob() {
   const queryClient = useQueryClient();
+  const router = useRouter();
   return useMutation<JobRow, Error, JobUpdate>({
     mutationFn: dbEditJob,
     onSuccess: async (result) => {
@@ -34,6 +36,7 @@ export function useEditJob() {
         queryKey: ["jobs", "table-detailed"],
         exact: false,
       });
+      router.refresh();
     },
     onError: (error) => {
       console.error("Error editing job:", error.message || error);
