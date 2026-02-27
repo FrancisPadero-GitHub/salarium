@@ -2,19 +2,14 @@
 
 import { DollarSign, TrendingUp, Briefcase } from "lucide-react";
 import { useFetchJobFinancialBreakdown } from "@/hooks/jobs/useFetchJobsFinanceBreakdown";
-import type { JobFinancialBreakdownRow } from "@/hooks/jobs/useFetchJobsFinanceBreakdown";
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
     n,
   );
 
-interface JobSummaryCardsProps {
-  initialData?: JobFinancialBreakdownRow[];
-}
-
-export function JobSummaryCards({ initialData }: JobSummaryCardsProps) {
-  const { data: jobs = [] } = useFetchJobFinancialBreakdown(initialData);
+export function JobSummaryCards() {
+  const { data: jobs = [] } = useFetchJobFinancialBreakdown();
 
   // Calculate totals
   const totalGross = jobs.reduce((s, j) => s + (j.gross ?? 0), 0);

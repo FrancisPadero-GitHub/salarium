@@ -10,15 +10,8 @@ import {
   ChartLegendContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-import {
-  useFetchTechMonthlySummary,
-  type TechnicianMonthlySummaryRow,
-} from "@/hooks/technicians/useFetchTechMonthlySummary";
+import { useFetchTechMonthlySummary } from "@/hooks/technicians/useFetchTechMonthlySummary";
 import { Spinner } from "@/components/ui/spinner";
-
-interface TechMonthlyChartProps {
-  initialMonthlySummary?: TechnicianMonthlySummaryRow[];
-}
 
 const CHART_COLORS = [
   "var(--chart-1)",
@@ -28,14 +21,12 @@ const CHART_COLORS = [
   "var(--chart-5)",
 ];
 
-export function TechMonthlyChart({
-  initialMonthlySummary,
-}: TechMonthlyChartProps) {
+export function TechMonthlyChart() {
   const {
     data: monthlyData,
     isLoading,
     isError,
-  } = useFetchTechMonthlySummary(initialMonthlySummary);
+  } = useFetchTechMonthlySummary();
 
   console.log("Monthly Summary Data:", monthlyData);
 

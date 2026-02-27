@@ -9,7 +9,6 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { useFetchJobFinancialBreakdown } from "@/hooks/jobs/useFetchJobsFinanceBreakdown";
-import type { JobFinancialBreakdownRow } from "@/hooks/jobs/useFetchJobsFinanceBreakdown";
 
 const PALETTE = [
   "var(--chart-1)",
@@ -22,12 +21,8 @@ const PALETTE = [
   "var(--chart-8, oklch(0.6 0.2 60))",
 ];
 
-interface TopJobsChartProps {
-  initialData?: JobFinancialBreakdownRow[];
-}
-
-export function TopJobsChart({ initialData }: TopJobsChartProps) {
-  const { data: jobs = [] } = useFetchJobFinancialBreakdown(initialData);
+export function TopJobsChart() {
+  const { data: jobs = [] } = useFetchJobFinancialBreakdown();
 
   const data = useMemo(
     () =>

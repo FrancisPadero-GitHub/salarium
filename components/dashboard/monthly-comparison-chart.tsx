@@ -11,7 +11,6 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { useFetchJobDetailed } from "@/hooks/jobs/useFetchJobs";
-import type { JobDetailedRow } from "@/hooks/jobs/useFetchJobs";
 
 const chartConfig = {
   gross: {
@@ -28,14 +27,8 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-interface MonthlyComparisonChartProps {
-  initialJobs: JobDetailedRow[];
-}
-
-export function MonthlyComparisonChart({
-  initialJobs,
-}: MonthlyComparisonChartProps) {
-  const { data: jobs = initialJobs } = useFetchJobDetailed(initialJobs);
+export function MonthlyComparisonChart() {
+  const { data: jobs = [] } = useFetchJobDetailed();
 
   const chartData = useMemo(() => {
     const currentYear = new Date().getFullYear();

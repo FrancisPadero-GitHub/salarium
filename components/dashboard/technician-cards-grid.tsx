@@ -3,29 +3,15 @@ import { cn } from "@/lib/utils";
 import { Spinner } from "@/components/ui/spinner";
 
 // Hooks client side
-import {
-  useFetchTechSummary,
-  type TechnicianSummaryRow,
-} from "@/hooks/technicians/useFetchTechSummary";
-
-interface TechnicianCardsGridProps {
-  initialTechSummary: TechnicianSummaryRow[];
-}
+import { useFetchTechSummary } from "@/hooks/technicians/useFetchTechSummary";
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
     n,
   );
 
-export function TechnicianCardsGrid({
-  initialTechSummary,
-}: TechnicianCardsGridProps) {
-  // Client side hydration and data fetching with Tanstack Query
-  const {
-    data: technicians = [],
-    isLoading,
-    isError,
-  } = useFetchTechSummary(initialTechSummary);
+export function TechnicianCardsGrid() {
+  const { data: technicians = [], isLoading, isError } = useFetchTechSummary();
 
   if (isLoading)
     return (

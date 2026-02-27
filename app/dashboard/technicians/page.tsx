@@ -1,39 +1,33 @@
-// shadcn
+"use client";
+
 import { TriangleAlert } from "lucide-react";
-// components
 import { TechPerformanceChart } from "@/components/dashboard/tech-performance-chart";
 import { TechMonthlyChart } from "@/components/dashboard/tech-monthly-chart";
 import { TechJobsDonut } from "@/components/dashboard/tech-jobs-donut";
 import { AddTechnicianDialog } from "@/components/dashboard/form-technician-dialog";
 import { TechnicianCardsGrid } from "@/components/dashboard/technician-cards-grid";
 import { TechnicianTable } from "@/components/dashboard/technician-table";
-
-// Server-side data fetching
-import { fetchTechSummary } from "@/hooks/technicians/useFetchTechSummary";
-import { fetchTechMonthlySummary } from "@/hooks/technicians/useFetchTechMonthlySummary";
-
-// types
-import type { TechnicianSummaryRow } from "@/hooks/technicians/useFetchTechSummary";
-import type { TechnicianMonthlySummaryRow } from "@/hooks/technicians/useFetchTechMonthlySummary";
+import { useFetchTechSummary } from "@/hooks/technicians/useFetchTechSummary";
+import { useFetchTechMonthlySummary } from "@/hooks/technicians/useFetchTechMonthlySummary";
 
 // toasts
 import { TechniciansErrorToast } from "@/components/toasts/technicians-error";
 
-export default async function TechniciansPage() {
-  // Fetch data server-side during render
-  let techSummary: TechnicianSummaryRow[] = [];
-  let techMontlySummary: TechnicianMonthlySummaryRow[] = [];
-  let error = null;
+export default function TechniciansPage() {
+  const {
+    data: techSummary = [],
+    isError: isTechError,
+    error: techError,
+  } = useFetchTechSummary();
+  const { isError: isMonthlyError, error: monthlyError } =
+    useFetchTechMonthlySummary();
 
-  try {
-    techSummary = await fetchTechSummary();
-    techMontlySummary = await fetchTechMonthlySummary();
-  } catch (err) {
-    error = err instanceof Error ? err.message : "Failed to fetch technicians";
-    console.error("Error fetching technician summary:", error);
-  }
+  const errorMessage =
+    techError?.message ||
+    monthlyError?.message ||
+    "Failed to fetch technicians";
 
-  if (error) {
+  if (isTechError || isMonthlyError) {
     return (
       <>
         <TechniciansErrorToast />
@@ -41,7 +35,7 @@ export default async function TechniciansPage() {
           <div className="flex items-center justify-center gap-2">
             <TriangleAlert className="h-4 w-4 text-red-600 dark:text-red-400" />
             <p className="text-md text-red-700 dark:text-red-400">
-              Failed to load data
+              {errorMessage}
             </p>
           </div>
         </div>
@@ -74,18 +68,18 @@ export default async function TechniciansPage() {
         <AddTechnicianDialog />
       </div>
       {/* Technician Table */}
-      <TechnicianTable initialTechSummary={techSummary} />
+      <TechnicianTable />
       {/* Charts */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <TechPerformanceChart initialTechSummary={techSummary} />
-        <TechMonthlyChart initialMonthlySummary={techMontlySummary} />
+        <TechPerformanceChart />
+        <TechMonthlyChart />
       </div>
 
       <div className="grid h-105 gap-6 lg:grid-cols-2">
-        <TechJobsDonut initialTechSummary={techSummary} />
+        <TechJobsDonut />
         {/* Technician Cards Grid */}
         <div className="h-full overflow-hidden p-2 bg-zinc-200/50 dark:bg-zinc-800 rounded-xl">
-          <TechnicianCardsGrid initialTechSummary={techSummary} />
+          <TechnicianCardsGrid />
         </div>
       </div>
     </div>

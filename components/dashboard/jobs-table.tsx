@@ -13,7 +13,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 import { useJobsStore } from "@/features/store/jobs/useFormJobStore";
-import { JobDetailedRow, useFetchJobDetailed } from "@/hooks/jobs/useFetchJobs";
+import { useFetchJobDetailed } from "@/hooks/jobs/useFetchJobs";
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
@@ -50,11 +50,7 @@ const statusColors: Record<string, string> = {
     "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
 };
 
-interface JobsTableProps {
-  initialJobs: JobDetailedRow[];
-}
-
-export function JobsTable({ initialJobs }: JobsTableProps) {
+export function JobsTable() {
   const { data: jobs = [], isLoading, isError } = useFetchJobDetailed();
   const { openEdit } = useJobsStore();
   const [search, setSearch] = useState("");

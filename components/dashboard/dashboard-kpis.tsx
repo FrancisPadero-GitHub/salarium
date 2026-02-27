@@ -13,26 +13,15 @@ import { cn } from "@/lib/utils";
 import { useFetchJobDetailed } from "@/hooks/jobs/useFetchJobs";
 import { useFetchTechSummary } from "@/hooks/technicians/useFetchTechSummary";
 import { useFetchJobMonthlyFinancialSummary } from "@/hooks/jobs/useFetchJobMonthlyFinancialSummary";
-import type { JobDetailedRow } from "@/hooks/jobs/useFetchJobs";
-import type { TechnicianSummaryRow } from "@/hooks/technicians/useFetchTechSummary";
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
     n,
   );
 
-interface DashboardKPIsProps {
-  initialJobs: JobDetailedRow[];
-  initialTechnicians: TechnicianSummaryRow[];
-}
-
-export function DashboardKPIs({
-  initialJobs,
-  initialTechnicians,
-}: DashboardKPIsProps) {
-  const { data: jobs = initialJobs } = useFetchJobDetailed(initialJobs);
-  const { data: technicians = initialTechnicians } =
-    useFetchTechSummary(initialTechnicians);
+export function DashboardKPIs() {
+  const { data: jobs = [] } = useFetchJobDetailed();
+  const { data: technicians = [] } = useFetchTechSummary();
   const { data: monthlySummaries = [] } = useFetchJobMonthlyFinancialSummary();
 
   const metrics = useMemo(() => {

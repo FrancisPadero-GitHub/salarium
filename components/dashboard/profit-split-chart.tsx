@@ -12,8 +12,6 @@ import {
 } from "@/components/ui/chart";
 import { useFetchJobDetailed } from "@/hooks/jobs/useFetchJobs";
 import { useFetchTechSummary } from "@/hooks/technicians/useFetchTechSummary";
-import type { JobDetailedRow } from "@/hooks/jobs/useFetchJobs";
-import type { TechnicianSummaryRow } from "@/hooks/technicians/useFetchTechSummary";
 
 const chartConfig = {
   "Company Net": { label: "Company Net", color: "var(--chart-1)" },
@@ -22,18 +20,9 @@ const chartConfig = {
 
 const COLORS = ["var(--chart-1)", "var(--chart-2)"];
 
-interface ProfitSplitChartProps {
-  initialJobs: JobDetailedRow[];
-  initialTechnicians: TechnicianSummaryRow[];
-}
-
-export function ProfitSplitChart({
-  initialJobs,
-  initialTechnicians,
-}: ProfitSplitChartProps) {
-  const { data: jobs = initialJobs } = useFetchJobDetailed(initialJobs);
-  const { data: technicians = initialTechnicians } =
-    useFetchTechSummary(initialTechnicians);
+export function ProfitSplitChart() {
+  const { data: jobs = [] } = useFetchJobDetailed();
+  const { data: technicians = [] } = useFetchTechSummary();
 
   const chartData = useMemo(() => {
     const currentYear = new Date().getFullYear();

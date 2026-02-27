@@ -9,10 +9,7 @@ import {
   ChartLegendContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-import {
-  useFetchTechSummary,
-  type TechnicianSummaryRow,
-} from "@/hooks/technicians/useFetchTechSummary";
+import { useFetchTechSummary } from "@/hooks/technicians/useFetchTechSummary";
 import { Spinner } from "@/components/ui/spinner";
 
 // Yotam: { label: "Yotam", color: "var(--chart-1)" },
@@ -20,16 +17,8 @@ import { Spinner } from "@/components/ui/spinner";
 // Shalom: { label: "Shalom", color: "var(--chart-3)" },
 // Subs: { label: "Subs", color: "var(--chart-4)" },
 
-type Props = {
-  initialTechSummary?: TechnicianSummaryRow[];
-};
-
-export function TechJobsDonut({ initialTechSummary }: Props) {
-  const {
-    data: technicians = [],
-    isLoading,
-    isError,
-  } = useFetchTechSummary(initialTechSummary);
+export function TechJobsDonut() {
+  const { data: technicians = [], isLoading, isError } = useFetchTechSummary();
 
   if (isLoading)
     return (

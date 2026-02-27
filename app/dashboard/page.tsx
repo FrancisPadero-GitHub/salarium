@@ -1,12 +1,8 @@
+"use client";
+
 import { TriangleAlert } from "lucide-react";
-import {
-  fetchJobDetailed,
-  type JobDetailedRow,
-} from "@/hooks/jobs/useFetchJobs";
-import {
-  fetchTechSummary,
-  type TechnicianSummaryRow,
-} from "@/hooks/technicians/useFetchTechSummary";
+import { useFetchJobDetailed } from "@/hooks/jobs/useFetchJobs";
+import { useFetchTechSummary } from "@/hooks/technicians/useFetchTechSummary";
 import { RevenueTrendChart } from "@/components/dashboard/revenue-trend-chart";
 import { MonthlyComparisonChart } from "@/components/dashboard/monthly-comparison-chart";
 import { TechRevenueDonut } from "@/components/dashboard/tech-revenue-donut";
@@ -14,29 +10,23 @@ import { ProfitSplitChart } from "@/components/dashboard/profit-split-chart";
 import { DashboardKPIs } from "@/components/dashboard/dashboard-kpis";
 import { RecentJobsTable } from "@/components/dashboard/recent-jobs-table";
 
-export default async function DashboardPage() {
-  let jobs: JobDetailedRow[] = [];
-  let technicians: TechnicianSummaryRow[] = [];
-  let error = null;
+export default function DashboardPage() {
+  const { isError: isJobsError, error: jobsError } = useFetchJobDetailed();
+  const { isError: isTechniciansError, error: techniciansError } =
+    useFetchTechSummary();
 
-  try {
-    [jobs, technicians] = await Promise.all([
-      fetchJobDetailed(),
-      fetchTechSummary(),
-    ]);
-  } catch (err) {
-    error =
-      err instanceof Error ? err.message : "Failed to fetch dashboard data";
-    console.error("Error fetching dashboard data:", error);
-  }
+  const errorMessage =
+    jobsError?.message ||
+    techniciansError?.message ||
+    "Failed to fetch dashboard data";
 
-  if (error) {
+  if (isJobsError || isTechniciansError) {
     return (
       <div className="rounded-lg border border-zinc-200 bg-red-100 p-3 text-center dark:border-zinc-800 dark:bg-red-900/20">
         <div className="flex items-center justify-center gap-2">
           <TriangleAlert className="h-4 w-4 text-red-600 dark:text-red-400" />
           <p className="text-md text-red-700 dark:text-red-400">
-            Failed to load dashboard data
+            {errorMessage}
           </p>
         </div>
       </div>
@@ -61,21 +51,21 @@ export default async function DashboardPage() {
       </div>
 
       {/* KPI Cards */}
-      <DashboardKPIs initialJobs={jobs} initialTechnicians={technicians} />
+      <DashboardKPIs />
 
       {/* Charts */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <RevenueTrendChart initialJobs={jobs} />
-        <MonthlyComparisonChart initialJobs={jobs} />
+        <RevenueTrendChart />
+        <MonthlyComparisonChart />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <TechRevenueDonut initialJobs={jobs} />
-        <ProfitSplitChart initialJobs={jobs} initialTechnicians={technicians} />
+        <TechRevenueDonut />
+        <ProfitSplitChart />
       </div>
 
       {/* Recent Jobs */}
-      <RecentJobsTable initialJobs={jobs} />
+      <RecentJobsTable />
     </div>
   );
 }

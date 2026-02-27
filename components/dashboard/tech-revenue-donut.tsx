@@ -11,11 +11,6 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { useFetchJobDetailed } from "@/hooks/jobs/useFetchJobs";
-import type { JobDetailedRow } from "@/hooks/jobs/useFetchJobs";
-
-interface TechRevenueDonutProps {
-  initialJobs: JobDetailedRow[];
-}
 
 const COLORS = [
   "var(--chart-1)",
@@ -25,8 +20,8 @@ const COLORS = [
   "var(--chart-5)",
 ];
 
-export function TechRevenueDonut({ initialJobs }: TechRevenueDonutProps) {
-  const { data: jobs = initialJobs } = useFetchJobDetailed(initialJobs);
+export function TechRevenueDonut() {
+  const { data: jobs = [] } = useFetchJobDetailed();
 
   const chartData = useMemo(() => {
     const techData: Record<string, number> = {};

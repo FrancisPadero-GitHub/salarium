@@ -13,10 +13,6 @@ import type { Database } from "@/database.types";
 
 type TechnicianRow = Database["public"]["Tables"]["technicians"]["Row"];
 
-interface TechnicianTableProps {
-  initialTechSummary: TechnicianSummaryRow[];
-}
-
 type SortKey = keyof Pick<
   TechnicianSummaryRow,
   | "name"
@@ -33,13 +29,8 @@ const fmt = (n: number) =>
     n,
   );
 
-export function TechnicianTable({ initialTechSummary }: TechnicianTableProps) {
-  // Fetch technicians with SWR, using initialTechSummary as the initial data
-  const {
-    data: technicians = [],
-    isLoading,
-    isError,
-  } = useFetchTechSummary(initialTechSummary);
+export function TechnicianTable() {
+  const { data: technicians = [], isLoading, isError } = useFetchTechSummary();
 
   const openEdit = useTechnicianStore((state) => state.openEdit);
 

@@ -3,7 +3,6 @@
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { useFetchJobDetailed } from "@/hooks/jobs/useFetchJobs";
-import type { JobDetailedRow } from "@/hooks/jobs/useFetchJobs";
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
@@ -18,12 +17,8 @@ const paymentColors: Record<string, string> = {
   zelle: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
 };
 
-interface RecentJobsTableProps {
-  initialJobs: JobDetailedRow[];
-}
-
-export function RecentJobsTable({ initialJobs }: RecentJobsTableProps) {
-  const { data: jobs = initialJobs } = useFetchJobDetailed(initialJobs);
+export function RecentJobsTable() {
+  const { data: jobs = [] } = useFetchJobDetailed();
 
   const recentJobs = useMemo(() => {
     return [...jobs]

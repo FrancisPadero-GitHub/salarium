@@ -1,12 +1,8 @@
+"use client";
+
 import { TriangleAlert } from "lucide-react";
-import {
-  fetchJobDetailed,
-  type JobDetailedRow,
-} from "@/hooks/jobs/useFetchJobs";
-import {
-  fetchJobFinancialBreakdown,
-  type JobFinancialBreakdownRow,
-} from "@/hooks/jobs/useFetchJobsFinanceBreakdown";
+import { useFetchJobDetailed } from "@/hooks/jobs/useFetchJobs";
+import { useFetchJobFinancialBreakdown } from "@/hooks/jobs/useFetchJobsFinanceBreakdown";
 
 import { TopCategoriesChart } from "@/components/dashboard/job-top-categories";
 import { TechRevenueBarChart } from "@/components/dashboard/tech-revenue-bar-chart";
@@ -16,20 +12,22 @@ import { JobsTable } from "@/components/dashboard/jobs-table";
 import { JobsErrorToast } from "@/components/toasts/jobs-error";
 import { JobSummaryCards } from "@/components/dashboard/job-summary-cards";
 
-export default async function JobsPage() {
-  let jobsDetailedTable: JobDetailedRow[] = [];
-  let jobFinancialBreakdown: JobFinancialBreakdownRow[] = [];
-  let error = null;
+export default function JobsPage() {
+  const {
+    data: jobsDetailedTable = [],
+    isError: isJobsError,
+    error: jobsError,
+  } = useFetchJobDetailed();
+  const {
+    data: jobFinancialBreakdown = [],
+    isError: isBreakdownError,
+    error: breakdownError,
+  } = useFetchJobFinancialBreakdown();
 
-  try {
-    jobsDetailedTable = await fetchJobDetailed();
-    jobFinancialBreakdown = await fetchJobFinancialBreakdown();
-  } catch (err) {
-    error = err instanceof Error ? err.message : "Failed to fetch jobs";
-    console.error("Error fetching job financial breakdown:", error);
-  }
+  const errorMessage =
+    jobsError?.message || breakdownError?.message || "Failed to fetch jobs";
 
-  if (error) {
+  if (isJobsError || isBreakdownError) {
     return (
       <>
         <JobsErrorToast />
@@ -37,7 +35,7 @@ export default async function JobsPage() {
           <div className="flex items-center justify-center gap-2">
             <TriangleAlert className="h-4 w-4 text-red-600 dark:text-red-400" />
             <p className="text-md text-red-700 dark:text-red-400">
-              Failed to load data
+              {errorMessage}
             </p>
           </div>
         </div>
@@ -61,17 +59,17 @@ export default async function JobsPage() {
       </div>
 
       {/* Summary cards */}
-      <JobSummaryCards initialData={jobFinancialBreakdown} />
+      <JobSummaryCards />
 
-      <JobsTable initialJobs={jobsDetailedTable} />
+      <JobsTable />
 
       {/* Charts */}
       <div className="grid gap-6 lg:grid-cols-2">
         <TopCategoriesChart />
-        <TechRevenueBarChart initialData={jobFinancialBreakdown} />
+        <TechRevenueBarChart />
       </div>
 
-      <TopJobsChart initialData={jobFinancialBreakdown} />
+      <TopJobsChart />
     </div>
   );
 }

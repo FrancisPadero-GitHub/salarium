@@ -11,7 +11,6 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { useFetchJobDetailed } from "@/hooks/jobs/useFetchJobs";
-import type { JobDetailedRow } from "@/hooks/jobs/useFetchJobs";
 
 const chartConfig = {
   gross: {
@@ -24,12 +23,8 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-interface RevenueTrendChartProps {
-  initialJobs: JobDetailedRow[];
-}
-
-export function RevenueTrendChart({ initialJobs }: RevenueTrendChartProps) {
-  const { data: jobs = initialJobs } = useFetchJobDetailed(initialJobs);
+export function RevenueTrendChart() {
+  const { data: jobs = [] } = useFetchJobDetailed();
 
   const chartData = useMemo(() => {
     const dailyData: Record<

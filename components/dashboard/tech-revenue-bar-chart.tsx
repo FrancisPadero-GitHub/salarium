@@ -11,7 +11,6 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { useFetchJobFinancialBreakdown } from "@/hooks/jobs/useFetchJobsFinanceBreakdown";
-import type { JobFinancialBreakdownRow } from "@/hooks/jobs/useFetchJobsFinanceBreakdown";
 
 const chartConfig = {
   companyNet: {
@@ -24,12 +23,8 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-interface TechRevenueBarChartProps {
-  initialData?: JobFinancialBreakdownRow[];
-}
-
-export function TechRevenueBarChart({ initialData }: TechRevenueBarChartProps) {
-  const { data: jobs = [] } = useFetchJobFinancialBreakdown(initialData);
+export function TechRevenueBarChart() {
+  const { data: jobs = [] } = useFetchJobFinancialBreakdown();
 
   const data = useMemo(() => {
     const techRevenueMap: Record<

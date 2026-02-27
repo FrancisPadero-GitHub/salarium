@@ -5,7 +5,7 @@ import type { Database } from "@/database.types";
 export type JobFinancialBreakdownRow =
   Database["public"]["Views"]["v_job_financial_breakdown"]["Row"];
 
-// Server-side data fetching function
+// Data fetching function
 export const fetchJobFinancialBreakdown = async (): Promise<
   JobFinancialBreakdownRow[]
 > => {
@@ -21,15 +21,11 @@ export const fetchJobFinancialBreakdown = async (): Promise<
   return result as JobFinancialBreakdownRow[];
 };
 
-export function useFetchJobFinancialBreakdown(
-  initialData?: JobFinancialBreakdownRow[],
-) {
+export function useFetchJobFinancialBreakdown() {
   return useQuery<JobFinancialBreakdownRow[], Error>({
     queryKey: ["jobs", "financial-breakdown"],
     queryFn: fetchJobFinancialBreakdown,
     staleTime: 1000 * 60 * 2, // 2 minutes
     retry: 1,
-    initialData,
-    initialDataUpdatedAt: initialData ? Date.now() : undefined,
   });
 }

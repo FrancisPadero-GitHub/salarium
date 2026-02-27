@@ -10,10 +10,7 @@ import {
   ChartLegendContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-import {
-  useFetchTechSummary,
-  type TechnicianSummaryRow,
-} from "@/hooks/technicians/useFetchTechSummary";
+import { useFetchTechSummary } from "@/hooks/technicians/useFetchTechSummary";
 import { Spinner } from "@/components/ui/spinner";
 
 const chartConfig = {
@@ -31,18 +28,8 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-interface TechPerformanceChartProps {
-  initialTechSummary?: TechnicianSummaryRow[];
-}
-
-export function TechPerformanceChart({
-  initialTechSummary,
-}: TechPerformanceChartProps) {
-  const {
-    data: technicians,
-    isLoading,
-    isError,
-  } = useFetchTechSummary(initialTechSummary);
+export function TechPerformanceChart() {
+  const { data: technicians, isLoading, isError } = useFetchTechSummary();
 
   const chartData = useMemo(() => {
     if (!technicians) return [];
