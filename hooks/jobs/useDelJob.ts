@@ -25,13 +25,14 @@ export function useDelJob() {
     mutationFn: dbSoftDeleteJob,
     onSuccess: async (result) => {
       console.log("Job soft-deleted successfully:", result);
-      queryClient.invalidateQueries({
-        queryKey: ["jobs", "financial-breakdown"],
+      await queryClient.cancelQueries({ queryKey: ["jobs"] });
+      await queryClient.invalidateQueries({
+        queryKey: ["jobs"],
         exact: false,
       });
-      queryClient.invalidateQueries({
-        queryKey: ["jobs", "table-detailed"],
-        exact: false,
+      await queryClient.refetchQueries({
+        queryKey: ["jobs"],
+        type: "active",
       });
     },
     onError: (error) => {

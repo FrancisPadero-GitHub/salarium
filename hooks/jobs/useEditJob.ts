@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import type { Database } from "@/database.types";
 
@@ -23,20 +22,19 @@ const dbEditJob = async (data: JobUpdate) => {
 
 export function useEditJob() {
   const queryClient = useQueryClient();
-  const router = useRouter();
   return useMutation<JobRow, Error, JobUpdate>({
     mutationFn: dbEditJob,
     onSuccess: async (result) => {
       console.log("Job edited successfully:", result);
-      queryClient.invalidateQueries({
-        queryKey: ["jobs", "financial-breakdown"],
+      await queryClient.cancelQueries({ queryKey: ["jobs"] });
+      await queryClient.invalidateQueries({
+        queryKey: ["jobs"],
         exact: false,
       });
-      queryClient.invalidateQueries({
-        queryKey: ["jobs", "table-detailed"],
-        exact: false,
+      await queryClient.refetchQueries({
+        queryKey: ["jobs"],
+        type: "active",
       });
-      router.refresh();
     },
     onError: (error) => {
       console.error("Error editing job:", error.message || error);

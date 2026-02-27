@@ -25,17 +25,14 @@ export function useAddTechnician() {
     mutationFn: dbAddTechnician,
     onSuccess: async (result) => {
       console.log("Technician added successfully:", result);
-      queryClient.invalidateQueries({
+      await queryClient.cancelQueries({ queryKey: ["technicians"] });
+      await queryClient.invalidateQueries({
         queryKey: ["technicians"],
         exact: false,
       });
-      queryClient.invalidateQueries({
-        queryKey: ["technicians", "monthly-summary"],
-        exact: false,
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["technicians", "summary"],
-        exact: false,
+      await queryClient.refetchQueries({
+        queryKey: ["technicians"],
+        type: "active",
       });
     },
     onError: (error) => {
