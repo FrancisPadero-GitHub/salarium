@@ -22,7 +22,7 @@ export function TechnicianCardsGrid() {
   /** Map technician_id → detail row for commission/email/hired_date */
   const detailMap = useMemo(() => {
     const m = new Map<string, TechnicianDetailRow>();
-    for (const d of techDetails) if (d.technician_id) m.set(d.technician_id, d);
+    for (const d of techDetails) if (d.id) m.set(d.id, d);
     return m;
   }, [techDetails]);
 

@@ -45,12 +45,21 @@ export function useEditJob() {
       console.log("Job edited successfully:", result);
       await queryClient.cancelQueries({ queryKey: ["jobs"] });
       await queryClient.invalidateQueries({
-        queryKey: ["jobs"],
+        queryKey: ["jobs", "summary"],
         exact: false,
       });
       await queryClient.refetchQueries({
-        queryKey: ["jobs"],
-        type: "active",
+        queryKey: ["jobs", "view-table"],
+        exact: false,
+      });
+      // technicians
+      await queryClient.refetchQueries({
+        queryKey: ["tech", "details"],
+        exact: false,
+      });
+      await queryClient.refetchQueries({
+        queryKey: ["tech", "summary"],
+        exact: false,
       });
     },
     onError: (error: Error) => {

@@ -3,11 +3,11 @@ import { supabase } from "@/lib/supabase";
 import type { Database } from "@/database.types";
 
 export type TechnicianDetailRow =
-  Database["public"]["Views"]["v_technicians"]["Row"];
+  Database["public"]["Tables"]["technicians"]["Row"];
 
 export const fetchTechnicians = async (): Promise<TechnicianDetailRow[]> => {
   const { data: result, error } = await supabase
-    .from("v_technicians")
+    .from("technicians")
     .select("*");
 
   if (error) {

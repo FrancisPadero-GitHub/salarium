@@ -2,13 +2,11 @@
 
 import { TriangleAlert } from "lucide-react";
 import { TechPerformanceChart } from "@/components/dashboard/tech-performance-chart";
-import { TechMonthlyChart } from "@/components/dashboard/tech-monthly-chart";
 import { TechJobsDonut } from "@/components/dashboard/tech-jobs-donut";
 import { AddTechnicianDialog } from "@/components/dashboard/form-technician-dialog";
 import { TechnicianCardsGrid } from "@/components/dashboard/technician-cards-grid";
 import { TechnicianTable } from "@/components/dashboard/technician-table";
 import { useFetchTechSummary } from "@/hooks/technicians/useFetchTechSummary";
-import { useFetchTechMonthlySummary } from "@/hooks/technicians/useFetchTechMonthlySummary";
 
 // toasts
 import { TechniciansErrorToast } from "@/components/toasts/technicians-error";
@@ -19,15 +17,10 @@ export default function TechniciansPage() {
     isError: isTechError,
     error: techError,
   } = useFetchTechSummary();
-  const { isError: isMonthlyError, error: monthlyError } =
-    useFetchTechMonthlySummary();
 
-  const errorMessage =
-    techError?.message ||
-    monthlyError?.message ||
-    "Failed to fetch technicians";
+  const errorMessage = techError?.message || "Failed to fetch technicians";
 
-  if (isTechError || isMonthlyError) {
+  if (isTechError) {
     return (
       <>
         <TechniciansErrorToast />
@@ -72,11 +65,10 @@ export default function TechniciansPage() {
       {/* Charts */}
       <div className="grid gap-6 lg:grid-cols-2">
         <TechPerformanceChart />
-        <TechMonthlyChart />
+        <TechJobsDonut />
       </div>
 
-      <div className="grid h-105 gap-6 lg:grid-cols-2">
-        <TechJobsDonut />
+      <div className="grid ">
         {/* Technician Cards Grid */}
         <div className="h-full overflow-hidden p-2 bg-zinc-200/50 dark:bg-zinc-800 rounded-xl">
           <TechnicianCardsGrid />

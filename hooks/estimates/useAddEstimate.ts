@@ -1,0 +1,56 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
+import type { Database } from "@/database.types";
+
+type WorkOrderInsert = Database["public"]["Tables"]["work_orders"]["Insert"];
+type EstimateInsert = Database["public"]["Tables"]["estimates"]["Insert"];
+
+export interface AddEstimatePayload {
+  workOrder: WorkOrderInsert;
+  estimate: Omit<EstimateInsert, "work_order_id">;
+}
+
+const dbAddEstimate = async (payload: AddEstimatePayload) => {
+  const { data: workOrder, error: workOrderError } = await supabase
+    .from("work_orders")
+    .insert([payload.workOrder])
+    .select()
+    .single();
+
+  if (workOrderError) {
+    throw new Error(
+      workOrderError.message || "Failed to create estimate work order",
+    );
+  }
+
+  const { data: estimate, error: estimateError } = await supabase
+    .from("estimates")
+    .insert([{ ...payload.estimate, work_order_id: workOrder.id }])
+    .select()
+    .single();
+
+  if (estimateError) {
+    await supabase.from("work_orders").delete().eq("id", workOrder.id);
+    throw new Error(estimateError.message || "Failed to create estimate");
+  }
+
+  return { workOrder, estimate };
+};
+
+export function useAddEstimate() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: dbAddEstimate,
+    onSuccess: async () => {
+      await queryClient.cancelQueries({ queryKey: ["estimates"] });
+      await queryClient.refetchQueries({
+        queryKey: ["estimates", "view-table"],
+        exact: false,
+      });
+    },
+    onError: (error: Error) => {
+      console.error("Error adding estimate:", error.message || error);
+    },
+  });
+}

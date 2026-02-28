@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { FileText } from "lucide-react";
 import {
@@ -24,22 +24,35 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useFetchTechnicians } from "@/hooks/technicians/useFetchTechnicians";
-import type { EstimateStatus } from "@/types/estimate";
+import { useAddEstimate } from "@/hooks/estimates/useAddEstimate";
+import {
+  useEstimateFormStore,
+  type EstimateFormValues,
+} from "@/features/store/estimates/useEstimateFormStore";
+import type { Database } from "@/database.types";
 
-interface EstimateFormValues {
-  date: string;
-  address: string;
-  technicianId: string;
-  description: string;
-  estimatedAmount: string;
-  status: EstimateStatus;
-  handledBy: string;
-  notes: string;
-}
+const ESTIMATE_STATUSES = ["follow_up", "approved", "denied"] as const;
 
 export function NewEstimateDialog() {
-  const [open, setOpen] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const {
+    form,
+    isDialogOpen,
+    isSubmitting,
+    openDialog,
+    closeDialog,
+    resetForm,
+    setIsSubmitting,
+    buildPayload,
+  } = useEstimateFormStore();
+
+  const {
+    mutate: addEstimate,
+    isPending,
+    isSuccess,
+    isError,
+    error,
+    reset: resetMutation,
+  } = useAddEstimate();
 
   const {
     register,
@@ -47,54 +60,56 @@ export function NewEstimateDialog() {
     reset,
     setValue,
     watch,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<EstimateFormValues>({
-    defaultValues: {
-      date: new Date().toISOString().slice(0, 10),
-      address: "",
-      technicianId: "",
-      description: "",
-      estimatedAmount: "",
-      status: "follow_up",
-      handledBy: "",
-      notes: "",
-    },
+    defaultValues: form,
   });
 
-  const selectedTechId = watch("technicianId");
+  useEffect(() => {
+    if (!isDialogOpen) return;
+    reset(form);
+  }, [isDialogOpen, form, reset]);
+
+  const selectedTechId = watch("technician_id");
   const { data: technicians = [] } = useFetchTechnicians();
 
   const onSubmit = (data: EstimateFormValues) => {
-    const techData = technicians.find(
-      (t) => t.technician_id === data.technicianId,
-    );
+    setIsSubmitting(true);
 
-    const estimate = {
-      id: `est-${Date.now()}`,
-      date: data.date,
-      address: data.address,
-      technicianId: data.technicianId,
-      technicianName: techData?.name ?? "",
-      description: data.description,
-      estimatedAmount: parseFloat(data.estimatedAmount) || 0,
-      status: data.status,
-      handledBy: data.handledBy || undefined,
-      notes: data.notes || undefined,
-    };
+    useEstimateFormStore.setState({ form: data });
 
-    console.log("New estimate recorded:", estimate);
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
-      setOpen(false);
-      reset();
-    }, 1500);
+    addEstimate(buildPayload(), {
+      onSuccess: () => {
+        setTimeout(() => {
+          closeDialog();
+          setTimeout(() => {
+            resetMutation();
+            resetForm();
+            reset();
+            setIsSubmitting(false);
+          }, 300);
+        }, 1200);
+      },
+      onError: () => {
+        setIsSubmitting(false);
+      },
+    });
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={isDialogOpen}
+      onOpenChange={(newOpen) => {
+        if (newOpen) {
+          resetMutation();
+          openDialog();
+        } else {
+          closeDialog();
+        }
+      }}
+    >
       <DialogTrigger asChild>
-        <Button>
+        <Button onClick={openDialog}>
           <FileText className="mr-2 h-4 w-4" />
           New Estimate
         </Button>
@@ -107,7 +122,7 @@ export function NewEstimateDialog() {
           </DialogDescription>
         </DialogHeader>
 
-        {submitted ? (
+        {isSuccess ? (
           <div className="flex flex-col items-center gap-2 py-8">
             <div className="rounded-full bg-emerald-100 p-3 dark:bg-emerald-900/30">
               <FileText className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
@@ -115,6 +130,10 @@ export function NewEstimateDialog() {
             <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
               Estimate created successfully!
             </p>
+          </div>
+        ) : isError ? (
+          <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-900/20 dark:text-red-300">
+            {error?.message ?? "Failed to create estimate."}
           </div>
         ) : (
           <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 py-2">
@@ -135,34 +154,49 @@ export function NewEstimateDialog() {
                 <Label htmlFor="est-tech">Technician</Label>
                 <Select
                   value={selectedTechId}
-                  onValueChange={(v) => setValue("technicianId", v)}
+                  onValueChange={(v) =>
+                    setValue("technician_id", v, { shouldDirty: true })
+                  }
                 >
                   <SelectTrigger id="est-tech">
                     <SelectValue placeholder="Select tech" />
                   </SelectTrigger>
                   <SelectContent>
                     {technicians.map((t) => (
-                      <SelectItem
-                        key={t.technician_id}
-                        value={t.technician_id ?? ""}
-                      >
+                      <SelectItem key={t.id} value={t.id}>
                         {t.name}
                       </SelectItem>
-                    ))}{" "}
+                    ))}
                   </SelectContent>
                 </Select>
                 <input
                   type="hidden"
-                  {...register("technicianId", {
+                  {...register("technician_id", {
                     required: "Select a technician",
                   })}
                 />
-                {errors.technicianId && (
+                {errors.technician_id && (
                   <p className="text-xs text-red-500">
-                    {errors.technicianId.message}
+                    {errors.technician_id.message}
                   </p>
                 )}
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="est-title">Work Title</Label>
+              <Input
+                id="est-title"
+                placeholder="Inspection and estimate"
+                {...register("work_title", {
+                  required: "Work title is required",
+                })}
+              />
+              {errors.work_title && (
+                <p className="text-xs text-red-500">
+                  {errors.work_title.message}
+                </p>
+              )}
             </div>
 
             {/* Address */}
@@ -206,14 +240,15 @@ export function NewEstimateDialog() {
                   step="0.01"
                   min="0"
                   placeholder="0.00"
-                  {...register("estimatedAmount", {
+                  {...register("estimated_amount", {
                     required: "Amount is required",
                     min: { value: 0.01, message: "Must be > 0" },
+                    valueAsNumber: true,
                   })}
                 />
-                {errors.estimatedAmount && (
+                {errors.estimated_amount && (
                   <p className="text-xs text-red-500">
-                    {errors.estimatedAmount.message}
+                    {errors.estimated_amount.message}
                   </p>
                 )}
               </div>
@@ -221,15 +256,23 @@ export function NewEstimateDialog() {
                 <Label htmlFor="est-status">Status</Label>
                 <Select
                   value={watch("status")}
-                  onValueChange={(v) => setValue("status", v as EstimateStatus)}
+                  onValueChange={(v) =>
+                    setValue(
+                      "status",
+                      v as Database["public"]["Enums"]["estimate_status_enum"],
+                      { shouldDirty: true },
+                    )
+                  }
                 >
                   <SelectTrigger id="est-status">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="follow_up">Follow Up</SelectItem>
-                    <SelectItem value="approved">Approved</SelectItem>
-                    <SelectItem value="denied">Denied</SelectItem>
+                    {ESTIMATE_STATUSES.map((status) => (
+                      <SelectItem key={status} value={status}>
+                        {status.replace("_", " ")}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -241,7 +284,7 @@ export function NewEstimateDialog() {
               <Input
                 id="est-handled"
                 placeholder="Office admin or tech name"
-                {...register("handledBy")}
+                {...register("handled_by")}
               />
             </div>
 
@@ -261,13 +304,18 @@ export function NewEstimateDialog() {
                 type="button"
                 variant="outline"
                 onClick={() => {
-                  setOpen(false);
+                  closeDialog();
                   reset();
                 }}
               >
                 Cancel
               </Button>
-              <Button type="submit">Save Estimate</Button>
+              <Button
+                type="submit"
+                disabled={isPending || isSubmitting || !isDirty}
+              >
+                {isPending || isSubmitting ? "Saving..." : "Save Estimate"}
+              </Button>
             </DialogFooter>
           </form>
         )}

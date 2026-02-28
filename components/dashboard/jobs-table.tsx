@@ -19,7 +19,7 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useJobsStore } from "@/features/store/jobs/useFormJobStore";
+import { useJobStore } from "@/features/store/jobs/useFormJobStore";
 import { useFetchViewJobRow } from "@/hooks/jobs/useFetchJobTable";
 import { useFetchTechSummary } from "@/hooks/technicians/useFetchTechSummary";
 import { useFetchTechnicians } from "@/hooks/technicians/useFetchTechnicians";
@@ -62,7 +62,7 @@ export function JobsTable() {
   const { data: jobs = [], isLoading, isError } = useFetchViewJobRow();
   const { data: techSummary = [] } = useFetchTechSummary();
   const { data: techDetails = [] } = useFetchTechnicians();
-  const { openEdit } = useJobsStore();
+  const { openEdit } = useJobStore();
 
   // Build tech name & commission lookup maps
   const techNameMap = useMemo(() => {
@@ -76,7 +76,7 @@ export function JobsTable() {
   const techCommissionMap = useMemo(() => {
     const map = new Map<string, number>();
     for (const t of techDetails) {
-      if (t.technician_id) map.set(t.technician_id, t.commission ?? 0);
+      if (t.id) map.set(t.id, t.commission ?? 0);
     }
     return map;
   }, [techDetails]);
@@ -437,21 +437,24 @@ export function JobsTable() {
                       key={job.work_order_id}
                       onClick={() =>
                         openEdit({
-                          work_order_id: job.work_order_id,
-                          work_title: job.work_title,
-                          description: job.description,
-                          work_order_date: job.work_order_date,
-                          technician_id: job.technician_id,
-                          category: job.category,
-                          address: job.address,
-                          region: job.region,
-                          payment_method_id: null, // v_jobs has payment_method name, not id
+                          work_order_id: job.work_order_id ?? "",
+                          work_title: job.work_title ?? "",
+                          description: job.description ?? "",
+                          work_order_date:
+                            job.work_order_date ??
+                            new Date().toISOString().slice(0, 10),
+                          technician_id: job.technician_id ?? "",
+                          category: job.category ?? "",
+                          address: job.address ?? "",
+                          region: job.region ?? "",
+                          // v_jobs has payment method name, not id — dialog resolves id by name
+                          payment_method_id: "",
                           payment_method: job.payment_method,
-                          parts_total_cost: job.parts_total_cost,
-                          subtotal: job.subtotal,
-                          tip_amount: job.tip_amount,
-                          notes: job.notes,
-                          status: job.status,
+                          parts_total_cost: job.parts_total_cost ?? 0,
+                          subtotal: job.subtotal ?? 0,
+                          tip_amount: job.tip_amount ?? 0,
+                          notes: job.notes ?? "",
+                          status: job.status ?? "pending",
                         })
                       }
                       className="cursor-pointer transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50"

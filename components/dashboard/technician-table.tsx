@@ -2,10 +2,7 @@
 import { useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { useFetchTechSummary } from "@/hooks/technicians/useFetchTechSummary";
-import {
-  useFetchTechnicians,
-  type TechnicianDetailRow,
-} from "@/hooks/technicians/useFetchTechnicians";
+import { useFetchTechnicians } from "@/hooks/technicians/useFetchTechnicians";
 import { Spinner } from "@/components/ui/spinner";
 import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 import { useFilterTechTable } from "@/features/store/technician/useFilterTechTable";
@@ -43,39 +40,34 @@ const fmt = (n: number) =>
   );
 
 export function TechnicianTable() {
-  const { data: summaries = [], isLoading, isError } = useFetchTechSummary();
-  const { data: techDetails = [] } = useFetchTechnicians();
+  const { data: techDetails } = useFetchTechnicians();
+  const { data: techSummary, isLoading, isError } = useFetchTechSummary();
 
-  const openEdit = useTechnicianStore((state) => state.openEdit);
-
-  /** Map technician_id → detail row for commission/email/hired_date */
-  const detailMap = useMemo(() => {
-    const m = new Map<string, TechnicianDetailRow>();
-    for (const d of techDetails) if (d.technician_id) m.set(d.technician_id, d);
-    return m;
-  }, [techDetails]);
-
-  /** Merge summary + detail into a unified row */
-  const technicians: MergedTechRow[] = useMemo(
+  // merges data from the technicians details and summary queries into a single array for easier display and filtering
+  const mergedData: MergedTechRow[] = useMemo(
     () =>
-      summaries.map((s) => {
-        const detail = s.technician_id ? detailMap.get(s.technician_id) : null;
+      (techDetails ?? []).map((baseRow) => {
+        const summaryRow = techSummary?.find(
+          (s) => s.technician_id === baseRow.id,
+        );
         return {
-          technician_id: s.technician_id,
-          name: s.name,
-          commission: detail?.commission ?? null,
-          email: detail?.email ?? null,
-          hired_date: detail?.hired_date ?? null,
-          total_jobs: s.total_jobs,
-          gross_revenue: s.gross_revenue,
-          total_company_net: s.total_company_net,
-          total_commission_earned: s.total_commission_earned,
-          total_parts: s.total_parts,
-          total_tips: s.total_tips,
+          technician_id: baseRow.id,
+          name: baseRow.name,
+          commission: baseRow.commission,
+          email: baseRow.email,
+          hired_date: baseRow.hired_date,
+          total_jobs: summaryRow?.total_jobs ?? null,
+          gross_revenue: summaryRow?.gross_revenue ?? null,
+          total_company_net: summaryRow?.total_company_net ?? null,
+          total_commission_earned: summaryRow?.total_commission_earned ?? null,
+          total_parts: summaryRow?.total_parts ?? null,
+          total_tips: summaryRow?.total_tips ?? null,
         };
       }),
-    [summaries, detailMap],
+    [techDetails, techSummary],
   );
+
+  const openEdit = useTechnicianStore((state) => state.openEdit);
 
   // Get filter state from Zustand store
   const search = useFilterTechTable((state) => state.search);
@@ -91,14 +83,14 @@ export function TechnicianTable() {
   const setSortKey = useFilterTechTable((state) => state.setSortKey);
   const setSortDir = useFilterTechTable((state) => state.setSortDir);
 
-  const techCommissionRates = technicians.map((t) => ({
-    name: t.name,
-    commission: t.commission,
-  }));
+  const techCommissionRates = useMemo(
+    () => mergedData.map((t) => ({ name: t.name, commission: t.commission })),
+    [mergedData],
+  );
 
   // compute dynamic thresholds (33rd and 66th percentiles) for commission rate percentages
   const [p33, p66] = useMemo(() => {
-    const rates = technicians
+    const rates = techCommissionRates
       .map((t) => t.commission ?? 0)
       .sort((a, b) => a - b);
     if (rates.length === 0) return [20, 30];
@@ -111,7 +103,7 @@ export function TechnicianTable() {
       return rates[lo] * (1 - w) + rates[hi] * w;
     };
     return [percentile(0.33), percentile(0.66)];
-  }, [technicians]);
+  }, [techCommissionRates]);
 
   console.log("Technician commission rates:", techCommissionRates, {
     p33,
@@ -134,7 +126,7 @@ export function TechnicianTable() {
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
 
-    return [...technicians]
+    return [...mergedData]
       .filter((t) => {
         const matchesSearch =
           !q ||
@@ -168,7 +160,7 @@ export function TechnicianTable() {
         }
         return sortDir === "asc" ? cmp : -cmp;
       });
-  }, [technicians, search, commissionFilter, sortKey, sortDir, p33, p66]);
+  }, [mergedData, search, commissionFilter, sortKey, sortDir, p33, p66]);
 
   function handleSort(key: SortKey) {
     if (sortKey === key) {
@@ -214,7 +206,7 @@ export function TechnicianTable() {
             Technicians
           </h3>
           <p className="text-xs text-zinc-500 dark:text-zinc-400">
-            {filtered.length} of {technicians.length} technicians
+            {filtered.length} of {mergedData.length} technicians
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">

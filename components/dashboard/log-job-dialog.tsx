@@ -6,12 +6,22 @@ import { Briefcase, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
-  DialogFooter,
-  DialogTrigger,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,65 +33,77 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Spinner } from "@/components/ui/spinner";
 
-// hooks
+// Zustand store
+import {
+  useJobStore,
+  type JobFormValues,
+} from "@/features/store/jobs/useFormJobStore";
+
+// Hooks
+import { useAddJob } from "@/hooks/jobs/useAddJobs";
+import { useEditJob } from "@/hooks/jobs/useEditJob";
+import { useDelJob } from "@/hooks/jobs/useDelJob";
 import { useFetchTechnicians } from "@/hooks/technicians/useFetchTechnicians";
 import { useFetchPaymentMethods } from "@/hooks/payment-methods/useFetchPaymentMethods";
-import { useAddJob, type AddJobPayload } from "@/hooks/jobs/useAddJobs";
-import { useEditJob, type EditJobPayload } from "@/hooks/jobs/useEditJob";
-import { useDelJob } from "@/hooks/jobs/useDelJob";
 
-// zustand
-import { useJobsStore, type FormJobState } from "@/features/store/jobs/useFormJobStore";
+const JOB_STATUSES = ["pending", "done", "cancelled"] as const;
 
-// types
-import { DEFAULT_VALUES, type JobFormValues } from "@/types/log-job";
+interface LogJobDialogProps {
+  showTrigger?: boolean;
+}
 
-export function LogJobDialog() {
+export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
+  // Zustand store
   const {
-    form: storeForm,
+    form,
     mode,
     isDialogOpen,
     isSubmitting,
     openAdd,
-    closeDialog,
     resetForm,
+    closeDialog,
     setIsSubmitting,
-  } = useJobsStore();
+  } = useJobStore();
 
   const isEdit = mode === "edit";
-  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
 
+  // TanStack Query data
+  const { data: technicians = [] } = useFetchTechnicians();
+  const { data: paymentMethods = [] } = useFetchPaymentMethods();
+
+  // TanStack Query mutations
   const {
-    mutateAsync: addJobAsync,
-    isError: isAddError,
-    isSuccess: isAddSuccess,
+    mutate: addJob,
     error: addError,
-    reset: resetAddJobMutation,
+    isError: isAddError,
+    isPending: isAddPending,
+    isSuccess: isAddSuccess,
+    reset: resetAddMutation,
   } = useAddJob();
 
   const {
-    mutateAsync: editJobAsync,
-    isError: isEditError,
-    isSuccess: isEditSuccess,
+    mutate: editJob,
     error: editError,
-    reset: resetEditJobMutation,
+    isError: isEditError,
+    isPending: isEditPending,
+    isSuccess: isEditSuccess,
+    reset: resetEditMutation,
   } = useEditJob();
 
   const {
-    mutate: softDeleteJob,
+    mutate: deleteJob,
     isPending: isDeletePending,
     isSuccess: isDeleteSuccess,
-    reset: resetDeleteJobMutation,
+    reset: resetDeleteMutation,
   } = useDelJob();
 
-  const isJobError = isEdit ? isEditError : isAddError;
-  const isJobSuccess = isEdit ? isEditSuccess : isAddSuccess;
-  const jobError = isEdit ? editError : addError;
+  const error = isEdit ? editError : addError;
+  const isError = isEdit ? isEditError : isAddError;
+  const isPending = isEdit ? isEditPending : isAddPending;
+  const isSuccess = isEdit ? isEditSuccess : isAddSuccess;
 
-  const { data: technicians = [], isLoading: techLoading } = useFetchTechnicians();
-  const { data: paymentMethods = [], isLoading: paymentLoading } = useFetchPaymentMethods();
+  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
 
   const {
     register,
@@ -89,139 +111,113 @@ export function LogJobDialog() {
     reset,
     setValue,
     watch,
-    formState: { errors, isDirty, touchedFields },
-  } = useForm<JobFormValues>({ defaultValues: DEFAULT_VALUES });
+    formState: { errors, isDirty },
+  } = useForm<JobFormValues>({
+    defaultValues: form,
+  });
 
+  // Sync form when dialog opens; resolve payment_method_id from name when editing
   useEffect(() => {
     if (!isDialogOpen) return;
-    if (isEdit) {
-      reset({
-        work_order_date:
-          storeForm.work_order_date ?? new Date().toISOString().slice(0, 10),
-        work_title: storeForm.work_title ?? "",
-        category: storeForm.category ?? "",
-        description: storeForm.description ?? "",
-        address: storeForm.address ?? "",
-        region: storeForm.region ?? "",
-        technician_id: storeForm.technician_id ?? "",
-        parts_total_cost: String(storeForm.parts_total_cost ?? 0),
-        subtotal: String(storeForm.subtotal ?? 0),
-        tip_amount: String(storeForm.tip_amount ?? 0),
-        payment_method_id: storeForm.payment_method_id ?? "",
-        status: storeForm.status ?? "done",
-        notes: storeForm.notes ?? "",
-      });
-    } else {
-      reset(DEFAULT_VALUES);
+
+    let resolvedPaymentMethodId = form.payment_method_id ?? "";
+
+    // In edit mode v_jobs only supplies the payment method name, not the id.
+    // Resolve it once payment methods are loaded.
+    if (isEdit && !resolvedPaymentMethodId && form.payment_method) {
+      const match = paymentMethods.find(
+        (pm) =>
+          pm.name.toLowerCase() === (form.payment_method ?? "").toLowerCase(),
+      );
+      if (match) resolvedPaymentMethodId = match.id;
     }
-  }, [isDialogOpen, isEdit, storeForm, reset]);
 
-  const selectedTechId = watch("technician_id");
-  const subtotalVal = parseFloat(watch("subtotal") || "0");
-  const tipVal = parseFloat(watch("tip_amount") || "0");
-  const partsTotal = parseFloat(watch("parts_total_cost") || "0");
+    reset({ ...form, payment_method_id: resolvedPaymentMethodId });
+  }, [isDialogOpen, paymentMethods.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Calculate financials
-  const gross = subtotalVal;
-  const netRevenue = gross - partsTotal;
-  const tech = technicians.find((t) => t.technician_id === selectedTechId);
-  const commissionRate = tech?.commission ?? 0;
-  const commissionAmount = netRevenue * (commissionRate / 100);
-  const companyNet = netRevenue - commissionAmount;
-  const totalCollected = subtotalVal + tipVal;
+  const onSubmit = (data: JobFormValues) => {
+    setIsSubmitting(true);
+
+    const workOrder = {
+      work_title: data.work_title,
+      work_order_date: data.work_order_date,
+      technician_id: data.technician_id,
+      address: data.address || null,
+      category: data.category || null,
+      description: data.description || null,
+      notes: data.notes || null,
+      region: data.region || null,
+    };
+
+    const job = {
+      subtotal: Number(data.subtotal),
+      parts_total_cost: Number(data.parts_total_cost) || 0,
+      payment_method_id: data.payment_method_id || null,
+      status: data.status,
+      tip_amount: Number(data.tip_amount) || 0,
+    };
+
+    if (isEdit) {
+      editJob(
+        { workOrderId: form.work_order_id!, workOrder, job },
+        {
+          onSuccess: () => {
+            setTimeout(() => {
+              closeDialog();
+              setTimeout(() => {
+                resetEditMutation?.();
+                resetForm();
+                reset();
+                setIsSubmitting(false);
+              }, 300);
+            }, 1500);
+          },
+          onError: (err) => {
+            console.error("Error editing job:", err);
+            setIsSubmitting(false);
+          },
+        },
+      );
+    } else {
+      addJob(
+        { workOrder, job },
+        {
+          onSuccess: () => {
+            setTimeout(() => {
+              closeDialog();
+              setTimeout(() => {
+                resetAddMutation?.();
+                resetForm();
+                reset();
+                setIsSubmitting(false);
+              }, 300);
+            }, 1500);
+          },
+          onError: (err) => {
+            console.error("Error logging job:", err);
+            setIsSubmitting(false);
+          },
+        },
+      );
+    }
+  };
 
   const handleDelete = () => {
-    if (!storeForm.work_order_id) return;
-    softDeleteJob(storeForm.work_order_id as string, {
+    if (!form.work_order_id) return;
+    deleteJob(form.work_order_id, {
       onSuccess: () => {
         setIsConfirmDeleteOpen(false);
         setTimeout(() => {
           closeDialog();
           setTimeout(() => {
-            resetDeleteJobMutation?.();
+            resetDeleteMutation?.();
             resetForm();
-            reset(DEFAULT_VALUES);
+            reset();
           }, 300);
-        }, 1500);
+        }, 2000);
       },
     });
   };
-
-  const resetAll = () => {
-    resetAddJobMutation?.();
-    resetEditJobMutation?.();
-    resetForm();
-    reset(DEFAULT_VALUES);
-    setIsSubmitting(false);
-  };
-
-  const onSubmit = async (data: JobFormValues) => {
-    const parts_total_cost = parseFloat(data.parts_total_cost) || 0;
-    const subtotal = parseFloat(data.subtotal) || 0;
-    const tip_amount = parseFloat(data.tip_amount) || 0;
-
-    setIsSubmitting(true);
-
-    try {
-      if (isEdit) {
-        const payload: EditJobPayload = {
-          workOrderId: storeForm.work_order_id as string,
-          workOrder: {
-            work_order_date: data.work_order_date,
-            work_title: data.work_title || null,
-            category: data.category || null,
-            description: data.description || null,
-            address: data.address || null,
-            region: data.region || null,
-            technician_id: data.technician_id || null,
-            notes: data.notes || null,
-          },
-          job: {
-            parts_total_cost,
-            subtotal,
-            tip_amount,
-            payment_method_id: data.payment_method_id || null,
-            status: data.status as "pending" | "done" | "cancelled",
-          },
-        };
-        await editJobAsync(payload);
-      } else {
-        const payload: AddJobPayload = {
-          workOrder: {
-            work_order_date: data.work_order_date,
-            work_title: data.work_title || null,
-            category: data.category || null,
-            description: data.description || null,
-            address: data.address || null,
-            region: data.region || null,
-            technician_id: data.technician_id || null,
-            notes: data.notes || null,
-          },
-          job: {
-            parts_total_cost,
-            subtotal,
-            tip_amount,
-            payment_method_id: data.payment_method_id || null,
-            status: data.status as "pending" | "done" | "cancelled",
-          },
-        };
-        await addJobAsync(payload);
-      }
-
-      setTimeout(() => {
-        closeDialog();
-        setTimeout(resetAll, 300);
-      }, 1500);
-    } catch (err) {
-      console.error("Error logging job:", err);
-      setIsSubmitting(false);
-    }
-  };
-
-  const showFeedback = isDeleteSuccess || isJobSuccess || isJobError;
-
-  const fmt = (n: number) =>
-    new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n);
 
   return (
     <>
@@ -229,31 +225,33 @@ export function LogJobDialog() {
         open={isDialogOpen}
         onOpenChange={(newOpen) => {
           if (newOpen) {
-            resetAddJobMutation?.();
-            resetEditJobMutation?.();
+            resetAddMutation?.();
+            resetEditMutation?.();
             openAdd();
           } else {
             closeDialog();
           }
         }}
       >
-        <DialogTrigger asChild>
-          <Button onClick={openAdd}>
-            <Briefcase className="mr-2 h-4 w-4" />
-            Log Job
-          </Button>
-        </DialogTrigger>
+        {showTrigger ? (
+          <DialogTrigger asChild>
+            <Button onClick={openAdd}>
+              <Briefcase className="mr-2 h-4 w-4" />
+              Log Job
+            </Button>
+          </DialogTrigger>
+        ) : null}
 
-        <DialogContent className="sm:max-w-xl" onCloseAutoFocus={(e) => e.preventDefault()}>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
           <DialogHeader>
             <DialogTitle>
               {isDeleteSuccess
-                ? "Job Removed"
-                : isJobSuccess
+                ? "Job Hidden"
+                : isSuccess
                   ? isEdit
                     ? "Job Updated!"
                     : "Job Logged!"
-                  : isJobError
+                  : isError
                     ? isEdit
                       ? "Error Updating Job"
                       : "Error Logging Job"
@@ -263,315 +261,398 @@ export function LogJobDialog() {
             </DialogTitle>
             <DialogDescription>
               {isDeleteSuccess
-                ? "The job has been removed from all views."
-                : isJobSuccess
+                ? "The job has been hidden from all views."
+                : isSuccess
                   ? isEdit
-                    ? "Job has been updated successfully."
-                    : "Job has been recorded successfully."
-                  : isJobError
-                    ? `Something went wrong: ${jobError?.message || "Unknown error"}`
+                    ? "Job updated successfully."
+                    : "The job has been successfully recorded."
+                  : isError
+                    ? "Something went wrong: " +
+                      (error?.message ?? "Unknown error")
                     : isEdit
-                      ? "Update the details for this job."
-                      : "Record a completed or pending job for a technician."}
+                      ? "Update the work order and job details below."
+                      : "Fill in the work order and job details below."}
             </DialogDescription>
           </DialogHeader>
 
-          {showFeedback ? (
-            <div className="py-8 text-center">
-              {isJobSuccess && (
-                <div className="text-sm text-emerald-600 dark:text-emerald-400">✓ Success</div>
-              )}
-              {isDeleteSuccess && (
-                <div className="text-sm text-emerald-600 dark:text-emerald-400">✓ Job deleted</div>
-              )}
-              {isJobError && (
-                <div className="text-sm text-red-600 dark:text-red-400">✗ Error: {jobError?.message}</div>
-              )}
-              <Spinner className="mx-auto mt-4" />
+          {isDeleteSuccess ? (
+            <div className="flex flex-col items-center gap-2 py-8">
+              <div className="rounded-full bg-amber-100 p-3 dark:bg-amber-900/30">
+                <Trash2 className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+              </div>
+              <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
+                Job hidden successfully.
+              </p>
+              <p className="text-xs text-center text-zinc-500 dark:text-zinc-400">
+                It has been removed from all views but its data remains in the
+                database.
+              </p>
+            </div>
+          ) : isSuccess ? (
+            <div className="flex flex-col items-center gap-2 py-8">
+              <div className="rounded-full bg-emerald-100 p-3 dark:bg-emerald-900/30">
+                <Briefcase className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
+                {isEdit
+                  ? "Job updated successfully!"
+                  : "Job logged successfully!"}
+              </p>
+            </div>
+          ) : isError ? (
+            <div className="flex flex-col items-center gap-2 py-8">
+              <div className="rounded-full bg-red-100 p-3 dark:bg-red-900/30">
+                <Briefcase className="h-6 w-6 text-red-600 dark:text-red-400" />
+              </div>
+              <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
+                Something went wrong: {error?.message || "Unknown error"}
+              </p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit(onSubmit)} className="grid">
-              <div className="overflow-y-auto max-h-[75vh] space-y-4 py-2 px-2">
-                {/* Basic Fields */}
-                <div className="grid grid-cols-2 gap-4">
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              className="flex flex-col flex-1 min-h-0"
+            >
+              <div className="overflow-y-auto flex-1 grid gap-6 py-2 pl-2 pr-1">
+                {/* ── Work Order Section ─────────────────────────── */}
+                <div className="grid gap-4">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                    Work Order
+                  </h3>
+
+                  {/* Work Title */}
                   <div className="space-y-2">
-                    <Label htmlFor="work_order_date">Date *</Label>
+                    <Label htmlFor="job-work-title">Work Title</Label>
                     <Input
-                      id="work_order_date"
-                      type="date"
-                      disabled={isSubmitting}
-                      {...register("work_order_date", { required: "Date is required" })}
+                      id="job-work-title"
+                      placeholder="e.g. HVAC Installation"
+                      disabled={isPending}
+                      {...register("work_title", {
+                        required: "Work title is required",
+                      })}
                     />
-                    {errors.work_order_date && (
-                      <p className="text-xs text-red-600">{errors.work_order_date.message}</p>
+                    {errors.work_title && (
+                      <p className="text-xs text-red-500">
+                        {errors.work_title.message}
+                      </p>
                     )}
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="technician_id">Technician</Label>
-                    <Select
-                      value={watch("technician_id")}
-                      onValueChange={(v) => setValue("technician_id", v, { shouldDirty: true })}
-                      disabled={isSubmitting || techLoading}
-                    >
-                      <SelectTrigger id="technician_id">
-                        <SelectValue placeholder="Select technician" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {technicians.map((t) => (
-                          <SelectItem key={t.technician_id} value={t.technician_id}>
-                            {t.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="work_title">Job Title *</Label>
-                  <Input
-                    id="work_title"
-                    placeholder="e.g., Heating System Repair"
-                    disabled={isSubmitting}
-                    {...register("work_title", { required: "Job title is required" })}
-                  />
-                  {errors.work_title && (
-                    <p className="text-xs text-red-600">{errors.work_title.message}</p>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="category">Category</Label>
-                    <Input
-                      id="category"
-                      placeholder="e.g., HVAC"
-                      disabled={isSubmitting}
-                      {...register("category")}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="status">Status</Label>
-                    <Select
-                      value={watch("status")}
-                      onValueChange={(v) => setValue("status", v as any, { shouldDirty: true })}
-                    >
-                      <SelectTrigger id="status">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="done">Done</SelectItem>
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="cancelled">Cancelled</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    placeholder="Service description..."
-                    rows={2}
-                    disabled={isSubmitting}
-                    {...register("description")}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="address">Address</Label>
-                    <Input
-                      id="address"
-                      placeholder="Street address"
-                      disabled={isSubmitting}
-                      {...register("address")}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="region">Region</Label>
-                    <Input
-                      id="region"
-                      placeholder="City/Region"
-                      disabled={isSubmitting}
-                      {...register("region")}
-                    />
-                  </div>
-                </div>
-
-                {/* Financial Fields */}
-                <div className="border-t border-zinc-200 pt-4 dark:border-zinc-800">
-                  <h4 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-                    Financials
-                  </h4>
-
-                  <div className="grid grid-cols-3 gap-3">
+                  {/* Date & Technician */}
+                  <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="subtotal">Subtotal *</Label>
+                      <Label htmlFor="job-date">Work Order Date</Label>
                       <Input
-                        id="subtotal"
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        placeholder="0.00"
-                        disabled={isSubmitting}
-                        {...register("subtotal", { required: "Subtotal is required" })}
+                        id="job-date"
+                        type="date"
+                        disabled={isPending}
+                        {...register("work_order_date", {
+                          required: "Date is required",
+                        })}
                       />
-                      {errors.subtotal && (
-                        <p className="text-xs text-red-600">{errors.subtotal.message}</p>
+                      {errors.work_order_date && (
+                        <p className="text-xs text-red-500">
+                          {errors.work_order_date.message}
+                        </p>
                       )}
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="parts_total_cost">Parts Cost</Label>
+                      <Label htmlFor="job-technician">Technician</Label>
+                      <Select
+                        disabled={isPending}
+                        value={watch("technician_id")}
+                        onValueChange={(v) =>
+                          setValue("technician_id", v, { shouldDirty: true })
+                        }
+                      >
+                        <SelectTrigger id="job-technician" className="w-full">
+                          <SelectValue placeholder="Select technician" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {technicians.map((t) => (
+                            <SelectItem key={t.id} value={t.id ?? ""}>
+                              {t.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <input
+                        type="hidden"
+                        {...register("technician_id", {
+                          required: "Technician is required",
+                        })}
+                      />
+                      {errors.technician_id && (
+                        <p className="text-xs text-red-500">
+                          {errors.technician_id.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Category & Region */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="job-category">
+                        Category{" "}
+                        <span className="text-zinc-400 text-xs">
+                          (optional)
+                        </span>
+                      </Label>
                       <Input
-                        id="parts_total_cost"
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        placeholder="0.00"
-                        disabled={isSubmitting}
-                        {...register("parts_total_cost")}
+                        id="job-category"
+                        placeholder="e.g. HVAC"
+                        disabled={isPending}
+                        {...register("category")}
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="tip_amount">Tip</Label>
+                      <Label htmlFor="job-region">
+                        Region{" "}
+                        <span className="text-zinc-400 text-xs">
+                          (optional)
+                        </span>
+                      </Label>
                       <Input
-                        id="tip_amount"
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        placeholder="0.00"
-                        disabled={isSubmitting}
-                        {...register("tip_amount")}
+                        id="job-region"
+                        placeholder="e.g. North"
+                        disabled={isPending}
+                        {...register("region")}
                       />
                     </div>
                   </div>
 
-                  {(touchedFields.parts_total_cost || touchedFields.subtotal) &&
-                    partsTotal > subtotalVal && (
-                      <p className="mt-2 rounded-md bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">
-                        ⚠ Parts cost (${partsTotal.toFixed(2)}) exceeds the job subtotal ($
-                        {subtotalVal.toFixed(2)}). This will result in a negative net revenue.
-                      </p>
-                    )}
+                  {/* Address */}
+                  <div className="space-y-2">
+                    <Label htmlFor="job-address">
+                      Address{" "}
+                      <span className="text-zinc-400 text-xs">(optional)</span>
+                    </Label>
+                    <Input
+                      id="job-address"
+                      placeholder="123 Main St"
+                      disabled={isPending}
+                      {...register("address")}
+                    />
+                  </div>
 
-                  <div className="mt-3 space-y-2 rounded-md bg-zinc-50 p-3 dark:bg-zinc-800/50">
-                    <div className="flex justify-between text-xs">
-                      <span className="text-zinc-600 dark:text-zinc-400">Gross Revenue:</span>
-                      <span className="font-medium text-zinc-900 dark:text-zinc-50">
-                        {fmt(gross)}
-                      </span>
+                  {/* Description */}
+                  <div className="space-y-2">
+                    <Label htmlFor="job-description">
+                      Description{" "}
+                      <span className="text-zinc-400 text-xs">(optional)</span>
+                    </Label>
+                    <Textarea
+                      id="job-description"
+                      placeholder="Describe the work performed..."
+                      disabled={isPending}
+                      {...register("description")}
+                    />
+                  </div>
+
+                  {/* Notes */}
+                  <div className="space-y-2">
+                    <Label htmlFor="job-notes">
+                      Notes{" "}
+                      <span className="text-zinc-400 text-xs">(optional)</span>
+                    </Label>
+                    <Textarea
+                      id="job-notes"
+                      placeholder="Any additional notes..."
+                      disabled={isPending}
+                      {...register("notes")}
+                    />
+                  </div>
+                </div>
+
+                {/* ── Job Financials Section ─────────────────────── */}
+                <div className="grid gap-4">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                    Job Financials
+                  </h3>
+
+                  {/* Subtotal & Parts Cost */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="job-subtotal">Subtotal ($)</Label>
+                      <Input
+                        id="job-subtotal"
+                        type="number"
+                        inputMode="decimal"
+                        min="0"
+                        step="0.01"
+                        placeholder="0.00"
+                        disabled={isPending}
+                        {...register("subtotal", {
+                          required: "Subtotal is required",
+                          min: { value: 0, message: "Subtotal must be ≥ 0" },
+                          valueAsNumber: true,
+                        })}
+                      />
+                      {errors.subtotal && (
+                        <p className="text-xs text-red-500">
+                          {errors.subtotal.message}
+                        </p>
+                      )}
                     </div>
-                    <div className="flex justify-between text-xs">
-                      <span className="text-zinc-600 dark:text-zinc-400">Net Revenue:</span>
-                      <span
-                        className={
-                          netRevenue < 0
-                            ? "font-medium text-red-600 dark:text-red-400"
-                            : "font-medium text-zinc-900 dark:text-zinc-50"
-                        }
-                      >
-                        {fmt(netRevenue)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-xs">
-                      <span className="text-zinc-600 dark:text-zinc-400">
-                        Tech Commission ({commissionRate}%):
-                      </span>
-                      <span className="font-medium text-zinc-900 dark:text-zinc-50">
-                        {fmt(commissionAmount)}
-                      </span>
-                    </div>
-                    <div className="border-t border-zinc-200 pt-2 dark:border-zinc-700">
-                      <div className="flex justify-between text-xs font-semibold">
-                        <span className="text-zinc-900 dark:text-zinc-50">Company Net:</span>
-                        <span
-                          className={
-                            companyNet < 0
-                              ? "text-red-600 dark:text-red-400"
-                              : "text-emerald-600 dark:text-emerald-400"
-                          }
-                        >
-                          {fmt(companyNet)}
+
+                    <div className="space-y-2">
+                      <Label htmlFor="job-parts-cost">
+                        Parts Cost ($){" "}
+                        <span className="text-zinc-400 text-xs">
+                          (optional)
                         </span>
-                      </div>
+                      </Label>
+                      <Input
+                        id="job-parts-cost"
+                        type="number"
+                        inputMode="decimal"
+                        min="0"
+                        step="0.01"
+                        placeholder="0.00"
+                        disabled={isPending}
+                        {...register("parts_total_cost", {
+                          min: { value: 0, message: "Parts cost must be ≥ 0" },
+                          valueAsNumber: true,
+                        })}
+                      />
+                      {errors.parts_total_cost && (
+                        <p className="text-xs text-red-500">
+                          {errors.parts_total_cost.message}
+                        </p>
+                      )}
                     </div>
                   </div>
 
-                  <div className="mt-3 space-y-2">
-                    <Label htmlFor="payment_method_id">Payment Method</Label>
+                  {/* Tip & Payment Method */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="job-tip">
+                        Tip ($){" "}
+                        <span className="text-zinc-400 text-xs">
+                          (optional)
+                        </span>
+                      </Label>
+                      <Input
+                        id="job-tip"
+                        type="number"
+                        inputMode="decimal"
+                        min="0"
+                        step="0.01"
+                        placeholder="0.00"
+                        disabled={isPending}
+                        {...register("tip_amount", {
+                          min: { value: 0, message: "Tip must be ≥ 0" },
+                          valueAsNumber: true,
+                        })}
+                      />
+                      {errors.tip_amount && (
+                        <p className="text-xs text-red-500">
+                          {errors.tip_amount.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="job-payment-method">
+                        Payment Method{" "}
+                        <span className="text-zinc-400 text-xs">
+                          (optional)
+                        </span>
+                      </Label>
+                      <Select
+                        disabled={isPending}
+                        value={watch("payment_method_id")}
+                        onValueChange={(v) =>
+                          setValue("payment_method_id", v, {
+                            shouldDirty: true,
+                          })
+                        }
+                      >
+                        <SelectTrigger
+                          id="job-payment-method"
+                          className="w-full"
+                        >
+                          <SelectValue placeholder="Select method" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {paymentMethods.map((pm) => (
+                            <SelectItem key={pm.id} value={pm.id}>
+                              {pm.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {/* Status */}
+                  <div className="space-y-2">
+                    <Label htmlFor="job-status">Status</Label>
                     <Select
-                      value={watch("payment_method_id")}
+                      disabled={isPending}
+                      value={watch("status")}
                       onValueChange={(v) =>
-                        setValue("payment_method_id", v, { shouldDirty: true })
+                        setValue("status", v as (typeof JOB_STATUSES)[number], {
+                          shouldDirty: true,
+                        })
                       }
-                      disabled={isSubmitting || paymentLoading}
                     >
-                      <SelectTrigger id="payment_method_id">
-                        <SelectValue placeholder="Select payment method" />
+                      <SelectTrigger id="job-status" className="w-full">
+                        <SelectValue placeholder="Select status" />
                       </SelectTrigger>
                       <SelectContent>
-                        {paymentMethods.map((pm) => (
-                          <SelectItem key={pm.id} value={pm.id}>
-                            {pm.name}
+                        {JOB_STATUSES.map((s) => (
+                          <SelectItem key={s} value={s}>
+                            {s.charAt(0).toUpperCase() + s.slice(1)}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
-
-                {/* Notes */}
-                <div className="space-y-2">
-                  <Label htmlFor="notes">Notes</Label>
-                  <Textarea
-                    id="notes"
-                    placeholder="Service details, observations..."
-                    rows={2}
-                    disabled={isSubmitting}
-                    {...register("notes")}
-                  />
-                </div>
               </div>
 
-              <DialogFooter className="flex-row items-center justify-between gap-2 pt-4 sm:justify-between">
+              <DialogFooter className="flex-row items-center justify-between sm:justify-between">
                 {isEdit && (
                   <Button
                     type="button"
                     variant="destructive"
-                    size="sm"
-                    disabled={isSubmitting || isDeletePending}
+                    disabled={isSubmitting || isPending || isDeletePending}
                     onClick={() => setIsConfirmDeleteOpen(true)}
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
                     Delete
                   </Button>
                 )}
-                <div className="ml-auto flex gap-2">
+                <div className="flex gap-2 ml-auto">
                   <Button
                     type="button"
                     variant="outline"
-                    size="sm"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || isPending}
                     onClick={() => {
                       closeDialog();
-                      reset(DEFAULT_VALUES);
+                      resetForm();
+                      reset();
                     }}
                   >
                     Cancel
                   </Button>
-                  <Button type="submit" size="sm" disabled={isSubmitting || !isDirty}>
-                    {isSubmitting
-                      ? "Saving…"
+                  <Button
+                    type="submit"
+                    disabled={
+                      isSubmitting || isPending || isSuccess || !isDirty
+                    }
+                  >
+                    {isSubmitting || isPending
+                      ? isEdit
+                        ? "Saving..."
+                        : "Logging..."
                       : isEdit
-                        ? "Update Job"
-                        : "Save Job"}
+                        ? "Save Changes"
+                        : "Log Job"}
                   </Button>
                 </div>
               </DialogFooter>
@@ -580,35 +661,36 @@ export function LogJobDialog() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={isConfirmDeleteOpen} onOpenChange={setIsConfirmDeleteOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete Job</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete this job? This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsConfirmDeleteOpen(false)}
-              disabled={isDeletePending}
-            >
+      <AlertDialog
+        open={isConfirmDeleteOpen}
+        onOpenChange={setIsConfirmDeleteOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Hide this job?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This job will be hidden from all views and reports but{" "}
+              <span className="font-medium text-zinc-900 dark:text-zinc-50">
+                not permanently deleted
+              </span>
+              . Its data will remain in the database and can be restored if
+              needed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeletePending}>
               Cancel
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
+            </AlertDialogCancel>
+            <AlertDialogAction
               onClick={handleDelete}
               disabled={isDeletePending}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600 dark:bg-red-700 dark:hover:bg-red-800"
             >
-              {isDeletePending ? "Deleting…" : "Delete"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+              {isDeletePending ? "Hiding..." : "Yes, hide job"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
