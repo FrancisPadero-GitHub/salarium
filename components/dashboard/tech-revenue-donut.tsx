@@ -11,6 +11,7 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { useFetchJobDetailed } from "@/hooks/jobs/useFetchJobs";
+import { useFetchTechSummary } from "@/hooks/technicians/useFetchTechSummary";
 
 const COLORS = [
   "var(--chart-1)",
@@ -22,13 +23,23 @@ const COLORS = [
 
 export function TechRevenueDonut() {
   const { data: jobs = [] } = useFetchJobDetailed();
+  const { data: techSummaries = [] } = useFetchTechSummary();
+
+  const techNameMap = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const t of techSummaries)
+      if (t.technician_id && t.name) m.set(t.technician_id, t.name);
+    return m;
+  }, [techSummaries]);
 
   const chartData = useMemo(() => {
     const techData: Record<string, number> = {};
 
     jobs.forEach((job) => {
-      const tech = job.technician_name || "Unassigned";
-      techData[tech] = (techData[tech] || 0) + (job.gross || 0);
+      const tech = job.technician_id
+        ? (techNameMap.get(job.technician_id) ?? "Unassigned")
+        : "Unassigned";
+      techData[tech] = (techData[tech] || 0) + (job.subtotal || 0);
     });
 
     return Object.entries(techData).map(([name, value]) => ({

@@ -12,17 +12,15 @@ import {
 import { estimateStatusData } from "@/data/chart-data";
 
 const chartConfig = {
-  Pending: { label: "Pending", color: "oklch(0.795 0.184 86.047)" },
-  Approved: { label: "Approved", color: "oklch(0.765 0.177 163.223)" },
-  Converted: { label: "Converted", color: "var(--chart-1)" },
-  Rejected: { label: "Rejected", color: "oklch(0.637 0.237 25.331)" },
+  follow_up: { label: "Follow Up", color: "oklch(0.795 0.184 86.047)" },
+  approved: { label: "Approved", color: "oklch(0.765 0.177 163.223)" },
+  denied: { label: "Denied", color: "oklch(0.637 0.237 25.331)" },
 } satisfies ChartConfig;
 
 const COLORS = [
-  "var(--color-Pending)",
-  "var(--color-Approved)",
-  "var(--color-Converted)",
-  "var(--color-Rejected)",
+  "var(--color-follow_up)",
+  "var(--color-approved)",
+  "var(--color-denied)",
 ];
 
 export function EstimateStatusChart() {

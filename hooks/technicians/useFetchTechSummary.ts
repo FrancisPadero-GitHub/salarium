@@ -3,14 +3,13 @@ import { supabase } from "@/lib/supabase";
 import type { Database } from "@/database.types";
 
 export type TechnicianSummaryRow =
-  Database["public"]["Views"]["v_technician_summary"]["Row"];
+  Database["public"]["Views"]["v_technicians_summary"]["Row"];
 
 // Data fetching function
 export const fetchTechSummary = async (): Promise<TechnicianSummaryRow[]> => {
   const { data: result, error } = await supabase
-    .from("v_technician_summary")
-    .select("*")
-    .order("created_at", { ascending: false });
+    .from("v_technicians_summary")
+    .select("*");
 
   if (error) {
     throw new Error(error.message || "Failed to fetch technician summary");

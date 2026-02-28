@@ -28,8 +28,7 @@ interface TechnicianStore {
 const defaultForm: TechnicianInsert = {
   name: "",
   email: "",
-  phone: "",
-  default_commission_rate: 0.0,
+  commission: 0,
   hired_date: new Date().toISOString().slice(0, 10),
 };
 
@@ -58,8 +57,7 @@ export const useTechnicianStore = create<TechnicianStore>((set) => ({
         id: data.id,
         name: data.name,
         email: data.email,
-        phone: data.phone,
-        default_commission_rate: data.default_commission_rate,
+        commission: data.commission,
         hired_date: data.hired_date,
       },
       mode: "edit",

@@ -8,7 +8,8 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-import { useFetchJobFinancialBreakdown } from "@/hooks/jobs/useFetchJobsFinanceBreakdown";
+import { useFetchViewJobRow } from "@/hooks/jobs/useFetchJobTable";
+import { useFetchTechSummary } from "@/hooks/technicians/useFetchTechSummary";
 
 const PALETTE = [
   "var(--chart-1)",
@@ -22,21 +23,31 @@ const PALETTE = [
 ];
 
 export function TopJobsChart() {
-  const { data: jobs = [] } = useFetchJobFinancialBreakdown();
+  const { data: jobs = [] } = useFetchViewJobRow();
+  const { data: techSummaries = [] } = useFetchTechSummary();
+
+  const techNameMap = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const t of techSummaries)
+      if (t.technician_id && t.name) m.set(t.technician_id, t.name);
+    return m;
+  }, [techSummaries]);
 
   const data = useMemo(
     () =>
       [...jobs]
-        .sort((a, b) => (b.gross ?? 0) - (a.gross ?? 0))
+        .sort((a, b) => (b.subtotal ?? 0) - (a.subtotal ?? 0))
         .slice(0, 10)
         .map((j) => ({
-          label: j.job_name ?? j.category ?? "Unknown",
+          label: j.work_title ?? j.category ?? "Unknown",
           address: j.address ?? "Unknown",
-          tech: j.technician_name ?? "?",
-          gross: j.gross ?? 0,
+          tech: j.technician_id
+            ? (techNameMap.get(j.technician_id) ?? "?")
+            : "?",
+          gross: j.subtotal ?? 0,
           category: j.category ?? "Uncategorized",
         })),
-    [jobs],
+    [jobs, techNameMap],
   );
   const categoryColorMap = useMemo(() => {
     const map = new Map<string, string>();

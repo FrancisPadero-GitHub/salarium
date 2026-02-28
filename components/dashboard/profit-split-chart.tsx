@@ -11,7 +11,7 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { useFetchJobDetailed } from "@/hooks/jobs/useFetchJobs";
-import { useFetchTechSummary } from "@/hooks/technicians/useFetchTechSummary";
+import { useFetchTechnicians } from "@/hooks/technicians/useFetchTechnicians";
 
 const chartConfig = {
   "Company Net": { label: "Company Net", color: "var(--chart-1)" },
@@ -22,28 +22,28 @@ const COLORS = ["var(--chart-1)", "var(--chart-2)"];
 
 export function ProfitSplitChart() {
   const { data: jobs = [] } = useFetchJobDetailed();
-  const { data: technicians = [] } = useFetchTechSummary();
+  const { data: technicians = [] } = useFetchTechnicians();
 
   const chartData = useMemo(() => {
     const currentYear = new Date().getFullYear();
 
     // Calculate YTD totals from jobs
     const ytdJobs = jobs.filter((j) => {
-      const jobDate = new Date(j.job_date || "");
+      const jobDate = new Date(j.work_order_date || "");
       return jobDate.getFullYear() === currentYear;
     });
 
     const totalCompanyNet = ytdJobs.reduce(
-      (sum, j) => sum + (j.company_net || 0),
+      (sum, j) => sum + (j.total_company_net || 0),
       0,
     );
 
     // Calculate total commissions (tech pay) from jobs
     const totalTechPay = ytdJobs.reduce((sum, j) => {
-      const netRevenue = (j.gross || 0) - (j.parts_total_cost || 0);
+      const netRevenue = (j.subtotal || 0) - (j.parts_total_cost || 0);
       const commissionRate =
         technicians.find((t) => t.technician_id === j.technician_id)
-          ?.commission_rate || 0;
+          ?.commission || 0;
       return sum + netRevenue * (commissionRate / 100);
     }, 0);
 

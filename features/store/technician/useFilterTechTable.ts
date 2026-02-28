@@ -4,11 +4,11 @@ import { persist } from "zustand/middleware";
 export type CommissionFilter = "all" | "low" | "mid" | "high";
 export type SortKey =
   | "name"
-  | "commission_rate"
+  | "commission"
   | "total_jobs"
-  | "total_gross"
-  | "total_company_earned"
-  | "total_earned"
+  | "gross_revenue"
+  | "total_company_net"
+  | "total_commission_earned"
   | "hired_date";
 export type SortDir = "asc" | "desc";
 

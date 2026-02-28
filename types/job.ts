@@ -1,6 +1,6 @@
 export type PaymentMethod = "Cash" | "Check" | "Credit Card" | "Zelle";
 
-export type JobStatus = "Done" | "Cancelled" | "Pending";
+export type JobStatus = "pending" | "done" | "cancelled";
 
 export interface Job {
   id: string;

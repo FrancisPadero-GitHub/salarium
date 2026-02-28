@@ -1,9 +1,14 @@
 "use client";
+import { useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { Spinner } from "@/components/ui/spinner";
 
 // Hooks client side
 import { useFetchTechSummary } from "@/hooks/technicians/useFetchTechSummary";
+import {
+  useFetchTechnicians,
+  type TechnicianDetailRow,
+} from "@/hooks/technicians/useFetchTechnicians";
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
@@ -11,7 +16,29 @@ const fmt = (n: number) =>
   );
 
 export function TechnicianCardsGrid() {
-  const { data: technicians = [], isLoading, isError } = useFetchTechSummary();
+  const { data: summaries = [], isLoading, isError } = useFetchTechSummary();
+  const { data: techDetails = [] } = useFetchTechnicians();
+
+  /** Map technician_id → detail row for commission/email/hired_date */
+  const detailMap = useMemo(() => {
+    const m = new Map<string, TechnicianDetailRow>();
+    for (const d of techDetails) if (d.technician_id) m.set(d.technician_id, d);
+    return m;
+  }, [techDetails]);
+
+  const technicians = useMemo(
+    () =>
+      summaries.map((s) => {
+        const detail = s.technician_id ? detailMap.get(s.technician_id) : null;
+        return {
+          ...s,
+          commission: detail?.commission ?? null,
+          email: detail?.email ?? null,
+          hired_date: detail?.hired_date ?? null,
+        };
+      }),
+    [summaries, detailMap],
+  );
 
   if (isLoading)
     return (
@@ -63,8 +90,7 @@ export function TechnicianCardsGrid() {
                   Commission Rate
                 </p>
                 <p className="mt-0.5 text-lg font-bold text-zinc-900 dark:text-zinc-50">
-                  {/* Multiplies to 100 because the value is in decimal form (e.g. 0.25 = 25%) */}
-                  {tech.commission_rate} %
+                  {tech.commission ?? 0} %
                 </p>
               </div>
               <div>
@@ -80,7 +106,7 @@ export function TechnicianCardsGrid() {
                   Total Gross
                 </p>
                 <p className="mt-0.5 text-sm font-semibold tabular-nums text-zinc-800 dark:text-zinc-200">
-                  {fmt(tech.total_gross ?? 0)}
+                  {fmt(tech.gross_revenue ?? 0)}
                 </p>
               </div>
               <div>
@@ -88,7 +114,7 @@ export function TechnicianCardsGrid() {
                   Company Net Revenue Gained
                 </p>
                 <p className="mt-0.5 text-sm font-semibold tabular-nums text-cyan-800 dark:text-cyan-200">
-                  {fmt(tech.total_company_earned ?? 0)}
+                  {fmt(tech.total_company_net ?? 0)}
                 </p>
               </div>
               <div>
@@ -96,7 +122,7 @@ export function TechnicianCardsGrid() {
                   Tech Total Earned
                 </p>
                 <p className="mt-0.5 text-sm font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">
-                  {fmt(tech.total_earned ?? 0)}
+                  {fmt(tech.total_commission_earned ?? 0)}
                 </p>
               </div>
             </div>

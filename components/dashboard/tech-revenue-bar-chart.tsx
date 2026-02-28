@@ -10,7 +10,8 @@ import {
   ChartLegendContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-import { useFetchJobFinancialBreakdown } from "@/hooks/jobs/useFetchJobsFinanceBreakdown";
+import { useFetchViewJobRow } from "@/hooks/jobs/useFetchJobTable";
+import { useFetchTechSummary } from "@/hooks/technicians/useFetchTechSummary";
 
 const chartConfig = {
   companyNet: {
@@ -24,7 +25,15 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export function TechRevenueBarChart() {
-  const { data: jobs = [] } = useFetchJobFinancialBreakdown();
+  const { data: jobs = [] } = useFetchViewJobRow();
+  const { data: techSummaries = [] } = useFetchTechSummary();
+
+  const techNameMap = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const t of techSummaries)
+      if (t.technician_id && t.name) m.set(t.technician_id, t.name);
+    return m;
+  }, [techSummaries]);
 
   const data = useMemo(() => {
     const techRevenueMap: Record<
@@ -32,11 +41,13 @@ export function TechRevenueBarChart() {
       { companyNet: number; techPay: number }
     > = {};
     for (const j of jobs) {
-      const name = j.technician_name ?? "Unknown";
+      const name = j.technician_id
+        ? (techNameMap.get(j.technician_id) ?? "Unknown")
+        : "Unknown";
       if (!techRevenueMap[name])
         techRevenueMap[name] = { companyNet: 0, techPay: 0 };
-      techRevenueMap[name].companyNet += j.company_net ?? 0;
-      techRevenueMap[name].techPay += j.commission ?? 0;
+      techRevenueMap[name].companyNet += j.total_company_net ?? 0;
+      techRevenueMap[name].techPay += j.total_commission ?? 0;
     }
     return Object.entries(techRevenueMap)
       .map(([name, v]) => ({ name, ...v }))

@@ -1,26 +1,39 @@
 "use client";
 import { useMemo } from "react";
 import { Input } from "@/components/ui/input";
+import { useFetchTechSummary } from "@/hooks/technicians/useFetchTechSummary";
 import {
-  useFetchTechSummary,
-  type TechnicianSummaryRow,
-} from "@/hooks/technicians/useFetchTechSummary";
+  useFetchTechnicians,
+  type TechnicianDetailRow,
+} from "@/hooks/technicians/useFetchTechnicians";
 import { Spinner } from "@/components/ui/spinner";
 import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 import { useFilterTechTable } from "@/features/store/technician/useFilterTechTable";
 import { useTechnicianStore } from "@/features/store/technician/useFormTechnicianStore";
-import type { Database } from "@/database.types";
 
-type TechnicianRow = Database["public"]["Tables"]["technicians"]["Row"];
+/** Merged row combining v_technicians_summary + v_technicians detail fields */
+type MergedTechRow = {
+  technician_id: string | null;
+  name: string | null;
+  commission: number | null;
+  email: string | null;
+  hired_date: string | null;
+  total_jobs: number | null;
+  gross_revenue: number | null;
+  total_company_net: number | null;
+  total_commission_earned: number | null;
+  total_parts: number | null;
+  total_tips: number | null;
+};
 
 type SortKey = keyof Pick<
-  TechnicianSummaryRow,
+  MergedTechRow,
   | "name"
-  | "commission_rate"
+  | "commission"
   | "total_jobs"
-  | "total_gross"
-  | "total_company_earned"
-  | "total_earned"
+  | "gross_revenue"
+  | "total_company_net"
+  | "total_commission_earned"
   | "hired_date"
 >;
 
@@ -30,9 +43,39 @@ const fmt = (n: number) =>
   );
 
 export function TechnicianTable() {
-  const { data: technicians = [], isLoading, isError } = useFetchTechSummary();
+  const { data: summaries = [], isLoading, isError } = useFetchTechSummary();
+  const { data: techDetails = [] } = useFetchTechnicians();
 
   const openEdit = useTechnicianStore((state) => state.openEdit);
+
+  /** Map technician_id → detail row for commission/email/hired_date */
+  const detailMap = useMemo(() => {
+    const m = new Map<string, TechnicianDetailRow>();
+    for (const d of techDetails) if (d.technician_id) m.set(d.technician_id, d);
+    return m;
+  }, [techDetails]);
+
+  /** Merge summary + detail into a unified row */
+  const technicians: MergedTechRow[] = useMemo(
+    () =>
+      summaries.map((s) => {
+        const detail = s.technician_id ? detailMap.get(s.technician_id) : null;
+        return {
+          technician_id: s.technician_id,
+          name: s.name,
+          commission: detail?.commission ?? null,
+          email: detail?.email ?? null,
+          hired_date: detail?.hired_date ?? null,
+          total_jobs: s.total_jobs,
+          gross_revenue: s.gross_revenue,
+          total_company_net: s.total_company_net,
+          total_commission_earned: s.total_commission_earned,
+          total_parts: s.total_parts,
+          total_tips: s.total_tips,
+        };
+      }),
+    [summaries, detailMap],
+  );
 
   // Get filter state from Zustand store
   const search = useFilterTechTable((state) => state.search);
@@ -50,13 +93,13 @@ export function TechnicianTable() {
 
   const techCommissionRates = technicians.map((t) => ({
     name: t.name,
-    commission_rate: t.commission_rate,
+    commission: t.commission,
   }));
 
   // compute dynamic thresholds (33rd and 66th percentiles) for commission rate percentages
   const [p33, p66] = useMemo(() => {
     const rates = technicians
-      .map((t) => t.commission_rate ?? 0)
+      .map((t) => t.commission ?? 0)
       .sort((a, b) => a - b);
     if (rates.length === 0) return [20, 30];
     const percentile = (q: number) => {
@@ -96,10 +139,9 @@ export function TechnicianTable() {
         const matchesSearch =
           !q ||
           (t.name ?? "").toLowerCase().includes(q) ||
-          (t.email ?? "").toLowerCase().includes(q) ||
-          (t.phone ?? "").toLowerCase().includes(q);
+          (t.email ?? "").toLowerCase().includes(q);
 
-        const rate = t.commission_rate ?? 0;
+        const rate = t.commission ?? 0;
         const matchesCommission =
           commissionFilter === "all" ||
           (commissionFilter === "low" && rate < p33) ||
@@ -112,8 +154,8 @@ export function TechnicianTable() {
         let av = a[sortKey] ?? "";
         let bv = b[sortKey] ?? "";
 
-        // Invert commission_rate values for sorting since display shows 100 - value
-        if (sortKey === "commission_rate") {
+        // Invert commission values for sorting since display shows 100 - value
+        if (sortKey === "commission") {
           av = typeof av === "number" ? 100 - av : av;
           bv = typeof bv === "number" ? 100 - bv : bv;
         }
@@ -177,7 +219,7 @@ export function TechnicianTable() {
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
           <Input
-            placeholder="Search name, email, phone…"
+            placeholder="Search name, email…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="h-8 w-full text-sm sm:w-56"
@@ -208,11 +250,11 @@ export function TechnicianTable() {
               {(
                 [
                   { key: "name", label: "Name" },
-                  { key: "commission_rate", label: "Commission" },
+                  { key: "commission", label: "Commission" },
                   { key: "total_jobs", label: "Jobs" },
-                  { key: "total_gross", label: "Total Gross" },
-                  { key: "total_company_earned", label: "Company Net" },
-                  { key: "total_earned", label: "Tech Earned" },
+                  { key: "gross_revenue", label: "Total Gross" },
+                  { key: "total_company_net", label: "Company Net" },
+                  { key: "total_commission_earned", label: "Tech Earned" },
                   { key: "hired_date", label: "Hired" },
                 ] as { key: SortKey; label: string }[]
               ).map(({ key, label }) => (
@@ -251,13 +293,14 @@ export function TechnicianTable() {
                     key={tech.technician_id}
                     onClick={() =>
                       openEdit({
-                        id: tech.technician_id,
-                        name: tech.name,
-                        email: tech.email,
-                        phone: tech.phone,
-                        default_commission_rate: tech.commission_rate,
-                        hired_date: tech.hired_date,
-                      } as TechnicianRow)
+                        id: tech.technician_id ?? "",
+                        name: tech.name ?? "",
+                        email: tech.email ?? null,
+                        commission: tech.commission ?? 0,
+                        hired_date: tech.hired_date ?? null,
+                        created_at: "",
+                        deleted_at: null,
+                      })
                     }
                     className="cursor-pointer transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
                   >
@@ -274,7 +317,7 @@ export function TechnicianTable() {
                     </td>
                     {/* Commission */}
                     <td className="px-4 py-3 text-zinc-700 dark:text-zinc-300">
-                      {tech.commission_rate} %
+                      {tech.commission ?? 0} %
                     </td>
                     {/* Jobs */}
                     <td className="px-4 py-3 font-semibold text-zinc-900 dark:text-zinc-50">
@@ -282,15 +325,15 @@ export function TechnicianTable() {
                     </td>
                     {/* Total Gross */}
                     <td className="px-4 py-3 tabular-nums text-zinc-700 dark:text-zinc-300">
-                      {fmt(tech.total_gross ?? 0)}
+                      {fmt(tech.gross_revenue ?? 0)}
                     </td>
                     {/* Company Net */}
                     <td className="px-4 py-3 tabular-nums font-medium text-cyan-700 dark:text-cyan-400">
-                      {fmt(tech.total_company_earned ?? 0)}
+                      {fmt(tech.total_company_net ?? 0)}
                     </td>
                     {/* Tech Earned */}
                     <td className="px-4 py-3 tabular-nums font-medium text-emerald-600 dark:text-emerald-400">
-                      {fmt(tech.total_earned ?? 0)}
+                      {fmt(tech.total_commission_earned ?? 0)}
                     </td>
                     {/* Hired */}
                     <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">
@@ -300,14 +343,9 @@ export function TechnicianTable() {
                     </td>
                     {/* Contact */}
                     <td className="px-4 py-3">
-                      <div className="flex flex-col gap-0.5">
-                        <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                          {tech.email || "—"}
-                        </span>
-                        <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                          {tech.phone || "—"}
-                        </span>
-                      </div>
+                      <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                        {tech.email || "—"}
+                      </span>
                     </td>
                   </tr>
                 );

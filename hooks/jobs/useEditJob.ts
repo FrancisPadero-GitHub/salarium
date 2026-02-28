@@ -2,27 +2,44 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import type { Database } from "@/database.types";
 
+type WorkOrderUpdate = Database["public"]["Tables"]["work_orders"]["Update"];
 type JobUpdate = Database["public"]["Tables"]["jobs"]["Update"];
-type JobRow = Database["public"]["Tables"]["jobs"]["Row"];
 
-const dbEditJob = async (data: JobUpdate) => {
-  const { data: result, error } = await supabase
+export interface EditJobPayload {
+  workOrderId: string;
+  workOrder: WorkOrderUpdate;
+  job: JobUpdate;
+}
+
+const dbEditJob = async (payload: EditJobPayload) => {
+  // Update the work order
+  const { error: woError } = await supabase
+    .from("work_orders")
+    .update(payload.workOrder)
+    .eq("id", payload.workOrderId);
+
+  if (woError) {
+    throw new Error(woError.message || "Failed to update work order");
+  }
+
+  // Update the job
+  const { data: result, error: jobError } = await supabase
     .from("jobs")
-    .update(data)
-    .eq("id", data.id!)
+    .update(payload.job)
+    .eq("work_order_id", payload.workOrderId)
     .select()
     .single();
 
-  if (error) {
-    throw new Error(error.message || "Failed to edit job");
+  if (jobError) {
+    throw new Error(jobError.message || "Failed to update job");
   }
 
-  return result as JobRow;
+  return result;
 };
 
 export function useEditJob() {
   const queryClient = useQueryClient();
-  return useMutation<JobRow, Error, JobUpdate>({
+  return useMutation({
     mutationFn: dbEditJob,
     onSuccess: async (result) => {
       console.log("Job edited successfully:", result);
@@ -36,7 +53,7 @@ export function useEditJob() {
         type: "active",
       });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       console.error("Error editing job:", error.message || error);
     },
   });

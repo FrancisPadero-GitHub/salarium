@@ -23,7 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { technicians } from "@/data/technicians";
+import { useFetchTechnicians } from "@/hooks/technicians/useFetchTechnicians";
 import type { EstimateStatus } from "@/types/estimate";
 
 interface EstimateFormValues {
@@ -55,16 +55,19 @@ export function NewEstimateDialog() {
       technicianId: "",
       description: "",
       estimatedAmount: "",
-      status: "Pending",
+      status: "follow_up",
       handledBy: "",
       notes: "",
     },
   });
 
   const selectedTechId = watch("technicianId");
+  const { data: technicians = [] } = useFetchTechnicians();
 
   const onSubmit = (data: EstimateFormValues) => {
-    const techData = technicians.find((t) => t.id === data.technicianId);
+    const techData = technicians.find(
+      (t) => t.technician_id === data.technicianId,
+    );
 
     const estimate = {
       id: `est-${Date.now()}`,
@@ -138,13 +141,14 @@ export function NewEstimateDialog() {
                     <SelectValue placeholder="Select tech" />
                   </SelectTrigger>
                   <SelectContent>
-                    {technicians
-                      .filter((t) => t.active)
-                      .map((t) => (
-                        <SelectItem key={t.id} value={t.id}>
-                          {t.name}
-                        </SelectItem>
-                      ))}
+                    {technicians.map((t) => (
+                      <SelectItem
+                        key={t.technician_id}
+                        value={t.technician_id ?? ""}
+                      >
+                        {t.name}
+                      </SelectItem>
+                    ))}{" "}
                   </SelectContent>
                 </Select>
                 <input
@@ -223,10 +227,9 @@ export function NewEstimateDialog() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Pending">Pending</SelectItem>
-                    <SelectItem value="Approved">Approved</SelectItem>
-                    <SelectItem value="Rejected">Rejected</SelectItem>
-                    <SelectItem value="Converted">Converted</SelectItem>
+                    <SelectItem value="follow_up">Follow Up</SelectItem>
+                    <SelectItem value="approved">Approved</SelectItem>
+                    <SelectItem value="denied">Denied</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

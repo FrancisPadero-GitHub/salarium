@@ -9,6 +9,7 @@ const dbSoftDeleteTechnician = async (id: string) => {
     .from("technicians")
     .update({ deleted_at: new Date().toISOString() })
     .eq("id", id)
+    .select()
     .single();
 
   if (error) {

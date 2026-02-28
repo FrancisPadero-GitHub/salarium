@@ -11,6 +11,7 @@ const dbEditTechnician = async (data: TechnicianUpdate) => {
     .from("technicians")
     .update(data)
     .eq("id", data.id)
+    .select()
     .single();
 
   if (error) {

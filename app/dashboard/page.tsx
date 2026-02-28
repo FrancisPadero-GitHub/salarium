@@ -1,7 +1,7 @@
 "use client";
 
 import { TriangleAlert } from "lucide-react";
-import { useFetchJobDetailed } from "@/hooks/jobs/useFetchJobs";
+import { useFetchJobsV2 } from "@/hooks/jobs/useFetchJobsV2";
 import { useFetchTechSummary } from "@/hooks/technicians/useFetchTechSummary";
 import { RevenueTrendChart } from "@/components/dashboard/revenue-trend-chart";
 import { MonthlyComparisonChart } from "@/components/dashboard/monthly-comparison-chart";
@@ -11,7 +11,7 @@ import { DashboardKPIs } from "@/components/dashboard/dashboard-kpis";
 import { RecentJobsTable } from "@/components/dashboard/recent-jobs-table";
 
 export default function DashboardPage() {
-  const { isError: isJobsError, error: jobsError } = useFetchJobDetailed();
+  const { isError: isJobsError, error: jobsError } = useFetchJobsV2();
   const { isError: isTechniciansError, error: techniciansError } =
     useFetchTechSummary();
 

@@ -151,10 +151,9 @@ export const topJobs = [
 
 // ── Estimate status summary ────────────────────────────────────────────
 export const estimateStatusData = [
-  { status: "Pending", count: 4, value: 14164 },
-  { status: "Approved", count: 5, value: 6079 },
-  { status: "Converted", count: 2, value: 6201.5 },
-  { status: "Rejected", count: 1, value: 199 },
+  { status: "follow_up", count: 4, value: 14164 },
+  { status: "approved", count: 7, value: 12280.5 },
+  { status: "denied", count: 1, value: 199 },
 ];
 
 // ── Estimate value by technician ───────────────────────────────────────

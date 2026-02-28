@@ -11,9 +11,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
-import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
+import {
+  ChevronUp,
+  ChevronDown,
+  ChevronsUpDown,
+  SlidersHorizontal,
+  X,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useJobsStore } from "@/features/store/jobs/useFormJobStore";
-import { useFetchJobDetailed } from "@/hooks/jobs/useFetchJobs";
+import { useFetchViewJobRow } from "@/hooks/jobs/useFetchJobTable";
+import { useFetchTechSummary } from "@/hooks/technicians/useFetchTechSummary";
+import { useFetchTechnicians } from "@/hooks/technicians/useFetchTechnicians";
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
@@ -21,18 +30,17 @@ const fmt = (n: number) =>
   );
 
 type SortKey =
-  | "job_date"
+  | "work_order_date"
   | "address"
-  | "technician_name"
-  | "gross"
-  | "commission"
-  | "company_net"
-  | "payment_mode"
+  | "technician_id"
+  | "subtotal"
+  | "total_commission"
+  | "total_company_net"
+  | "payment_method"
   | "status";
 
 type SortDir = "asc" | "desc";
 type StatusFilter = "all" | "done" | "pending" | "cancelled";
-type PaymentFilter = "all" | "cash" | "credit card" | "check" | "zelle";
 type DynamicFilter = "all" | (string & {});
 
 const paymentColors: Record<string, string> = {
@@ -51,17 +59,59 @@ const statusColors: Record<string, string> = {
 };
 
 export function JobsTable() {
-  const { data: jobs = [], isLoading, isError } = useFetchJobDetailed();
+  const { data: jobs = [], isLoading, isError } = useFetchViewJobRow();
+  const { data: techSummary = [] } = useFetchTechSummary();
+  const { data: techDetails = [] } = useFetchTechnicians();
   const { openEdit } = useJobsStore();
+
+  // Build tech name & commission lookup maps
+  const techNameMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const t of techSummary) {
+      if (t.technician_id && t.name) map.set(t.technician_id, t.name);
+    }
+    return map;
+  }, [techSummary]);
+
+  const techCommissionMap = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const t of techDetails) {
+      if (t.technician_id) map.set(t.technician_id, t.commission ?? 0);
+    }
+    return map;
+  }, [techDetails]);
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-  const [paymentFilter, setPaymentFilter] = useState<PaymentFilter>("all");
+  const [paymentFilter, setPaymentFilter] = useState<DynamicFilter>("all");
   const [categoryFilter, setCategoryFilter] = useState<DynamicFilter>("all");
   const [technicianFilter, setTechnicianFilter] =
     useState<DynamicFilter>("all");
-  const [yearFilter, setYearFilter] = useState<DynamicFilter>("all");
-  const [sortKey, setSortKey] = useState<SortKey>("job_date");
+  const [sortKey, setSortKey] = useState<SortKey>("work_order_date");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [showFilters, setShowFilters] = useState(true);
+
+  const activeFilterCount = [
+    search !== "",
+    startDate !== "",
+    endDate !== "",
+    statusFilter !== "all",
+    paymentFilter !== "all",
+    categoryFilter !== "all",
+    technicianFilter !== "all",
+  ].filter(Boolean).length;
+
+  function clearFilters() {
+    setSearch("");
+    setStartDate("");
+    setEndDate("");
+    setStatusFilter("all");
+    setPaymentFilter("all");
+    setCategoryFilter("all");
+    setTechnicianFilter("all");
+  }
 
   const categories = useMemo(
     () =>
@@ -74,59 +124,68 @@ export function JobsTable() {
   const technicians = useMemo(
     () =>
       Array.from(
-        new Set(jobs.map((j) => j.technician_name).filter(Boolean)),
-      ).sort() as string[],
-    [jobs],
-  );
-
-  const years = useMemo(
-    () =>
-      Array.from(
         new Set(
           jobs
             .map((j) =>
-              j.job_date ? new Date(j.job_date).getFullYear() : null,
+              j.technician_id ? techNameMap.get(j.technician_id) : null,
             )
-            .filter((y): y is number => y !== null),
+            .filter(Boolean),
         ),
-      ).sort((a, b) => b - a),
-    [jobs],
+      ).sort() as string[],
+    [jobs, techNameMap],
   );
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
+    const startDateObj = startDate ? new Date(startDate) : null;
+    const endDateObj = endDate ? new Date(endDate) : null;
+
     return [...jobs]
       .filter((j) => {
+        const techName = j.technician_id
+          ? (techNameMap.get(j.technician_id) ?? "")
+          : "";
         const matchSearch =
           !q ||
           (j.address ?? "").toLowerCase().includes(q) ||
-          (j.technician_name ?? "").toLowerCase().includes(q) ||
+          techName.toLowerCase().includes(q) ||
           (j.region ?? "").toLowerCase().includes(q) ||
-          (j.job_name ?? "").toLowerCase().includes(q) ||
+          (j.work_title ?? "").toLowerCase().includes(q) ||
           (j.category ?? "").toLowerCase().includes(q);
         const matchStatus =
           statusFilter === "all" ||
           (j.status ?? "").toLowerCase() === statusFilter;
         const matchPayment =
           paymentFilter === "all" ||
-          (j.payment_mode ?? "").toLowerCase() === paymentFilter;
+          (j.payment_method ?? "").toLowerCase() ===
+            paymentFilter.toLowerCase();
         const matchCategory =
           categoryFilter === "all" || (j.category ?? "") === categoryFilter;
         const matchTechnician =
-          technicianFilter === "all" ||
-          (j.technician_name ?? "") === technicianFilter;
-        const matchYear =
-          yearFilter === "all" ||
-          (j.job_date
-            ? String(new Date(j.job_date).getFullYear()) === yearFilter
-            : false);
+          technicianFilter === "all" || techName === technicianFilter;
+
+        let matchDate = true;
+        if (startDateObj || endDateObj) {
+          const jobDate = j.work_order_date
+            ? new Date(j.work_order_date)
+            : null;
+          if (jobDate) {
+            if (startDateObj && jobDate < startDateObj) matchDate = false;
+            if (endDateObj) {
+              const endOfDay = new Date(endDateObj);
+              endOfDay.setHours(23, 59, 59, 999);
+              if (jobDate > endOfDay) matchDate = false;
+            }
+          }
+        }
+
         return (
           matchSearch &&
           matchStatus &&
           matchPayment &&
           matchCategory &&
           matchTechnician &&
-          matchYear
+          matchDate
         );
       })
       .sort((a, b) => {
@@ -147,9 +206,11 @@ export function JobsTable() {
     paymentFilter,
     categoryFilter,
     technicianFilter,
-    yearFilter,
     sortKey,
     sortDir,
+    startDate,
+    endDate,
+    techNameMap,
   ]);
 
   function handleSort(key: SortKey) {
@@ -183,12 +244,60 @@ export function JobsTable() {
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-2 sm:items-center">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowFilters((v) => !v)}
+            className="h-8 gap-1.5 text-xs"
+          >
+            <SlidersHorizontal className="h-3.5 w-3.5" />
+            {showFilters ? "Hide Filters" : "Show Filters"}
+            {!showFilters && activeFilterCount > 0 && (
+              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-zinc-800 text-[10px] font-semibold text-white dark:bg-zinc-200 dark:text-zinc-900">
+                {activeFilterCount}
+              </span>
+            )}
+          </Button>
+
+          {activeFilterCount > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearFilters}
+              className="h-8 gap-1.5 text-xs text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+            >
+              <X className="h-3.5 w-3.5" />
+              Clear filters
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Filters */}
+      {showFilters && (
+        <div className="flex flex-wrap gap-2 border-b border-zinc-200 p-4 dark:border-zinc-800">
           <Input
             placeholder="Search job, category, technician, address…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="h-8 w-full text-sm sm:w-56"
+          />
+
+          <Input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="h-8 w-full text-sm sm:w-40"
+            title="Start date"
+          />
+
+          <Input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            className="h-8 w-full text-sm sm:w-40"
+            title="End date"
           />
 
           <Select
@@ -208,17 +317,22 @@ export function JobsTable() {
 
           <Select
             value={paymentFilter}
-            onValueChange={(v) => setPaymentFilter(v as PaymentFilter)}
+            onValueChange={(v) => setPaymentFilter(v)}
           >
             <SelectTrigger size="sm" className="w-full sm:w-36">
               <SelectValue placeholder="Payment" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Payments</SelectItem>
-              <SelectItem value="cash">Cash</SelectItem>
-              <SelectItem value="credit card">Credit Card</SelectItem>
-              <SelectItem value="zelle">Zelle</SelectItem>
-              <SelectItem value="check">Check</SelectItem>
+              {Array.from(
+                new Set(jobs.map((j) => j.payment_method).filter(Boolean)),
+              )
+                .sort()
+                .map((pm) => (
+                  <SelectItem key={pm!} value={pm!}>
+                    {pm}
+                  </SelectItem>
+                ))}
             </SelectContent>
           </Select>
 
@@ -255,22 +369,8 @@ export function JobsTable() {
               ))}
             </SelectContent>
           </Select>
-
-          <Select value={yearFilter} onValueChange={(v) => setYearFilter(v)}>
-            <SelectTrigger size="sm" className="w-full sm:w-28">
-              <SelectValue placeholder="Year" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Years</SelectItem>
-              {years.map((y) => (
-                <SelectItem key={y} value={String(y)}>
-                  {y}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
         </div>
-      </div>
+      )}
 
       {/* Table body */}
       {isLoading ? (
@@ -282,22 +382,22 @@ export function JobsTable() {
           Failed to load jobs.
         </div>
       ) : (
-        <div className="min-h-96 max-h-96 overflow-x-auto">
+        <div className="min-h-96 max-h-1/2 overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="sticky top-0 border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
                 {(
                   [
-                    { key: "job_name", label: "Job Name" },
-                    { key: "description", label: "Description" },
-                    { key: "category", label: "Category" },
-                    { key: "job_date", label: "Date" },
+                    { key: "work_title" as SortKey, label: "Job Name" },
+                    { key: "description" as SortKey, label: "Description" },
+                    { key: "category" as SortKey, label: "Category" },
+                    { key: "work_order_date", label: "Date" },
                     { key: "address", label: "Address" },
-                    { key: "technician_name", label: "Technician" },
-                    { key: "gross", label: "Gross" },
-                    { key: "commission", label: "Commission" },
-                    { key: "company_net", label: "Company Net" },
-                    { key: "payment_mode", label: "Payment" },
+                    { key: "technician_id", label: "Technician" },
+                    { key: "subtotal", label: "Gross" },
+                    { key: "total_commission", label: "Commission" },
+                    { key: "total_company_net", label: "Company Net" },
+                    { key: "payment_method", label: "Payment" },
                     { key: "status", label: "Status" },
                   ] as { key: SortKey; label: string }[]
                 ).map(({ key, label }) => (
@@ -316,7 +416,7 @@ export function JobsTable() {
               {filtered.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={8}
+                    colSpan={11}
                     className="px-4 py-8 text-center text-sm text-zinc-400 dark:text-zinc-600"
                   >
                     No jobs match your filters.
@@ -325,16 +425,40 @@ export function JobsTable() {
               ) : (
                 filtered.map((job) => {
                   const statusKey = (job.status ?? "pending").toLowerCase();
-                  const paymentKey = (job.payment_mode ?? "").toLowerCase();
+                  const paymentKey = (job.payment_method ?? "").toLowerCase();
+                  const techName = job.technician_id
+                    ? (techNameMap.get(job.technician_id) ?? "—")
+                    : "—";
+                  const commRate = job.technician_id
+                    ? techCommissionMap.get(job.technician_id)
+                    : null;
                   return (
                     <tr
-                      key={job.id}
-                      onClick={() => openEdit(job)}
+                      key={job.work_order_id}
+                      onClick={() =>
+                        openEdit({
+                          work_order_id: job.work_order_id,
+                          work_title: job.work_title,
+                          description: job.description,
+                          work_order_date: job.work_order_date,
+                          technician_id: job.technician_id,
+                          category: job.category,
+                          address: job.address,
+                          region: job.region,
+                          payment_method_id: null, // v_jobs has payment_method name, not id
+                          payment_method: job.payment_method,
+                          parts_total_cost: job.parts_total_cost,
+                          subtotal: job.subtotal,
+                          tip_amount: job.tip_amount,
+                          notes: job.notes,
+                          status: job.status,
+                        })
+                      }
                       className="cursor-pointer transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
                     >
                       {/* Job Name */}
                       <td className="px-4 py-3 font-medium text-zinc-800 dark:text-zinc-200">
-                        {job.job_name ?? "—"}
+                        {job.work_title ?? "—"}
                       </td>
                       {/* Description */}
                       <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">
@@ -348,8 +472,8 @@ export function JobsTable() {
 
                       {/* Date */}
                       <td className="whitespace-nowrap px-4 py-3 text-zinc-500 dark:text-zinc-400">
-                        {job.job_date
-                          ? new Date(job.job_date).toLocaleDateString()
+                        {job.work_order_date
+                          ? new Date(job.work_order_date).toLocaleDateString()
                           : "—"}
                       </td>
                       {/* Address */}
@@ -365,32 +489,32 @@ export function JobsTable() {
                       <td className="whitespace-nowrap px-4 py-3">
                         <div className="flex items-center gap-2">
                           <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xs font-semibold text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-                            {(job.technician_name ?? "?")
+                            {(techName === "—" ? "?" : techName)
                               .split(" ")
                               .map((n) => n[0])
                               .join("")}
                           </div>
                           <span className="text-zinc-700 dark:text-zinc-300">
-                            {job.technician_name ?? "—"}
+                            {techName}
                           </span>
-                          {job.default_commission_rate != null && (
+                          {commRate != null && (
                             <span className="text-xs text-zinc-400">
-                              ({job.default_commission_rate}%)
+                              ({commRate}%)
                             </span>
                           )}
                         </div>
                       </td>
                       {/* Gross */}
                       <td className="px-4 py-3 tabular-nums font-medium text-zinc-900 dark:text-zinc-100">
-                        {fmt(job.gross ?? 0)}
+                        {fmt(job.subtotal ?? 0)}
                       </td>
                       {/* Commission */}
                       <td className="px-4 py-3 tabular-nums text-amber-600 dark:text-amber-400">
-                        {fmt(job.commission ?? 0)}
+                        {fmt(job.total_commission ?? 0)}
                       </td>
                       {/* Company Net */}
                       <td className="px-4 py-3 tabular-nums font-medium text-emerald-600 dark:text-emerald-400">
-                        {fmt(job.company_net ?? 0)}
+                        {fmt(job.total_company_net ?? 0)}
                       </td>
                       {/* Payment */}
                       <td className="px-4 py-3">
@@ -401,7 +525,7 @@ export function JobsTable() {
                               "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
                           )}
                         >
-                          {job.payment_mode ?? "—"}
+                          {job.payment_method ?? "—"}
                         </span>
                       </td>
                       {/* Status */}

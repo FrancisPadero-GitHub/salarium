@@ -14,7 +14,7 @@ export const estimates: Estimate[] = [
     technicianName: "Tamir",
     description: "Dryer pipe replacement, connect ducts to vents",
     estimatedAmount: 1850,
-    status: "Pending",
+    status: "follow_up",
   },
   {
     id: "est-2",
@@ -24,7 +24,7 @@ export const estimates: Estimate[] = [
     technicianName: "3 Bros (Sub)",
     description: "Rebuilt chimney from stucco",
     estimatedAmount: 8750,
-    status: "Pending",
+    status: "follow_up",
   },
   {
     id: "est-3",
@@ -34,8 +34,9 @@ export const estimates: Estimate[] = [
     technicianName: "Tamir",
     description: "Deep cleaning chimney, new cap, flushing",
     estimatedAmount: 1600,
-    status: "Pending",
+    status: "follow_up",
   },
+
   {
     id: "est-4",
     date: "2025-12-31",
@@ -44,7 +45,7 @@ export const estimates: Estimate[] = [
     technicianName: "Yotam",
     description: "Deep cleaning",
     estimatedAmount: 199,
-    status: "Rejected",
+    status: "denied",
     notes: "Customer did not proceed.",
   },
   {
@@ -55,7 +56,7 @@ export const estimates: Estimate[] = [
     technicianName: "Yotam",
     description: "Basic cleaning, sanitation, dryer cleaning",
     estimatedAmount: 350,
-    status: "Approved",
+    status: "approved",
   },
   {
     id: "est-6",
@@ -66,7 +67,7 @@ export const estimates: Estimate[] = [
     description:
       "AC unit deep cleaning, air duct deep cleaning, duct coating, UV light system, 5-year warranty",
     estimatedAmount: 1600,
-    status: "Approved",
+    status: "approved",
   },
   {
     id: "est-7",
@@ -76,7 +77,7 @@ export const estimates: Estimate[] = [
     technicianName: "3 Bros (Sub)",
     description: "Unclogged lint in the roof, two-story access",
     estimatedAmount: 400,
-    status: "Approved",
+    status: "approved",
   },
   {
     id: "est-8",
@@ -86,7 +87,7 @@ export const estimates: Estimate[] = [
     technicianName: "3 Bros (Sub)",
     description: "New vent installation",
     estimatedAmount: 880,
-    status: "Approved",
+    status: "approved",
   },
   {
     id: "est-9",
@@ -97,8 +98,7 @@ export const estimates: Estimate[] = [
     description:
       "Sanitation unit, sanitation main duct, UV light, deep cleaning & sanitation vents, coating",
     estimatedAmount: 2468,
-    status: "Converted",
-    convertedJobId: "job-1",
+    status: "approved",
   },
   {
     id: "est-10",
@@ -109,8 +109,7 @@ export const estimates: Estimate[] = [
     description:
       "New chase, new cap, crown repair, deep cleaning fireplace, fireplace repair",
     estimatedAmount: 3733.5,
-    status: "Converted",
-    convertedJobId: "job-2",
+    status: "approved",
   },
   {
     id: "est-11",
@@ -121,7 +120,7 @@ export const estimates: Estimate[] = [
     description:
       "Ducts deep cleaning & sanitation $540, basic cleaning air handler $54, deep cleaning air handler & blower + sanitation $375, duct coating $135, UV light ×2 $860",
     estimatedAmount: 1964,
-    status: "Pending",
+    status: "follow_up",
     handledBy: "Shalom",
   },
   {
@@ -132,6 +131,6 @@ export const estimates: Estimate[] = [
     technicianName: "3 Bros (Sub)",
     description: "New chase, new cap",
     estimatedAmount: 2849,
-    status: "Approved",
+    status: "approved",
   },
 ];

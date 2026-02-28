@@ -1,8 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import type { Database } from "@/database.types";
+/**
+ * Fetches own calculations based on the v_jobs view, allowing for flexible date range filtering.
+ * This is used for the summary cards on the dashboard, providing a more accurate financial breakdown.
+ * The v_jobs_summary view is not used here because it does not support dynamic date range filtering.
+ *
+ */
 
-export type VJobsRow = Database["public"]["Views"]["v_jobs"]["Row"];
+export type JobSummaryRow =
+  Database["public"]["Views"]["v_jobs_summary"]["Row"];
+
+type VJobsRow = Database["public"]["Views"]["v_jobs"]["Row"];
 
 export type JobsSummaryFilterMode =
   | "all"
@@ -131,30 +140,66 @@ const resolveDateRange = (filter?: JobsSummaryFilter): ResolvedDateRange => {
 };
 
 // Data fetching function
-export const fetchJobs = async (
+export const fetchJobSummary = async (
   filter?: JobsSummaryFilter,
-): Promise<VJobsRow[]> => {
-  let query = supabase.from("v_jobs").select("*");
+): Promise<JobSummaryRow> => {
+  let query = supabase
+    .from("v_jobs")
+    .select(
+      "work_order_id, work_order_date, subtotal, parts_total_cost, tip_amount, total_company_net",
+    )
+    .eq("status", "done");
 
   const { startDate, endDate } = resolveDateRange(filter);
   if (startDate) query = query.gte("work_order_date", startDate);
   if (endDate) query = query.lte("work_order_date", endDate);
 
-  const { data: result, error } = await query.order("work_order_date", {
-    ascending: false,
-  });
+  const { data: jobs, error } = await query;
 
   if (error) {
-    throw new Error(error.message || "Failed to fetch jobs");
+    throw new Error(error.message || "Failed to fetch job financial breakdown");
   }
 
-  return result as VJobsRow[];
+  const rows = (jobs ?? []) as Pick<
+    VJobsRow,
+    | "work_order_id"
+    | "subtotal"
+    | "parts_total_cost"
+    | "tip_amount"
+    | "total_company_net"
+  >[];
+
+  const summary = rows.reduce(
+    (acc, row) => {
+      const subtotal = row.subtotal ?? 0;
+      const partsCost = row.parts_total_cost ?? 0;
+
+      acc.total_jobs += row.work_order_id ? 1 : 0;
+      acc.technician_total_tips += row.tip_amount ?? 0;
+      acc.parts_total_cost += partsCost;
+      acc.gross_revenue += subtotal;
+      acc.net_revenue += subtotal - partsCost;
+      acc.total_company_net_earned += row.total_company_net ?? 0;
+
+      return acc;
+    },
+    {
+      total_jobs: 0,
+      technician_total_tips: 0,
+      parts_total_cost: 0,
+      gross_revenue: 0,
+      net_revenue: 0,
+      total_company_net_earned: 0,
+    },
+  );
+
+  return summary as JobSummaryRow;
 };
 
-export function useFetchJobDetailed(filter?: JobsSummaryFilter) {
-  return useQuery<VJobsRow[], Error>({
-    queryKey: ["jobs", "table-detailed", filter ?? null],
-    queryFn: () => fetchJobs(filter),
+export function useFetchJobsV2(filter?: JobsSummaryFilter) {
+  return useQuery<JobSummaryRow, Error>({
+    queryKey: ["jobs", "summary", filter ?? null],
+    queryFn: () => fetchJobSummary(filter),
     staleTime: 1000 * 60 * 2, // 2 minutes
     retry: 1,
   });

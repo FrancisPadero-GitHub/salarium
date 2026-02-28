@@ -33,8 +33,8 @@ export function RevenueTrendChart() {
     > = {};
 
     jobs.forEach((job) => {
-      if (job.job_date) {
-        const date = new Date(job.job_date).toLocaleDateString("en-US", {
+      if (job.work_order_date) {
+        const date = new Date(job.work_order_date).toLocaleDateString("en-US", {
           month: "short",
           day: "numeric",
         });
@@ -42,8 +42,8 @@ export function RevenueTrendChart() {
         if (!dailyData[date]) {
           dailyData[date] = { date, gross: 0, net: 0 };
         }
-        dailyData[date].gross += job.gross || 0;
-        dailyData[date].net += job.company_net || 0;
+        dailyData[date].gross += job.subtotal || 0;
+        dailyData[date].net += job.total_company_net || 0;
       }
     });
 

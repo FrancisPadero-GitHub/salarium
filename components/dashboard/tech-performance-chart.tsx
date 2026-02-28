@@ -35,9 +35,9 @@ export function TechPerformanceChart() {
     if (!technicians) return [];
     return technicians.map((tech) => ({
       name: tech.name || "Unknown",
-      gross: tech.total_gross || 0,
-      companyNet: tech.total_company_earned || 0,
-      parts: tech.total_parts_cost || 0,
+      gross: tech.gross_revenue || 0,
+      companyNet: tech.total_company_net || 0,
+      parts: tech.total_parts || 0,
     }));
   }, [technicians]);
 

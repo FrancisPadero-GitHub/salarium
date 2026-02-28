@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { useFetchJobDetailed } from "@/hooks/jobs/useFetchJobs";
+import { useFetchTechSummary } from "@/hooks/technicians/useFetchTechSummary";
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
@@ -19,13 +20,21 @@ const paymentColors: Record<string, string> = {
 
 export function RecentJobsTable() {
   const { data: jobs = [] } = useFetchJobDetailed();
+  const { data: techSummaries = [] } = useFetchTechSummary();
+
+  const techNameMap = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const t of techSummaries)
+      if (t.technician_id && t.name) m.set(t.technician_id, t.name);
+    return m;
+  }, [techSummaries]);
 
   const recentJobs = useMemo(() => {
     return [...jobs]
       .sort(
         (a, b) =>
-          new Date(b.job_date || "").getTime() -
-          new Date(a.job_date || "").getTime(),
+          new Date(b.work_order_date || "").getTime() -
+          new Date(a.work_order_date || "").getTime(),
       )
       .slice(0, 5);
   }, [jobs]);
@@ -74,7 +83,7 @@ export function RecentJobsTable() {
             ) : (
               recentJobs.map((job, i) => (
                 <tr
-                  key={job.id}
+                  key={job.work_order_id}
                   className={cn(
                     "transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50",
                     i !== recentJobs.length - 1 &&
@@ -82,34 +91,39 @@ export function RecentJobsTable() {
                   )}
                 >
                   <td className="px-6 py-3 text-zinc-500 dark:text-zinc-400">
-                    {job.job_date
-                      ? new Date(job.job_date).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                        })
+                    {job.work_order_date
+                      ? new Date(job.work_order_date).toLocaleDateString(
+                          "en-US",
+                          {
+                            month: "short",
+                            day: "numeric",
+                          },
+                        )
                       : "—"}
                   </td>
                   <td className="px-6 py-3 font-medium text-zinc-800 dark:text-zinc-200">
                     {job.address || "—"}
                   </td>
                   <td className="px-6 py-3 text-zinc-600 dark:text-zinc-300">
-                    {job.technician_name || "—"}
+                    {job.technician_id
+                      ? (techNameMap.get(job.technician_id) ?? "—")
+                      : "—"}
                   </td>
                   <td className="px-6 py-3 tabular-nums text-zinc-800 dark:text-zinc-200">
-                    {fmt(job.gross || 0)}
+                    {fmt(job.subtotal || 0)}
                   </td>
                   <td className="px-6 py-3 tabular-nums text-emerald-600 dark:text-emerald-400">
-                    {fmt(job.company_net || 0)}
+                    {fmt(job.total_company_net || 0)}
                   </td>
                   <td className="px-6 py-3">
                     <span
                       className={cn(
                         "inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
-                        paymentColors[job.payment_mode || ""] ||
+                        paymentColors[job.payment_method || ""] ||
                           "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300",
                       )}
                     >
-                      {job.payment_mode || "—"}
+                      {job.payment_method || "—"}
                     </span>
                   </td>
                 </tr>

@@ -1,8 +1,11 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { TriangleAlert } from "lucide-react";
-import { useFetchJobDetailed } from "@/hooks/jobs/useFetchJobs";
-import { useFetchJobFinancialBreakdown } from "@/hooks/jobs/useFetchJobsFinanceBreakdown";
+import {
+  useFetchJobsV2,
+  type JobsSummaryFilter,
+} from "@/hooks/jobs/useFetchJobsV2";
 
 import { TopCategoriesChart } from "@/components/dashboard/job-top-categories";
 import { TechRevenueBarChart } from "@/components/dashboard/tech-revenue-bar-chart";
@@ -13,21 +16,42 @@ import { JobsErrorToast } from "@/components/toasts/jobs-error";
 import { JobSummaryCards } from "@/components/dashboard/job-summary-cards";
 
 export default function JobsPage() {
+  const now = new Date();
+  const [mode, setMode] = useState<JobsSummaryFilter["mode"]>("all");
+  const [year, setYear] = useState(String(now.getFullYear()));
+  const [month, setMonth] = useState(String(now.getMonth() + 1));
+  const [isoWeek, setIsoWeek] = useState("");
+  const [date, setDate] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+
+  const filter = useMemo<JobsSummaryFilter>(() => {
+    if (mode === "all") return { mode: "all" };
+    if (mode === "year") return { mode, year: Number(year) };
+    if (mode === "month")
+      return { mode, year: Number(year), month: Number(month) };
+    if (mode === "week") return { mode, isoWeek: isoWeek || undefined };
+    if (mode === "day") return { mode, date: date || undefined };
+    return {
+      mode: "range",
+      startDate: startDate || undefined,
+      endDate: endDate || undefined,
+    };
+  }, [mode, year, month, isoWeek, date, startDate, endDate]);
+
+  const { isError: isJobsError, error: jobsError } = useFetchJobsV2(filter);
   const {
-    data: jobsDetailedTable = [],
-    isError: isJobsError,
-    error: jobsError,
-  } = useFetchJobDetailed();
-  const {
-    data: jobFinancialBreakdown = [],
-    isError: isBreakdownError,
-    error: breakdownError,
-  } = useFetchJobFinancialBreakdown();
+    data: summary,
+    isError: jobSummaryError,
+    error: jobSummaryErrorMessage,
+  } = useFetchJobsV2(filter);
 
   const errorMessage =
-    jobsError?.message || breakdownError?.message || "Failed to fetch jobs";
+    jobsError?.message ||
+    jobSummaryErrorMessage?.message ||
+    "Failed to fetch jobs";
 
-  if (isJobsError || isBreakdownError) {
+  if (isJobsError || jobSummaryError) {
     return (
       <>
         <JobsErrorToast />
@@ -52,14 +76,28 @@ export default function JobsPage() {
             Jobs
           </h2>
           <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-            {jobFinancialBreakdown.length} jobs logged
+            {summary?.total_jobs ?? 0} jobs logged
           </p>
         </div>
         <LogJobDialog />
       </div>
 
       {/* Summary cards */}
-      <JobSummaryCards />
+      <JobSummaryCards
+        filter={filter}
+        onFilterChange={(newFilter) => {
+          setMode(newFilter.mode ?? "all");
+          if (newFilter.year !== undefined) setYear(String(newFilter.year));
+          if (newFilter.month !== undefined) setMonth(String(newFilter.month));
+          if (newFilter.isoWeek !== undefined)
+            setIsoWeek(newFilter.isoWeek ?? "");
+          if (newFilter.date !== undefined) setDate(newFilter.date ?? "");
+          if (newFilter.startDate !== undefined)
+            setStartDate(newFilter.startDate ?? "");
+          if (newFilter.endDate !== undefined)
+            setEndDate(newFilter.endDate ?? "");
+        }}
+      />
 
       <JobsTable />
 

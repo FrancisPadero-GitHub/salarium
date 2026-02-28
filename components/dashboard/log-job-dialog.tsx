@@ -13,29 +13,30 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import type { Database } from "@/database.types";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
 
 // hooks
-import { useFetchTechSummary } from "@/hooks/technicians/useFetchTechSummary";
-import { useAddJob } from "@/hooks/jobs/useAddJobs";
-import { useEditJob } from "@/hooks/jobs/useEditJob";
+import { useFetchTechnicians } from "@/hooks/technicians/useFetchTechnicians";
+import { useFetchPaymentMethods } from "@/hooks/payment-methods/useFetchPaymentMethods";
+import { useAddJob, type AddJobPayload } from "@/hooks/jobs/useAddJobs";
+import { useEditJob, type EditJobPayload } from "@/hooks/jobs/useEditJob";
 import { useDelJob } from "@/hooks/jobs/useDelJob";
 
 // zustand
-import { useJobsStore } from "@/features/store/jobs/useFormJobStore";
+import { useJobsStore, type FormJobState } from "@/features/store/jobs/useFormJobStore";
 
-// Components
-import { JobStatusFeedback } from "./log-job/job-status-feedback";
-import { JobBasicFields } from "./log-job/job-basic-fields";
-import { JobFinancialsFields } from "./log-job/job-financials-fields";
-import { JobFinancialsSummary } from "./log-job/job-financials-summary";
-import { DeleteJobDialog } from "./log-job/delete-job-dialog";
+// types
 import { DEFAULT_VALUES, type JobFormValues } from "@/types/log-job";
-import { Label } from "../ui/label";
-import { Textarea } from "../ui/textarea";
-
-type JobInsert = Database["public"]["Tables"]["jobs"]["Insert"];
-type JobUpdate = Database["public"]["Tables"]["jobs"]["Update"];
 
 export function LogJobDialog() {
   const {
@@ -79,7 +80,8 @@ export function LogJobDialog() {
   const isJobSuccess = isEdit ? isEditSuccess : isAddSuccess;
   const jobError = isEdit ? editError : addError;
 
-  const { data: technicians = [] } = useFetchTechSummary();
+  const { data: technicians = [], isLoading: techLoading } = useFetchTechnicians();
+  const { data: paymentMethods = [], isLoading: paymentLoading } = useFetchPaymentMethods();
 
   const {
     register,
@@ -87,15 +89,16 @@ export function LogJobDialog() {
     reset,
     setValue,
     watch,
-    formState: { errors, isDirty },
+    formState: { errors, isDirty, touchedFields },
   } = useForm<JobFormValues>({ defaultValues: DEFAULT_VALUES });
 
   useEffect(() => {
     if (!isDialogOpen) return;
     if (isEdit) {
       reset({
-        job_date: storeForm.job_date ?? new Date().toISOString().slice(0, 10),
-        job_name: storeForm.job_name ?? "",
+        work_order_date:
+          storeForm.work_order_date ?? new Date().toISOString().slice(0, 10),
+        work_title: storeForm.work_title ?? "",
         category: storeForm.category ?? "",
         description: storeForm.description ?? "",
         address: storeForm.address ?? "",
@@ -104,49 +107,32 @@ export function LogJobDialog() {
         parts_total_cost: String(storeForm.parts_total_cost ?? 0),
         subtotal: String(storeForm.subtotal ?? 0),
         tip_amount: String(storeForm.tip_amount ?? 0),
-        cash_on_hand: String(storeForm.cash_on_hand ?? 0),
-        payment_mode: storeForm.payment_mode ?? "credit card",
+        payment_method_id: storeForm.payment_method_id ?? "",
         status: storeForm.status ?? "done",
         notes: storeForm.notes ?? "",
       });
     } else {
       reset(DEFAULT_VALUES);
     }
-  }, [isDialogOpen]);
-
-  // Auto-fill cash_on_hand when payment_mode is cash
-  useEffect(() => {
-    const subscription = watch((value, { name }) => {
-      if (name === "payment_mode" || name === "subtotal") {
-        if (value.payment_mode === "cash" && value.subtotal) {
-          setValue("cash_on_hand", value.subtotal, { shouldDirty: true });
-        }
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, [watch, setValue]);
+  }, [isDialogOpen, isEdit, storeForm, reset]);
 
   const selectedTechId = watch("technician_id");
   const subtotalVal = parseFloat(watch("subtotal") || "0");
   const tipVal = parseFloat(watch("tip_amount") || "0");
-  const cashOnHandVal = parseFloat(watch("cash_on_hand") || "0");
   const partsTotal = parseFloat(watch("parts_total_cost") || "0");
 
-  // Mirror the v_job_table_detailed view calculations
-  const gross = subtotalVal; // gross = subtotal
-  const netRevenue = gross - partsTotal; // net_revenue = subtotal - parts_total_cost
+  // Calculate financials
+  const gross = subtotalVal;
+  const netRevenue = gross - partsTotal;
   const tech = technicians.find((t) => t.technician_id === selectedTechId);
-  const commissionRate = tech?.commission_rate ?? 0;
-  const commissionAmount = netRevenue * (commissionRate / 100); // commission on net_revenue
-  const companyNet = netRevenue - commissionAmount; // company_net
-  const totalCollected = subtotalVal + tipVal; // total_amount
-  const netPlusTip = totalCollected - partsTotal; // net_plus_tip
-  // const balance = subtotalVal - cashOnHandVal; // balance
-  const isNetNegative = companyNet < 0;
+  const commissionRate = tech?.commission ?? 0;
+  const commissionAmount = netRevenue * (commissionRate / 100);
+  const companyNet = netRevenue - commissionAmount;
+  const totalCollected = subtotalVal + tipVal;
 
   const handleDelete = () => {
-    if (!storeForm.id) return;
-    softDeleteJob(storeForm.id as string, {
+    if (!storeForm.work_order_id) return;
+    softDeleteJob(storeForm.work_order_id as string, {
       onSuccess: () => {
         setIsConfirmDeleteOpen(false);
         setTimeout(() => {
@@ -173,48 +159,53 @@ export function LogJobDialog() {
     const parts_total_cost = parseFloat(data.parts_total_cost) || 0;
     const subtotal = parseFloat(data.subtotal) || 0;
     const tip_amount = parseFloat(data.tip_amount) || 0;
-    const cash_on_hand = parseFloat(data.cash_on_hand) || 0;
 
     setIsSubmitting(true);
 
     try {
       if (isEdit) {
-        const jobUpdate: JobUpdate = {
-          id: storeForm.id as string,
-          job_date: data.job_date,
-          job_name: data.job_name || null,
-          category: data.category || null,
-          description: data.description || null,
-          address: data.address || null,
-          region: data.region || null,
-          technician_id: data.technician_id || null,
-          parts_total_cost,
-          subtotal,
-          tip_amount,
-          cash_on_hand,
-          payment_mode: data.payment_mode,
-          status: data.status,
-          notes: data.notes || null,
+        const payload: EditJobPayload = {
+          workOrderId: storeForm.work_order_id as string,
+          workOrder: {
+            work_order_date: data.work_order_date,
+            work_title: data.work_title || null,
+            category: data.category || null,
+            description: data.description || null,
+            address: data.address || null,
+            region: data.region || null,
+            technician_id: data.technician_id || null,
+            notes: data.notes || null,
+          },
+          job: {
+            parts_total_cost,
+            subtotal,
+            tip_amount,
+            payment_method_id: data.payment_method_id || null,
+            status: data.status as "pending" | "done" | "cancelled",
+          },
         };
-        await editJobAsync(jobUpdate);
+        await editJobAsync(payload);
       } else {
-        const jobPayload: JobInsert = {
-          job_date: data.job_date,
-          job_name: data.job_name || null,
-          category: data.category || null,
-          description: data.description || null,
-          address: data.address || null,
-          region: data.region || null,
-          technician_id: data.technician_id || null,
-          parts_total_cost,
-          subtotal,
-          tip_amount,
-          cash_on_hand,
-          payment_mode: data.payment_mode,
-          status: data.status,
-          notes: data.notes || null,
+        const payload: AddJobPayload = {
+          workOrder: {
+            work_order_date: data.work_order_date,
+            work_title: data.work_title || null,
+            category: data.category || null,
+            description: data.description || null,
+            address: data.address || null,
+            region: data.region || null,
+            technician_id: data.technician_id || null,
+            notes: data.notes || null,
+          },
+          job: {
+            parts_total_cost,
+            subtotal,
+            tip_amount,
+            payment_method_id: data.payment_method_id || null,
+            status: data.status as "pending" | "done" | "cancelled",
+          },
         };
-        await addJobAsync(jobPayload);
+        await addJobAsync(payload);
       }
 
       setTimeout(() => {
@@ -228,6 +219,9 @@ export function LogJobDialog() {
   };
 
   const showFeedback = isDeleteSuccess || isJobSuccess || isJobError;
+
+  const fmt = (n: number) =>
+    new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n);
 
   return (
     <>
@@ -249,10 +243,8 @@ export function LogJobDialog() {
             Log Job
           </Button>
         </DialogTrigger>
-        <DialogContent
-          className="sm:max-w-xl"
-          onCloseAutoFocus={(e) => e.preventDefault()}
-        >
+
+        <DialogContent className="sm:max-w-xl" onCloseAutoFocus={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle>
               {isDeleteSuccess
@@ -277,7 +269,7 @@ export function LogJobDialog() {
                     ? "Job has been updated successfully."
                     : "Job has been recorded successfully."
                   : isJobError
-                    ? "Something went wrong while saving the job."
+                    ? `Something went wrong: ${jobError?.message || "Unknown error"}`
                     : isEdit
                       ? "Update the details for this job."
                       : "Record a completed or pending job for a technician."}
@@ -285,51 +277,261 @@ export function LogJobDialog() {
           </DialogHeader>
 
           {showFeedback ? (
-            <JobStatusFeedback
-              isDeleteSuccess={isDeleteSuccess}
-              isJobSuccess={isJobSuccess}
-              isJobError={isJobError}
-              isEdit={isEdit}
-              jobError={jobError}
-            />
+            <div className="py-8 text-center">
+              {isJobSuccess && (
+                <div className="text-sm text-emerald-600 dark:text-emerald-400">✓ Success</div>
+              )}
+              {isDeleteSuccess && (
+                <div className="text-sm text-emerald-600 dark:text-emerald-400">✓ Job deleted</div>
+              )}
+              {isJobError && (
+                <div className="text-sm text-red-600 dark:text-red-400">✗ Error: {jobError?.message}</div>
+              )}
+              <Spinner className="mx-auto mt-4" />
+            </div>
           ) : (
             <form onSubmit={handleSubmit(onSubmit)} className="grid">
               <div className="overflow-y-auto max-h-[75vh] space-y-4 py-2 px-2">
-                <JobBasicFields
-                  register={register}
-                  errors={errors}
-                  isSubmitting={isSubmitting}
-                  technicians={technicians}
-                  selectedTechId={selectedTechId}
-                  setValue={setValue}
-                />
+                {/* Basic Fields */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="work_order_date">Date *</Label>
+                    <Input
+                      id="work_order_date"
+                      type="date"
+                      disabled={isSubmitting}
+                      {...register("work_order_date", { required: "Date is required" })}
+                    />
+                    {errors.work_order_date && (
+                      <p className="text-xs text-red-600">{errors.work_order_date.message}</p>
+                    )}
+                  </div>
 
-                <JobFinancialsFields
-                  register={register}
-                  watch={watch}
-                  setValue={setValue}
-                  errors={errors}
-                  isSubmitting={isSubmitting}
-                  isNetNegative={isNetNegative}
-                />
+                  <div className="space-y-2">
+                    <Label htmlFor="technician_id">Technician</Label>
+                    <Select
+                      value={watch("technician_id")}
+                      onValueChange={(v) => setValue("technician_id", v, { shouldDirty: true })}
+                      disabled={isSubmitting || techLoading}
+                    >
+                      <SelectTrigger id="technician_id">
+                        <SelectValue placeholder="Select technician" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {technicians.map((t) => (
+                          <SelectItem key={t.technician_id} value={t.technician_id}>
+                            {t.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
 
-                <JobFinancialsSummary
-                  gross={gross}
-                  partsTotal={partsTotal}
-                  netRevenue={netRevenue}
-                  commissionRate={commissionRate}
-                  commissionAmount={commissionAmount}
-                  companyNet={companyNet}
-                  totalCollected={totalCollected}
-                  netPlusTip={netPlusTip}
-                  // balance={balance}
-                  isNetNegative={isNetNegative}
-                />
+                <div className="space-y-2">
+                  <Label htmlFor="work_title">Job Title *</Label>
+                  <Input
+                    id="work_title"
+                    placeholder="e.g., Heating System Repair"
+                    disabled={isSubmitting}
+                    {...register("work_title", { required: "Job title is required" })}
+                  />
+                  {errors.work_title && (
+                    <p className="text-xs text-red-600">{errors.work_title.message}</p>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="category">Category</Label>
+                    <Input
+                      id="category"
+                      placeholder="e.g., HVAC"
+                      disabled={isSubmitting}
+                      {...register("category")}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="status">Status</Label>
+                    <Select
+                      value={watch("status")}
+                      onValueChange={(v) => setValue("status", v as any, { shouldDirty: true })}
+                    >
+                      <SelectTrigger id="status">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="done">Done</SelectItem>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="cancelled">Cancelled</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    placeholder="Service description..."
+                    rows={2}
+                    disabled={isSubmitting}
+                    {...register("description")}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="address">Address</Label>
+                    <Input
+                      id="address"
+                      placeholder="Street address"
+                      disabled={isSubmitting}
+                      {...register("address")}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="region">Region</Label>
+                    <Input
+                      id="region"
+                      placeholder="City/Region"
+                      disabled={isSubmitting}
+                      {...register("region")}
+                    />
+                  </div>
+                </div>
+
+                {/* Financial Fields */}
+                <div className="border-t border-zinc-200 pt-4 dark:border-zinc-800">
+                  <h4 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+                    Financials
+                  </h4>
+
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="subtotal">Subtotal *</Label>
+                      <Input
+                        id="subtotal"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        placeholder="0.00"
+                        disabled={isSubmitting}
+                        {...register("subtotal", { required: "Subtotal is required" })}
+                      />
+                      {errors.subtotal && (
+                        <p className="text-xs text-red-600">{errors.subtotal.message}</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="parts_total_cost">Parts Cost</Label>
+                      <Input
+                        id="parts_total_cost"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        placeholder="0.00"
+                        disabled={isSubmitting}
+                        {...register("parts_total_cost")}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="tip_amount">Tip</Label>
+                      <Input
+                        id="tip_amount"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        placeholder="0.00"
+                        disabled={isSubmitting}
+                        {...register("tip_amount")}
+                      />
+                    </div>
+                  </div>
+
+                  {(touchedFields.parts_total_cost || touchedFields.subtotal) &&
+                    partsTotal > subtotalVal && (
+                      <p className="mt-2 rounded-md bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">
+                        ⚠ Parts cost (${partsTotal.toFixed(2)}) exceeds the job subtotal ($
+                        {subtotalVal.toFixed(2)}). This will result in a negative net revenue.
+                      </p>
+                    )}
+
+                  <div className="mt-3 space-y-2 rounded-md bg-zinc-50 p-3 dark:bg-zinc-800/50">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-zinc-600 dark:text-zinc-400">Gross Revenue:</span>
+                      <span className="font-medium text-zinc-900 dark:text-zinc-50">
+                        {fmt(gross)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-zinc-600 dark:text-zinc-400">Net Revenue:</span>
+                      <span
+                        className={
+                          netRevenue < 0
+                            ? "font-medium text-red-600 dark:text-red-400"
+                            : "font-medium text-zinc-900 dark:text-zinc-50"
+                        }
+                      >
+                        {fmt(netRevenue)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-zinc-600 dark:text-zinc-400">
+                        Tech Commission ({commissionRate}%):
+                      </span>
+                      <span className="font-medium text-zinc-900 dark:text-zinc-50">
+                        {fmt(commissionAmount)}
+                      </span>
+                    </div>
+                    <div className="border-t border-zinc-200 pt-2 dark:border-zinc-700">
+                      <div className="flex justify-between text-xs font-semibold">
+                        <span className="text-zinc-900 dark:text-zinc-50">Company Net:</span>
+                        <span
+                          className={
+                            companyNet < 0
+                              ? "text-red-600 dark:text-red-400"
+                              : "text-emerald-600 dark:text-emerald-400"
+                          }
+                        >
+                          {fmt(companyNet)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 space-y-2">
+                    <Label htmlFor="payment_method_id">Payment Method</Label>
+                    <Select
+                      value={watch("payment_method_id")}
+                      onValueChange={(v) =>
+                        setValue("payment_method_id", v, { shouldDirty: true })
+                      }
+                      disabled={isSubmitting || paymentLoading}
+                    >
+                      <SelectTrigger id="payment_method_id">
+                        <SelectValue placeholder="Select payment method" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {paymentMethods.map((pm) => (
+                          <SelectItem key={pm.id} value={pm.id}>
+                            {pm.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
                 {/* Notes */}
                 <div className="space-y-2">
-                  <Label htmlFor="job-notes">Notes</Label>
+                  <Label htmlFor="notes">Notes</Label>
                   <Textarea
-                    id="job-notes"
+                    id="notes"
                     placeholder="Service details, observations..."
                     rows={2}
                     disabled={isSubmitting}
@@ -337,11 +539,13 @@ export function LogJobDialog() {
                   />
                 </div>
               </div>
-              <DialogFooter className="flex-row pt-3 items-center justify-between sm:justify-between">
+
+              <DialogFooter className="flex-row items-center justify-between gap-2 pt-4 sm:justify-between">
                 {isEdit && (
                   <Button
                     type="button"
                     variant="destructive"
+                    size="sm"
                     disabled={isSubmitting || isDeletePending}
                     onClick={() => setIsConfirmDeleteOpen(true)}
                   >
@@ -353,6 +557,7 @@ export function LogJobDialog() {
                   <Button
                     type="button"
                     variant="outline"
+                    size="sm"
                     disabled={isSubmitting}
                     onClick={() => {
                       closeDialog();
@@ -361,7 +566,7 @@ export function LogJobDialog() {
                   >
                     Cancel
                   </Button>
-                  <Button type="submit" disabled={isSubmitting || !isDirty}>
+                  <Button type="submit" size="sm" disabled={isSubmitting || !isDirty}>
                     {isSubmitting
                       ? "Saving…"
                       : isEdit
@@ -375,12 +580,35 @@ export function LogJobDialog() {
         </DialogContent>
       </Dialog>
 
-      <DeleteJobDialog
-        isOpen={isConfirmDeleteOpen}
-        onOpenChange={setIsConfirmDeleteOpen}
-        isDeletePending={isDeletePending}
-        onConfirm={handleDelete}
-      />
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isConfirmDeleteOpen} onOpenChange={setIsConfirmDeleteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Job</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this job? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsConfirmDeleteOpen(false)}
+              disabled={isDeletePending}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={isDeletePending}
+            >
+              {isDeletePending ? "Deleting…" : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

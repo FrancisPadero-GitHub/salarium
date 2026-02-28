@@ -72,15 +72,15 @@ export function MonthlyComparisonChart() {
     });
 
     jobs.forEach((job) => {
-      if (job.job_date) {
-        const jobDate = new Date(job.job_date);
+      if (job.work_order_date) {
+        const jobDate = new Date(job.work_order_date);
         const jobYear = jobDate.getFullYear();
         const jobMonth = jobDate.getMonth();
 
         if (jobYear === currentYear && monthsToShow.includes(jobMonth)) {
           const monthName = months[jobMonth].month;
-          comparisonData[monthName].gross += job.gross || 0;
-          comparisonData[monthName].companyNet += job.company_net || 0;
+          comparisonData[monthName].gross += job.subtotal || 0;
+          comparisonData[monthName].companyNet += job.total_company_net || 0;
           comparisonData[monthName].parts += job.parts_total_cost || 0;
         }
       }

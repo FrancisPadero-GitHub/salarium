@@ -41,13 +41,13 @@ export function DashboardKPIs() {
 
     // YTD calculations
     const ytdJobs = jobs.filter((j) => {
-      const jobDate = new Date(j.job_date || "");
+      const jobDate = new Date(j.work_order_date || "");
       return jobDate.getFullYear() === currentYear;
     });
 
-    const totalGross = ytdJobs.reduce((sum, j) => sum + (j.gross || 0), 0);
+    const totalGross = ytdJobs.reduce((sum, j) => sum + (j.subtotal || 0), 0);
     const companyNet = ytdJobs.reduce(
-      (sum, j) => sum + (j.company_net || 0),
+      (sum, j) => sum + (j.total_company_net || 0),
       0,
     );
     const totalJobs = ytdJobs.length;

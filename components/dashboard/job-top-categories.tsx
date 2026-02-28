@@ -19,14 +19,10 @@ const PALETTE = [
 ];
 
 // hooks
-import { useFetchJobFinancialBreakdown } from "@/hooks/jobs/useFetchJobsFinanceBreakdown";
+import { useFetchViewJobRow } from "@/hooks/jobs/useFetchJobTable";
 
 export function TopCategoriesChart() {
-  const {
-    data: jobsData,
-    isError,
-    isLoading,
-  } = useFetchJobFinancialBreakdown();
+  const { data: jobsData, isError, isLoading } = useFetchViewJobRow();
 
   // ── Chart data ────────────────────────────────────────────────────────────
   const categoryCounts: Record<string, number> = {};

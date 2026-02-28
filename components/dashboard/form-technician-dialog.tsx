@@ -44,10 +44,6 @@ import { useAddTechnician } from "@/hooks/technicians/useAddTechnician";
 import { useEditTechnician } from "@/hooks/technicians/useEditTechnician";
 import { useDelTechnician } from "@/hooks/technicians/useDelTechnicians";
 
-// data
-import { countryCodes } from "@/data/country-code";
-import { Area } from "recharts";
-
 type TechnicianFormValues =
   Database["public"]["Tables"]["technicians"]["Insert"];
 
@@ -106,45 +102,34 @@ export function AddTechnicianDialog() {
     watch,
 
     formState: { errors, isDirty },
-  } = useForm<TechnicianFormValues & { country_code?: string }>({
+  } = useForm<TechnicianFormValues>({
     defaultValues: {
       name: "",
       email: "",
-      phone: "",
-      country_code: "+63",
-      default_commission_rate: 0,
+      commission: 0,
       hired_date: new Date().toISOString().slice(0, 10),
     },
   });
 
-  const default_commission_rate = watch("default_commission_rate");
+  const commission = watch("commission");
 
   // When the dialog opens, reset form with the current store values
   useEffect(() => {
     if (!isDialogOpen) return;
 
-    const phone = form.phone ?? "";
-    const matchedCountry = countryCodes.find((c) => phone.startsWith(c.value));
-    const countryCode = matchedCountry?.value ?? "+63";
-    const phoneNum = matchedCountry ? phone.slice(countryCode.length) : phone;
-
     reset({
       name: form.name ?? "",
       email: form.email ?? "",
-      phone: phoneNum,
-      country_code: countryCode,
-      default_commission_rate: form.default_commission_rate ?? 0,
+      commission: form.commission ?? 0,
       hired_date: form.hired_date ?? new Date().toISOString().slice(0, 10),
       id: form.id,
     });
   }, [isDialogOpen]);
 
-  const onSubmit = (data: TechnicianFormValues & { country_code?: string }) => {
-    const { id, created_at, country_code, ...rest } = data;
+  const onSubmit = (data: TechnicianFormValues) => {
+    const { id, created_at, ...rest } = data;
 
-    // Prepend country code to phone number if provided, otherwise default to +63 for Philippines
-    const fullPhone = `${country_code ?? "+63"}${rest.phone ?? ""}`;
-    const payload = { ...rest, phone: fullPhone };
+    const payload = { ...rest };
 
     setIsSubmitting(true);
 
@@ -315,89 +300,25 @@ export function AddTechnicianDialog() {
                 )}
               </div>
 
-              {/* Email & Phone */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="tech-email">Email</Label>
-                  <Input
-                    id="tech-email"
-                    type="email"
-                    placeholder="tech@example.com"
-                    disabled={isPending}
-                    {...register("email", {
-                      required: "Email is required",
-                      pattern: {
-                        value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                        message: "Invalid email",
-                      },
-                    })}
-                  />
-                  {errors.email && (
-                    <p className="text-xs text-red-500">
-                      {errors.email.message}
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="tech-phone">Phone</Label>
-                  <div className="flex-row space-y-2 ">
-                    <Select
-                      value={watch("country_code") ?? "+63"}
-                      onValueChange={(value) =>
-                        setValue("country_code" as any, value, {
-                          shouldDirty: true,
-                        })
-                      }
-                      disabled={isPending}
-                    >
-                      <SelectTrigger id="tech-country" className="w-full">
-                        <SelectValue className="sr-only" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {countryCodes.map((country) => (
-                          <SelectItem key={country.value} value={country.value}>
-                            {country.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                      <div className="flex gap-2 items-center">
-                        <span className="text-md text-zinc-500 dark:text-zinc-400">
-                          {watch("country_code") ?? "+63"}
-                        </span>
-
-                        <Input
-                          id="tech-phone"
-                          type="tel"
-                          inputMode="tel"
-                          placeholder="912 345 6789"
-                          disabled={isPending}
-                          className="flex-1"
-                          {...register("phone", {
-                            required: "Phone is required",
-                            pattern: {
-                              value: /^[0-9 ]+$/,
-                              message: "Only numbers and spaces allowed",
-                            },
-                            minLength: {
-                              value: 7,
-                              message: "Phone must be at least 7 characters",
-                            },
-                            maxLength: {
-                              value: 15,
-                              message:
-                                "Phone must be no more than 15 characters",
-                            },
-                          })}
-                        />
-                      </div>
-                    </Select>
-                  </div>
-                  {errors.phone && (
-                    <p className="text-xs text-red-500">
-                      {errors.phone.message}
-                    </p>
-                  )}
-                </div>
+              {/* Email */}
+              <div className="space-y-2">
+                <Label htmlFor="tech-email">Email</Label>
+                <Input
+                  id="tech-email"
+                  type="email"
+                  placeholder="tech@example.com"
+                  disabled={isPending}
+                  {...register("email", {
+                    required: "Email is required",
+                    pattern: {
+                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                      message: "Invalid email",
+                    },
+                  })}
+                />
+                {errors.email && (
+                  <p className="text-xs text-red-500">{errors.email.message}</p>
+                )}
               </div>
 
               {/* Commission Rate & Hire Date */}
@@ -413,7 +334,7 @@ export function AddTechnicianDialog() {
                     max="100"
                     placeholder="e.g. 75"
                     disabled={isPending}
-                    {...register("default_commission_rate", {
+                    {...register("commission", {
                       required: "Commission rate is required",
                       min: {
                         value: 0,
@@ -425,19 +346,16 @@ export function AddTechnicianDialog() {
                       },
                     })}
                   />
-                  {errors.default_commission_rate && (
+                  {errors.commission && (
                     <p className="text-xs text-red-500">
-                      {errors.default_commission_rate.message}
+                      {errors.commission.message}
                     </p>
                   )}
                   <p className="text-xs text-zinc-400 dark:text-zinc-500">
                     Business keeps{" "}
                     {(() => {
                       const result = Math.round(
-                        100 -
-                          parseFloat(
-                            default_commission_rate?.toString() ?? "0",
-                          ),
+                        100 - parseFloat(commission?.toString() ?? "0"),
                       );
                       return isNaN(result) ? "" : `${result}%`;
                     })()}
