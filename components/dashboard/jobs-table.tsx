@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import {
@@ -63,6 +64,19 @@ export function JobsTable() {
   const { data: techSummary = [] } = useFetchTechSummary();
   const { data: techDetails = [] } = useFetchTechnicians();
   const { openEdit } = useJobStore();
+
+  const searchParams = useSearchParams();
+  const highlightId = searchParams.get("highlight");
+  const highlightRowRef = useRef<HTMLTableRowElement>(null);
+
+  useEffect(() => {
+    if (highlightId && highlightRowRef.current) {
+      highlightRowRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
+  }, [highlightId, jobs]);
 
   // Build tech name & commission lookup maps
   const techNameMap = useMemo(() => {
@@ -432,9 +446,12 @@ export function JobsTable() {
                   const commRate = job.technician_id
                     ? techCommissionMap.get(job.technician_id)
                     : null;
+                  const isHighlighted =
+                    !!highlightId && job.work_order_id === highlightId;
                   return (
                     <tr
                       key={job.work_order_id}
+                      ref={isHighlighted ? highlightRowRef : undefined}
                       onClick={() =>
                         openEdit({
                           work_order_id: job.work_order_id ?? "",
@@ -457,7 +474,11 @@ export function JobsTable() {
                           status: job.status ?? "pending",
                         })
                       }
-                      className="cursor-pointer transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                      className={cn(
+                        "cursor-pointer transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50",
+                        isHighlighted &&
+                          "bg-amber-50 ring-1 ring-inset ring-amber-300 dark:bg-amber-950/30 dark:ring-amber-700",
+                      )}
                     >
                       {/* Job Name */}
                       <td className="px-4 py-3 font-medium text-zinc-800 dark:text-zinc-200">

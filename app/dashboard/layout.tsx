@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   Briefcase,
   FileText,
+  MessageSquareText,
   Users,
   WalletMinimal,
   Menu,
@@ -19,6 +20,7 @@ const navItems = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/dashboard/jobs", label: "Jobs", icon: Briefcase },
   { href: "/dashboard/estimates", label: "Estimates", icon: FileText },
+  { href: "/dashboard/reviews", label: "Reviews", icon: MessageSquareText },
   { href: "/dashboard/technicians", label: "Technicians", icon: Users },
 ];
 
