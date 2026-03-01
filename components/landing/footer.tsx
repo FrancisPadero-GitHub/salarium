@@ -17,24 +17,28 @@ export default function Footer() {
               </span>
             </Link>
             <p className="mt-3 max-w-xs text-sm text-zinc-500 dark:text-zinc-400">
-              Financial orchestration for field service businesses. Automate
-              commissions, centralize reporting, and reclaim your time.
+              Your virtual assistant for business operations. We build custom
+              solutions so you can focus on what matters most.
             </p>
           </div>
 
           {/* Product */}
           <div>
             <h4 className="mb-3 text-xs font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
-              Product
+              Services
             </h4>
             <ul className="space-y-2">
-              {["Features", "How It Works", "Stats"].map((item) => (
-                <li key={item}>
+              {[
+                { label: "Features", href: "#features" },
+                { label: "How It Works", href: "#how-it-works" },
+                { label: "Why Us", href: "#stats" },
+              ].map(({ label, href }) => (
+                <li key={label}>
                   <Link
-                    href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
+                    href={href}
                     className="text-sm text-zinc-500 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
                   >
-                    {item}
+                    {label}
                   </Link>
                 </li>
               ))}

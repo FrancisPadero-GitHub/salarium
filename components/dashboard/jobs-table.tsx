@@ -464,7 +464,7 @@ export function JobsTable() {
                           category: job.category ?? "",
                           address: job.address ?? "",
                           region: job.region ?? "",
-                          // v_jobs has payment method name, not id — dialog resolves id by name
+                          // v_jobs has payment method name, not id, dialog resolves id by name
                           payment_method_id: "",
                           payment_method: job.payment_method,
                           parts_total_cost: job.parts_total_cost ?? 0,

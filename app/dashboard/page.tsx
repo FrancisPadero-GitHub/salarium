@@ -41,7 +41,7 @@ export default function DashboardPage() {
         <DashboardDateFilter />
       </div>
 
-      {/* Content — loading / error / data */}
+      {/* Content, loading / error / data */}
       <QueryStatePanel
         isLoading={isLoading}
         isError={isError}

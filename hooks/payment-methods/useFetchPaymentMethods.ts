@@ -22,6 +22,6 @@ export function useFetchPaymentMethods() {
   return useQuery<PaymentMethodRow[], Error>({
     queryKey: ["payment-methods"],
     queryFn: fetchPaymentMethods,
-    staleTime: 1000 * 60 * 10, // 10 minutes — these rarely change
+    staleTime: 1000 * 60 * 10, // 10 minutes, these rarely change
   });
 }

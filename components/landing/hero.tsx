@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, TrendingUp, ShieldCheck } from "lucide-react";
+import { ArrowRight, Wrench, Sparkles } from "lucide-react";
 
 export default function Hero() {
   return (
@@ -15,30 +15,32 @@ export default function Hero() {
       <div className="mx-auto max-w-7xl px-6 text-center">
         {/* Badge */}
         <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-zinc-50 px-4 py-1.5 text-xs font-medium text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400">
-          <ShieldCheck className="h-3.5 w-3.5 text-zinc-500" />
-          Server-enforced financial accuracy
+          <Sparkles className="h-3.5 w-3.5 text-zinc-500" />
+          Your Virtual Assistant for Business Operations
         </div>
 
         {/* Headline */}
         <h1 className="mx-auto max-w-3xl text-5xl font-extrabold leading-tight tracking-tight text-zinc-900 sm:text-6xl dark:text-zinc-50">
-          Replace spreadsheets with{" "}
-          <span className="text-zinc-500">automated financial clarity</span>
+          We solve your <span className="text-zinc-500">business problems</span>{" "}
+          so you don&apos;t have to
         </h1>
 
         {/* Subheadline */}
         <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-zinc-500 dark:text-zinc-400">
-          Salarium centralizes job reporting, automates commission splits, and
-          delivers real-time revenue dashboards, built for chimney, HVAC, and
-          dryer vent service businesses tired of juggling spreadsheets.
+          From financial tracking to job management, we build and manage custom
+          solutions tailored to your exact workflow. Tell us what you need and
+          we handle the rest.
         </p>
 
         {/* CTA Buttons */}
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Link
-            href="/auth/signup"
+            href="https://advancedvirtualstaff.com/booking"
             className="inline-flex items-center gap-2 rounded-xl bg-zinc-900 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-zinc-700 hover:shadow-md dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+            target="_blank"
+            rel="noopener noreferrer"
           >
-            Start for free
+            Request a consultation
             <ArrowRight className="h-4 w-4" />
           </Link>
           <Link
@@ -52,8 +54,8 @@ export default function Hero() {
         {/* Social proof line */}
         <div className="mt-12 flex flex-col items-center justify-center gap-6 sm:flex-row sm:gap-10">
           {[
-            { icon: TrendingUp, text: "Real-time revenue dashboards" },
-            { icon: ShieldCheck, text: "Database-level calculation integrity" },
+            { icon: Wrench, text: "Fully customizable to your needs" },
+            { icon: Sparkles, text: "Built and managed for you" },
           ].map(({ icon: Icon, text }) => (
             <div
               key={text}

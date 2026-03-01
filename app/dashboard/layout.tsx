@@ -130,7 +130,7 @@ export default function DashboardLayout({
         <main className="flex-1 overflow-y-auto p-6">{children}</main>
       </div>
 
-      {/* Floating toggle button — mobile only */}
+      {/* Floating toggle button, mobile only */}
       <button
         onClick={() => setSidebarOpen((prev) => !prev)}
         className="fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-zinc-900 text-white shadow-lg transition-colors hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300 lg:hidden"

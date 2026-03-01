@@ -15,23 +15,24 @@ export default function CTASection() {
           </div>
 
           <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-zinc-400">
-            Get Started Today
+            Let&apos;s Talk
           </p>
           <h2 className="mx-auto max-w-2xl text-3xl font-bold tracking-tight text-zinc-50 sm:text-4xl">
-            Stop reconciling spreadsheets. Start running your business.
+            Ready to solve your business problems? We are here to help.
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-zinc-400">
-            Salarium automates every financial calculation your field service
-            business relies on. Set it up once and let the database handle the
-            rest.
+            Tell us what is slowing your business down and we will build a
+            custom solution that works exactly the way you need it to.
           </p>
 
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
-              href="/auth/signup"
+              href="https://advancedvirtualstaff.com/booking"
               className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold text-zinc-900 shadow-sm transition-all hover:bg-zinc-100 hover:shadow-md"
+              target="_blank"
+              rel="noopener noreferrer"
             >
-              Create your account
+              Book a consultation
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link

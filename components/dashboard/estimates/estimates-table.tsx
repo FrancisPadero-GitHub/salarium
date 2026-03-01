@@ -417,7 +417,7 @@ export function EstimatesTable({
                         </span>
                       ) : (
                         <span className="text-xs text-zinc-400 dark:text-zinc-500">
-                          —
+                          ,
                         </span>
                       )}
                     </td>

@@ -103,7 +103,7 @@ export function DashboardDateFilter() {
       case "week": {
         const range = getISOWeekRange(store.isoWeek);
         return range
-          ? `Week: ${range.start} — ${range.end}`
+          ? `Week: ${range.start}, ${range.end}`
           : `Week: ${store.isoWeek}`;
       }
       case "day":
@@ -234,7 +234,7 @@ export function DashboardDateFilter() {
 
       {/* Mode-specific controls */}
       <div className="flex flex-wrap items-end gap-3">
-        {/* Year Selector — shown for year & month modes */}
+        {/* Year Selector, shown for year & month modes */}
         {(store.mode === "year" || store.mode === "month") && (
           <div className="space-y-1">
             <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400">

@@ -23,7 +23,7 @@ export const dMul = (
   b: number | null | undefined,
 ): Decimal => d(a).times(d(b));
 
-/** Divide: a / b — returns 0 if b is zero. */
+/** Divide: a / b, returns 0 if b is zero. */
 export const dDiv = (
   a: number | null | undefined,
   b: number | null | undefined,

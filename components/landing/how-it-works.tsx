@@ -1,27 +1,27 @@
 const steps = [
   {
     number: "01",
-    title: "Add your technicians",
+    title: "Tell us your pain points",
     description:
-      "Create profiles for each technician and configure their individual commission rates. Salarium maps every job automatically.",
+      "Schedule a consultation and walk us through the challenges slowing your business down. We listen, ask the right questions, and map out a plan.",
   },
   {
     number: "02",
-    title: "Log jobs as they complete",
+    title: "We build your custom solution",
     description:
-      "Enter job details, address, parts cost, tips, subtotal, and payment method, through the unified job entry interface.",
+      "Our team designs and develops a system tailored to your exact workflow, whether it is job tracking, financial reporting, or team management.",
   },
   {
     number: "03",
-    title: "Let the database calculate",
+    title: "You start using it immediately",
     description:
-      "Commission splits, subtotals, and revenue totals are computed server-side the moment a job is saved. No manual formulas.",
+      "We set everything up, migrate your data if needed, and walk you through the platform. You are operational from day one.",
   },
   {
     number: "04",
-    title: "Monitor your financials in real time",
+    title: "Request changes anytime",
     description:
-      "Access live dashboards showing daily gross, daily net, and year-to-date performance. Always accurate, always up to date.",
+      "Need a new report, a different workflow, or an extra feature? Just let us know. We iterate and customize as your business evolves.",
   },
 ];
 
@@ -35,11 +35,11 @@ export default function HowItWorks() {
             How It Works
           </p>
           <h2 className="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
-            Operational in four steps
+            From problem to solution in four steps
           </h2>
           <p className="mt-4 text-zinc-500 dark:text-zinc-400">
-            From setup to real-time financial clarity, Salarium is designed to
-            get out of your way and let you focus on running the business.
+            We handle the heavy lifting so you can focus on running your
+            business. No technical knowledge required on your end.
           </p>
         </div>
 

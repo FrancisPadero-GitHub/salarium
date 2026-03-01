@@ -1,27 +1,27 @@
 const stats = [
   {
-    value: "9",
-    label: "Spreadsheets replaced",
+    value: "100%",
+    label: "Custom-built",
     description:
-      "Per-tech logs, daily gross/net, estimates, P&L, and Orlando jobs, all in one place",
+      "Every solution is designed from the ground up around your specific business needs",
   },
   {
-    value: "$92K+",
-    label: "Monthly team gross tracked",
+    value: "24/7",
+    label: "Always available",
     description:
-      "February 2026 actuals, updating in real time as jobs are logged",
+      "Your system runs around the clock so you can access your data whenever you need it",
   },
   {
-    value: "50 / 75%",
-    label: "Commission splits automated",
+    value: "Zero",
+    label: "Spreadsheets needed",
     description:
-      "Both rate tiers calculated server-side per technician, no manual formulas",
+      "We replace manual tracking with automated systems that do the work for you",
   },
   {
-    value: "5",
-    label: "Technicians managed",
+    value: "On Request",
+    label: "New features delivered",
     description:
-      "Tamir, Yotam, Shalom, Aviran, and the 3 Bros sub crew tracked individually",
+      "Need something new? Just ask. We build and ship custom features as your business grows",
   },
 ];
 
@@ -31,10 +31,10 @@ export default function Stats() {
       <div className="mx-auto max-w-7xl px-6">
         <div className="mx-auto max-w-2xl text-center">
           <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-zinc-400">
-            The Numbers
+            Why Choose Us
           </p>
           <h2 className="text-3xl font-bold tracking-tight text-zinc-50 sm:text-4xl">
-            Built to eliminate financial guesswork
+            Your business deserves more than generic software
           </h2>
         </div>
 

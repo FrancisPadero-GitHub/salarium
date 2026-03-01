@@ -4,45 +4,45 @@ import {
   BarChart3,
   FileText,
   Users,
-  ShieldCheck,
+  Wrench,
 } from "lucide-react";
 
 const features = [
   {
     icon: ClipboardList,
-    title: "Centralized Job Logging",
+    title: "Job & Task Tracking",
     description:
-      "Capture every job detail in one place, date, address, technician, parts costs, tips, subtotals, and payment method.",
+      "We set up a centralized system to capture every job detail, from scheduling and assignments to costs and payment collection.",
   },
   {
     icon: Calculator,
-    title: "Automated Commission Splits",
+    title: "Automated Financial Calculations",
     description:
-      "50% and 75% commission splits calculated at the database level. No formulas, no manual math, no errors.",
+      "Commission splits, payroll breakdowns, and revenue summaries computed automatically. No spreadsheets, no manual math.",
   },
   {
     icon: BarChart3,
-    title: "Real-Time Dashboards",
+    title: "Live Performance Dashboards",
     description:
-      "Daily gross, daily net, monthly performance, and year-to-date revenue update the moment a job is logged.",
+      "Get real-time visibility into revenue, expenses, and team performance with dashboards that update the moment data changes.",
   },
   {
     icon: FileText,
-    title: "Estimate Pipeline",
+    title: "Estimates & Proposals",
     description:
-      "Track pending proposals and convert approved estimates into active jobs with a single click.",
+      "Track pending proposals, manage approvals, and convert estimates into active jobs with a single click.",
   },
   {
     icon: Users,
-    title: "Technician Management",
+    title: "Team & Partner Management",
     description:
-      "Maintain a centralized technician directory with configurable commission rates per team member.",
+      "Manage your team, subcontractors, or partners with individual profiles, rates, and performance tracking.",
   },
   {
-    icon: ShieldCheck,
-    title: "Server-Enforced Accuracy",
+    icon: Wrench,
+    title: "Fully Customizable on Request",
     description:
-      "PostgreSQL constraints and generated columns protect every calculation. The database is the single source of truth.",
+      "Every feature can be tailored to your specific workflow. Need something unique? Just tell us and we will build it for you.",
   },
 ];
 
@@ -53,15 +53,15 @@ export default function Features() {
         {/* Header */}
         <div className="mx-auto max-w-2xl text-center">
           <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
-            Platform Features
+            What We Build For You
           </p>
           <h2 className="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
-            Everything your field service business needs
+            Solutions that fit your business, not the other way around
           </h2>
           <p className="mt-4 text-zinc-500 dark:text-zinc-400">
-            Salarium replaces disconnected spreadsheets with a unified,
-            automated financial system designed for the realities of field
-            service operations.
+            We handle the technical complexity so you can focus on operations.
+            Every feature is built around your real-world needs and can be
+            customized at any time.
           </p>
         </div>
 
