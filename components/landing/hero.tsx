@@ -9,7 +9,7 @@ export default function Hero() {
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 -z-10"
       >
-        <div className="absolute top-0 left-1/2 h-[600px] w-[900px] -translate-x-1/2 rounded-full bg-zinc-100 opacity-60 blur-3xl dark:bg-zinc-800 dark:opacity-30" />
+        <div className="absolute top-0 left-1/2 h-150 w-225 -translate-x-1/2 rounded-full bg-zinc-100 opacity-60 blur-3xl dark:bg-zinc-800 dark:opacity-30" />
       </div>
 
       <div className="mx-auto max-w-7xl px-6 text-center">
@@ -28,7 +28,7 @@ export default function Hero() {
         {/* Subheadline */}
         <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-zinc-500 dark:text-zinc-400">
           Salarium centralizes job reporting, automates commission splits, and
-          delivers real-time revenue dashboards, built for chimney, HVAC, and
+          delivers synchronous revenue dashboards, built for chimney, HVAC, and
           dryer vent service businesses tired of juggling spreadsheets.
         </p>
 
