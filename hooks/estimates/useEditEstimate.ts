@@ -1,0 +1,90 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
+import type { Database } from "@/database.types";
+
+type EstimateUpdate = Database["public"]["Tables"]["estimates"]["Update"];
+type WorkOrderUpdate = Database["public"]["Tables"]["work_orders"]["Update"];
+
+// destructure to omit work_order_id from updates since it's not editable
+export interface EditEstimatePayload {
+  estimateId: string; // used to identify the estimate to update
+  estimateUpdates?: EstimateUpdate;
+  workOrderUpdates?: WorkOrderUpdate;
+}
+
+const dbEditEstimate = async (payload: EditEstimatePayload) => {
+  const hasEstimateUpdates =
+    payload.estimateUpdates && Object.keys(payload.estimateUpdates).length > 0;
+  const hasWorkOrderUpdates =
+    payload.workOrderUpdates &&
+    Object.keys(payload.workOrderUpdates).length > 0;
+
+  let estimateResult: Database["public"]["Tables"]["estimates"]["Row"] | null =
+    null;
+  let workOrderResult:
+    | Database["public"]["Tables"]["work_orders"]["Row"]
+    | null = null;
+
+  if (hasEstimateUpdates) {
+    const { data, error } = await supabase
+      .from("estimates")
+      .update(payload.estimateUpdates)
+      .eq("work_order_id", payload.estimateId)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(error.message || "Failed to update estimate");
+    }
+
+    estimateResult = data;
+  }
+
+  if (hasWorkOrderUpdates) {
+    const { data, error } = await supabase
+      .from("work_orders")
+      .update(payload.workOrderUpdates)
+      .eq("id", payload.estimateId)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(error.message || "Failed to update work order");
+    }
+
+    workOrderResult = data;
+  }
+
+  if (!hasEstimateUpdates && !hasWorkOrderUpdates) {
+    throw new Error("No updates provided");
+  }
+
+  return {
+    estimate: estimateResult,
+    workOrder: workOrderResult,
+  };
+};
+
+export function useEditEstimate() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: dbEditEstimate,
+    onSuccess: async (result) => {
+      console.log("Estimate edited successfully:", result);
+      await queryClient.cancelQueries({ queryKey: ["estimates"] });
+      await queryClient.refetchQueries({
+        queryKey: ["estimates", "view-table"],
+        exact: false,
+      });
+      await queryClient.cancelQueries({ queryKey: ["jobs", "work-orders"] });
+      await queryClient.refetchQueries({
+        queryKey: ["jobs", "work-orders"],
+        exact: false,
+      });
+    },
+    onError: (error) => {
+      console.error("Error editing estimate:", error);
+    },
+  });
+}

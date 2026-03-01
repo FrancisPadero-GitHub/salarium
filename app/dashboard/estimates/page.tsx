@@ -1,16 +1,33 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { useMemo } from "react";
+import { FileText } from "lucide-react";
+import { useMemo, useState } from "react";
+
+// types
 import type { EstimateStatus } from "@/types/estimate";
-import { EstimateStatusChart } from "@/components/dashboard/estimate-status-chart";
-import { EstimatesByTechChart } from "@/components/dashboard/estimates-by-tech-chart";
-import { NewEstimateDialog } from "@/components/dashboard/new-estimate-dialog";
+import type { EstimatesRow } from "@/hooks/estimates/useFetchEstimates";
+
+// components
+import { EstimateStatusChart } from "@/components/dashboard/estimates/estimate-status-chart";
+import { EstimatesByTechChart } from "@/components/dashboard/estimates/estimates-by-tech-chart";
+
+import { EstimatesTable } from "@/components/dashboard/estimates/estimates-table";
+import { NewEstimateDialog } from "@/components/dashboard/estimates/new-estimate-dialog";
 import { LogJobDialog } from "@/components/dashboard/log-job-dialog";
+import { Button } from "@/components/ui/button";
+
+// hooks
 import { useFetchEstimates } from "@/hooks/estimates/useFetchEstimates";
 import { useFetchTechnicians } from "@/hooks/technicians/useFetchTechnicians";
-import { useJobStore } from "@/features/store/jobs/useFormJobStore";
 
+import { useFetchWorkOrdersRow } from "@/hooks/estimates/useFetchWorkorder";
+
+type EstimateWithNotes = EstimatesRow & {
+  notes: string | null;
+};
+
+// format
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
     n,
@@ -31,27 +48,42 @@ const statusLabels: Record<EstimateStatus, string> = {
 };
 
 export default function EstimatesPage() {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [dialogMode, setDialogMode] = useState<"add" | "edit">("add");
+  const [selectedEstimate, setSelectedEstimate] =
+    useState<EstimateWithNotes | null>(null);
+
   const {
     data: estimates = [],
     isLoading,
     isError,
     error,
   } = useFetchEstimates();
-  const { data: technicians = [] } = useFetchTechnicians();
-  const { openAddWithPrefill } = useJobStore();
+  const { data: workOrders = [] } = useFetchWorkOrdersRow();
 
-  const technicianNameById = useMemo(
-    () =>
-      technicians.reduce<Record<string, string>>((acc, tech) => {
-        acc[tech.id] = tech.name;
+  const { data: technicians = [] } = useFetchTechnicians();
+
+  // merges estimate data with related work order notes for display in the table
+  const mergedEstimates = useMemo<EstimateWithNotes[]>(() => {
+    const notesByWorkOrderId = workOrders.reduce(
+      (acc, workOrder) => {
+        acc[workOrder.id] = workOrder.notes;
         return acc;
-      }, {}),
-    [technicians],
-  );
+      },
+      {} as Record<string, string | null>,
+    );
+
+    return estimates.map((estimate) => ({
+      ...estimate,
+      notes: estimate.work_order_id
+        ? (notesByWorkOrderId[estimate.work_order_id] ?? null)
+        : null,
+    }));
+  }, [estimates, workOrders]);
 
   const counts = useMemo(
     () =>
-      estimates.reduce(
+      mergedEstimates.reduce(
         (acc, estimate) => {
           const status = estimate.estimate_status;
           if (!status) return acc;
@@ -60,53 +92,60 @@ export default function EstimatesPage() {
         },
         {} as Record<EstimateStatus, number>,
       ),
-    [estimates],
+    [mergedEstimates],
   );
 
   const totalValue = useMemo(
     () =>
-      estimates.reduce(
+      mergedEstimates.reduce(
         (sum, estimate) => sum + Number(estimate.estimated_amount ?? 0),
         0,
       ),
-    [estimates],
+    [mergedEstimates],
   );
 
-  const handlePromoteToJob = (estimate: (typeof estimates)[number]) => {
-    if (!estimate.technician_id || !estimate.work_order_date) return;
+  const handlePromoteToJob = () => {};
 
-    openAddWithPrefill({
-      work_title: estimate.work_title ?? "Promoted Estimate",
-      work_order_date: estimate.work_order_date,
-      technician_id: estimate.technician_id,
-      address: estimate.address ?? "",
-      category: estimate.category ?? "",
-      description: estimate.description ?? "",
-      notes: estimate.handled_by ? `Handled by: ${estimate.handled_by}` : "",
-      region: estimate.region ?? "",
-      subtotal: Number(estimate.estimated_amount ?? 0),
-      parts_total_cost: 0,
-      payment_method_id: "",
-      status: "pending",
-      tip_amount: 0,
-    });
+  const technicianNameById = useMemo(
+    () =>
+      technicians.reduce(
+        (acc, technician) => {
+          acc[technician.id] = technician.name;
+          return acc;
+        },
+        {} as Record<string, string>,
+      ),
+    [technicians],
+  );
+
+  const handleOpenAddDialog = () => {
+    setSelectedEstimate(null);
+    setDialogMode("add");
+    setIsDialogOpen(true);
+  };
+
+  const handleOpenEditDialog = (estimate: EstimatesRow) => {
+    setSelectedEstimate(estimate as EstimateWithNotes);
+    setDialogMode("edit");
+    setIsDialogOpen(true);
   };
 
   return (
     <div className="space-y-6">
       <LogJobDialog showTrigger={false} />
-
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-            Estimates
-          </h2>
-          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-            {estimates.length} estimates in pipeline
-          </p>
-        </div>
-        <NewEstimateDialog />
+        <Button onClick={handleOpenAddDialog}>
+          <FileText className="mr-2 h-4 w-4" />
+          New Estimate
+        </Button>
       </div>
+
+      <NewEstimateDialog
+        open={isDialogOpen}
+        mode={dialogMode}
+        selectedEstimate={selectedEstimate}
+        onOpenChange={setIsDialogOpen}
+      />
 
       {isLoading ? (
         <div className="rounded-xl border border-zinc-200 bg-white p-4 text-sm text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
@@ -163,102 +202,12 @@ export default function EstimatesPage() {
       </div>
 
       {/* Table */}
-      <div className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-zinc-100 dark:border-zinc-800">
-                {[
-                  "Date",
-                  "Work Title",
-                  "Address",
-                  "Technician",
-                  "Description",
-                  "Amount",
-                  "Status",
-                  "Handled By",
-                  "Action",
-                ].map((h) => (
-                  <th
-                    key={h}
-                    className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-500"
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {estimates.map((est, i) => (
-                <tr
-                  key={est.work_order_id ?? `${est.created_at}-${i}`}
-                  className={cn(
-                    "transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50",
-                    i !== estimates.length - 1 &&
-                      "border-b border-zinc-100 dark:border-zinc-800",
-                  )}
-                >
-                  <td className="whitespace-nowrap px-4 py-3 text-zinc-500 dark:text-zinc-400">
-                    {est.work_order_date ?? "—"}
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3 font-medium text-zinc-800 dark:text-zinc-200">
-                    {est.work_title ?? "—"}
-                  </td>
-                  <td className="px-4 py-3 font-medium text-zinc-800 dark:text-zinc-200">
-                    {est.address ?? "—"}
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-zinc-600 dark:text-zinc-300">
-                    {est.technician_id
-                      ? (technicianNameById[est.technician_id] ??
-                        est.technician_id)
-                      : "—"}
-                  </td>
-                  <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">
-                    {est.description ?? "—"}
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3 tabular-nums font-medium text-zinc-900 dark:text-zinc-100">
-                    {fmt(Number(est.estimated_amount ?? 0))}
-                  </td>
-                  <td className="px-4 py-3">
-                    {est.estimate_status ? (
-                      <span
-                        className={cn(
-                          "inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium",
-                          statusStyles[est.estimate_status],
-                        )}
-                      >
-                        {statusLabels[est.estimate_status]}
-                      </span>
-                    ) : (
-                      <span className="text-xs text-zinc-400 dark:text-zinc-500">
-                        —
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-xs text-zinc-500 dark:text-zinc-400">
-                    {est.handled_by ?? "—"}
-                  </td>
-                  <td className="px-4 py-3">
-                    <button
-                      type="button"
-                      onClick={() => handlePromoteToJob(est)}
-                      disabled={!est.technician_id || !est.work_order_date}
-                      className={cn(
-                        "rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
-                        est.technician_id && est.work_order_date
-                          ? "bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
-                          : "cursor-not-allowed bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500",
-                      )}
-                    >
-                      Promote to Job
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <EstimatesTable
+        estimates={mergedEstimates}
+        technicianNameById={technicianNameById}
+        onPromoteToJob={handlePromoteToJob}
+        onRowClick={handleOpenEditDialog}
+      />
     </div>
   );
 }

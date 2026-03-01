@@ -48,6 +48,11 @@ export function useAddEstimate() {
         queryKey: ["estimates", "view-table"],
         exact: false,
       });
+      await queryClient.cancelQueries({ queryKey: ["jobs", "work-orders"] });
+      await queryClient.refetchQueries({
+        queryKey: ["jobs", "work-orders"],
+        exact: false,
+      });
     },
     onError: (error: Error) => {
       console.error("Error adding estimate:", error.message || error);
