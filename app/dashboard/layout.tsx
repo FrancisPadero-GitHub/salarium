@@ -9,6 +9,7 @@ import {
   FileText,
   MessageSquareText,
   Users,
+  Settings,
   WalletMinimal,
   Menu,
   X,
@@ -22,6 +23,7 @@ const navItems = [
   { href: "/dashboard/estimates", label: "Estimates", icon: FileText },
   { href: "/dashboard/reviews", label: "Reviews", icon: MessageSquareText },
   { href: "/dashboard/technicians", label: "Technicians", icon: Users },
+  { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
 export default function DashboardLayout({

@@ -27,10 +27,16 @@ export function useEditReviewRecord() {
     mutationFn: dbEditReviewRecord,
     onSuccess: async (result) => {
       console.log("Review record edited successfully:", result);
+      // Invalidate review-related queries
       await queryClient.invalidateQueries({
         queryKey: ["reviews", "review-records"],
         exact: false,
       });
+      await queryClient.invalidateQueries({
+        queryKey: ["reviews", "review-records-summaries"],
+        exact: false,
+      });
+      // Invalidate job-related queries
       await queryClient.invalidateQueries({
         queryKey: ["jobs"],
         exact: false,
@@ -40,15 +46,21 @@ export function useEditReviewRecord() {
         exact: false,
       });
       await queryClient.invalidateQueries({
-        queryKey: ["job-monthly-financial-summary"],
-        exact: false,
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ["estimates"],
+        queryKey: ["jobs", "for-review"],
         exact: false,
       });
       await queryClient.invalidateQueries({
         queryKey: ["jobs", "work-orders"],
+        exact: false,
+      });
+      // Invalidate financial summaries
+      await queryClient.invalidateQueries({
+        queryKey: ["job-monthly-financial-summary"],
+        exact: false,
+      });
+      // Invalidate estimates (in case job was promoted from estimate)
+      await queryClient.invalidateQueries({
+        queryKey: ["estimates"],
         exact: false,
       });
     },
