@@ -27,9 +27,9 @@ export default function Hero() {
 
         {/* Subheadline */}
         <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-zinc-500 dark:text-zinc-400">
-          From financial tracking to job management, we build and manage custom
-          solutions tailored to your exact workflow. Tell us what you need and
-          we handle the rest.
+          Salarium centralizes job reporting, automates commission splits, and
+          delivers real-time revenue dashboards, built for chimney, HVAC, and
+          dryer vent service businesses tired of juggling spreadsheets.
         </p>
 
         {/* CTA Buttons */}

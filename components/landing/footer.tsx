@@ -17,7 +17,7 @@ export default function Footer() {
               </span>
             </Link>
             <p className="mt-3 max-w-xs text-sm text-zinc-500 dark:text-zinc-400">
-              Your virtual assistant for business operations. We build custom
+              Your tool to replace traditional spreadsheets. We build custom
               solutions so you can focus on what matters most.
             </p>
           </div>
