@@ -1,0 +1,74 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
+import type { Database } from "@/database.types";
+
+type WorkOrderRow = Database["public"]["Tables"]["work_orders"]["Row"];
+
+const dbSoftDeleteEstimate = async (workOrderId: string) => {
+  const now = new Date().toISOString();
+
+  const { error: estimateError } = await supabase
+    .from("estimates")
+    .update({ deleted_at: now })
+    .eq("work_order_id", workOrderId);
+
+  if (estimateError) {
+    throw new Error(estimateError.message || "Failed to delete estimate");
+  }
+
+  const { error: jobError } = await supabase
+    .from("jobs")
+    .update({ deleted_at: now })
+    .eq("work_order_id", workOrderId);
+
+  if (jobError) {
+    throw new Error(jobError.message || "Failed to delete related job");
+  }
+
+  const { data: result, error: workOrderError } = await supabase
+    .from("work_orders")
+    .update({ deleted_at: now })
+    .eq("id", workOrderId)
+    .select()
+    .single();
+
+  if (workOrderError) {
+    throw new Error(workOrderError.message || "Failed to delete work order");
+  }
+
+  return result as WorkOrderRow;
+};
+
+export function useDelEstimate() {
+  const queryClient = useQueryClient();
+
+  return useMutation<WorkOrderRow, Error, string>({
+    mutationFn: dbSoftDeleteEstimate,
+    onSuccess: async (result) => {
+      console.log("Estimate soft-deleted successfully:", result);
+      await queryClient.invalidateQueries({
+        queryKey: ["estimates"],
+        exact: false,
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["jobs", "work-orders"],
+        exact: false,
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["jobs"],
+        exact: false,
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["job-monthly-financial-summary"],
+        exact: false,
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["technicians"],
+        exact: false,
+      });
+    },
+    onError: (error) => {
+      console.error("Error soft-deleting estimate:", error.message || error);
+    },
+  });
+}

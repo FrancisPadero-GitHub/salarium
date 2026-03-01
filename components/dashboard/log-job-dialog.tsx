@@ -615,7 +615,7 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
                 </div>
               </div>
 
-              <DialogFooter className="flex-row items-center justify-between sm:justify-between">
+              <DialogFooter className="flex-row items-center justify-between sm:justify-between pt-5">
                 {isEdit && (
                   <Button
                     type="button"
@@ -684,7 +684,7 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
             <AlertDialogAction
               onClick={handleDelete}
               disabled={isDeletePending}
-              className="bg-red-600 hover:bg-red-700 focus:ring-red-600 dark:bg-red-700 dark:hover:bg-red-800"
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600 dark:bg-red-700 dark:text-zinc-100 dark:hover:bg-red-800"
             >
               {isDeletePending ? "Hiding..." : "Yes, hide job"}
             </AlertDialogAction>
