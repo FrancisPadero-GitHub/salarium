@@ -1,42 +1,38 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { WalletMinimal, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-
-type LoginFormValues = {
-  email: string;
-  password: string;
-};
+import { useLogin } from "@/hooks/auth/useLogin";
+import type { LoginFormValues } from "@/types/auth";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
-  const [serverError, setServerError] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const justRegistered = searchParams.get("registered") === "true";
+
+  const loginMutation = useLogin();
 
   const {
     register,
     handleSubmit,
-    setError,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<LoginFormValues>({
     defaultValues: { email: "", password: "" },
   });
 
-  async function onSubmit(values: LoginFormValues) {
-    setServerError(null);
-    try {
-      // TODO: wire up Supabase auth
-      // const { error } = await supabase.auth.signInWithPassword(values);
-      // if (error) throw error;
-      console.log("Login values:", values);
-    } catch (err: unknown) {
-      setServerError(
-        err instanceof Error ? err.message : "Something went wrong.",
-      );
-    }
+  function onSubmit(values: LoginFormValues) {
+    loginMutation.mutate(values);
   }
+
+  const serverError = loginMutation.error
+    ? loginMutation.error instanceof Error
+      ? loginMutation.error.message
+      : "Something went wrong."
+    : null;
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 px-4 py-12 dark:bg-zinc-950">
@@ -59,6 +55,12 @@ export default function LoginPage() {
 
         {/* Card */}
         <div className="rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          {justRegistered && (
+            <div className="mb-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-600 dark:border-green-800 dark:bg-green-950/50 dark:text-green-400">
+              Account created! Please log in.
+            </div>
+          )}
+
           {serverError && (
             <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-800 dark:bg-red-950/50 dark:text-red-400">
               {serverError}
@@ -165,10 +167,10 @@ export default function LoginPage() {
             {/* Submit */}
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={loginMutation.isPending}
               className="flex w-full items-center justify-center gap-2 rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
             >
-              {isSubmitting ? (
+              {loginMutation.isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
                   Logging in...
@@ -183,13 +185,14 @@ export default function LoginPage() {
         {/* Footer link */}
         <p className="mt-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
           Don&apos;t have an account?{" "}
-          {/* <Link
-            href="/auth/signup"
+          <Link
+            href="https://advancedvirtualstaff.com/booking"
             className="font-medium text-zinc-900 underline-offset-2 hover:underline dark:text-zinc-50"
+            target="_blank"
+            rel="noopener noreferrer"
           >
-            Sign up
-          </Link> */}
-          Contact admin
+            Contact us
+          </Link>
         </p>
       </div>
     </div>

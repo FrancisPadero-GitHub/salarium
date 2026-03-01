@@ -5,24 +5,20 @@ import { useForm } from "react-hook-form";
 import { WalletMinimal, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-
-type SignUpFormValues = {
-  fullName: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-};
+import { useSignup } from "@/hooks/auth/useSignup";
+import type { SignUpFormValues } from "@/types/auth";
 
 export default function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [serverError, setServerError] = useState<string | null>(null);
+
+  const signupMutation = useSignup();
 
   const {
     register,
     handleSubmit,
     watch,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<SignUpFormValues>({
     defaultValues: {
       fullName: "",
@@ -34,23 +30,16 @@ export default function SignUpPage() {
 
   const password = watch("password");
 
-  async function onSubmit(values: SignUpFormValues) {
-    setServerError(null);
-    try {
-      // TODO: wire up Supabase auth
-      // const { error } = await supabase.auth.signUp({
-      //   email: values.email,
-      //   password: values.password,
-      //   options: { data: { full_name: values.fullName } },
-      // });
-      // if (error) throw error;
-      console.log("Sign up values:", values);
-    } catch (err: unknown) {
-      setServerError(
-        err instanceof Error ? err.message : "Something went wrong.",
-      );
-    }
+  function onSubmit(values: SignUpFormValues) {
+    const { confirmPassword: _, ...payload } = values;
+    signupMutation.mutate(payload);
   }
+
+  const serverError = signupMutation.error
+    ? signupMutation.error instanceof Error
+      ? signupMutation.error.message
+      : "Something went wrong."
+    : null;
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 px-4 py-12 dark:bg-zinc-950">
@@ -276,10 +265,10 @@ export default function SignUpPage() {
             {/* Submit */}
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={signupMutation.isPending}
               className="flex w-full items-center justify-center gap-2 rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
             >
-              {isSubmitting ? (
+              {signupMutation.isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
                   Creating account...

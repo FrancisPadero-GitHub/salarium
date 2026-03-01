@@ -13,9 +13,14 @@ import {
   WalletMinimal,
   Menu,
   X,
+  LogOut,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ModeToggle } from "@/components/mode-toggle";
+import { ProtectedRoute } from "@/components/protected-route";
+import { useAuth } from "@/components/auth-provider";
+import { useLogout } from "@/hooks/auth/useLogout";
 
 const navItems = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
@@ -33,6 +38,8 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { user } = useAuth();
+  const logoutMutation = useLogout();
 
   const SidebarContent = () => (
     <>
@@ -72,72 +79,92 @@ export default function DashboardLayout({
         })}
       </nav>
 
-      {/* Footer */}
+      {/* User & Logout */}
       <div className="border-t border-zinc-200 p-4 dark:border-zinc-800">
-        <p className="text-xs text-zinc-400 dark:text-zinc-600">
-          Field Service Platform
-        </p>
+        {user && (
+          <p className="mb-2 truncate text-xs font-medium text-zinc-600 dark:text-zinc-400">
+            {user.user_metadata?.full_name ?? user.email}
+          </p>
+        )}
+        <button
+          onClick={() => logoutMutation.mutate()}
+          disabled={logoutMutation.isPending}
+          className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 disabled:opacity-60 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50"
+        >
+          {logoutMutation.isPending ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <LogOut className="h-4 w-4" />
+          )}
+          Log out
+        </button>
       </div>
     </>
   );
 
   return (
-    <div className="flex h-screen overflow-hidden bg-zinc-50 dark:bg-zinc-950">
-      {/* Desktop Sidebar */}
-      <aside className="hidden w-60 flex-col border-r border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 lg:flex">
-        <SidebarContent />
-      </aside>
+    <ProtectedRoute>
+      <div className="flex h-screen overflow-hidden bg-zinc-50 dark:bg-zinc-950">
+        {/* Desktop Sidebar */}
+        <aside className="hidden w-60 flex-col border-r border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 lg:flex">
+          <SidebarContent />
+        </aside>
 
-      {/* Mobile Sidebar Overlay */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      {/* Mobile Sidebar Drawer */}
-      <aside
-        className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-60 flex-col border-r border-zinc-200 bg-white transition-transform duration-300 dark:border-zinc-800 dark:bg-zinc-900 lg:hidden",
-          sidebarOpen ? "translate-x-0" : "-translate-x-full",
+        {/* Mobile Sidebar Overlay */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
         )}
-      >
-        <button
-          onClick={() => setSidebarOpen(false)}
-          className="absolute right-3 top-4 rounded-md p-1 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
-          aria-label="Close sidebar"
+
+        {/* Mobile Sidebar Drawer */}
+        <aside
+          className={cn(
+            "fixed inset-y-0 left-0 z-50 flex w-60 flex-col border-r border-zinc-200 bg-white transition-transform duration-300 dark:border-zinc-800 dark:bg-zinc-900 lg:hidden",
+            sidebarOpen ? "translate-x-0" : "-translate-x-full",
+          )}
         >
-          <X className="h-5 w-5" />
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="absolute right-3 top-4 rounded-md p-1 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
+            aria-label="Close sidebar"
+          >
+            <X className="h-5 w-5" />
+          </button>
+          <SidebarContent />
+        </aside>
+
+        {/* Main */}
+        <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
+          {/* Top bar */}
+          <header className="flex h-16 items-center justify-between border-b border-zinc-200 bg-white px-6 dark:border-zinc-800 dark:bg-zinc-900">
+            <h1 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+              {navItems.find((n) =>
+                n.href === "/dashboard"
+                  ? pathname === "/dashboard"
+                  : pathname.startsWith(n.href),
+              )?.label ?? "Dashboard"}
+            </h1>
+            <ModeToggle />
+          </header>
+
+          <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        </div>
+
+        {/* Floating toggle button, mobile only */}
+        <button
+          onClick={() => setSidebarOpen((prev) => !prev)}
+          className="fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-zinc-900 text-white shadow-lg transition-colors hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300 lg:hidden"
+          aria-label="Toggle sidebar"
+        >
+          {sidebarOpen ? (
+            <X className="h-5 w-5" />
+          ) : (
+            <Menu className="h-5 w-5" />
+          )}
         </button>
-        <SidebarContent />
-      </aside>
-
-      {/* Main */}
-      <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
-        {/* Top bar */}
-        <header className="flex h-16 items-center justify-between border-b border-zinc-200 bg-white px-6 dark:border-zinc-800 dark:bg-zinc-900">
-          <h1 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
-            {navItems.find((n) =>
-              n.href === "/dashboard"
-                ? pathname === "/dashboard"
-                : pathname.startsWith(n.href),
-            )?.label ?? "Dashboard"}
-          </h1>
-          <ModeToggle />
-        </header>
-
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
       </div>
-
-      {/* Floating toggle button, mobile only */}
-      <button
-        onClick={() => setSidebarOpen((prev) => !prev)}
-        className="fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-zinc-900 text-white shadow-lg transition-colors hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300 lg:hidden"
-        aria-label="Toggle sidebar"
-      >
-        {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-      </button>
-    </div>
+    </ProtectedRoute>
   );
 }
