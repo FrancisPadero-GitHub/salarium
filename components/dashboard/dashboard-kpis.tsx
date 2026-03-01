@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
 import {
   TrendingUp,
   Briefcase,
@@ -8,204 +7,108 @@ import {
   FileText,
   DollarSign,
   Percent,
+  Wrench,
+  Banknote,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { QueryStatePanel } from "@/components/misc/query-state-panel";
-import { useFetchJobDetailed } from "@/hooks/jobs/useFetchJobs";
-import { useFetchTechSummary } from "@/hooks/technicians/useFetchTechSummary";
-import { useFetchJobMonthlyFinancialSummary } from "@/hooks/jobs/useFetchJobMonthlyFinancialSummary";
+import { fmtUSD } from "@/lib/decimal";
+import type { DashboardMetrics } from "@/hooks/dashboard/useDashboardData";
 
-const fmt = (n: number) =>
-  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
-    n,
-  );
+interface DashboardKPIsProps {
+  metrics: DashboardMetrics;
+  techCount: number;
+}
 
-export function DashboardKPIs() {
-  const {
-    data: jobs = [],
-    isLoading: isJobsLoading,
-    isError: isJobsError,
-    error: jobsError,
-  } = useFetchJobDetailed();
-  const {
-    data: technicians = [],
-    isLoading: isTechLoading,
-    isError: isTechError,
-    error: techError,
-  } = useFetchTechSummary();
-  const {
-    data: monthlySummaries = [],
-    isLoading: isMonthlyLoading,
-    isError: isMonthlyError,
-    error: monthlyError,
-  } = useFetchJobMonthlyFinancialSummary();
-
-  const isLoading = isJobsLoading || isTechLoading || isMonthlyLoading;
-  const isError = isJobsError || isTechError || isMonthlyError;
-  const errorMessage =
-    jobsError?.message || techError?.message || monthlyError?.message;
-
-  const metrics = useMemo(() => {
-    if (jobs.length === 0)
-      return {
-        totalGross: 0,
-        companyNet: 0,
-        totalJobs: 0,
-        avgRevenuePerJob: 0,
-        companyNetMargin: 0,
-        monthlyRevenue: 0,
-        pendingJobs: 0,
-      };
-
-    const currentYear = new Date().getFullYear();
-    const currentMonth = new Date().getMonth();
-
-    // YTD calculations
-    const ytdJobs = jobs.filter((j) => {
-      const jobDate = new Date(j.work_order_date || "");
-      return jobDate.getFullYear() === currentYear;
-    });
-
-    const totalGross = ytdJobs.reduce((sum, j) => sum + (j.subtotal || 0), 0);
-    const companyNet = ytdJobs.reduce(
-      (sum, j) => sum + (j.total_company_net || 0),
-      0,
-    );
-    const totalJobs = ytdJobs.length;
-    const avgRevenuePerJob = totalJobs > 0 ? totalGross / totalJobs : 0;
-    const companyNetMargin =
-      totalGross > 0 ? ((companyNet / totalGross) * 100).toFixed(1) : "0.0";
-
-    // Current month calculations from the view
-    const currentMonthStart = new Date(currentYear, currentMonth, 1);
-    const currentMonthPeriod = currentMonthStart.toISOString().split("T")[0];
-
-    const monthlyData = monthlySummaries.find((m) =>
-      m.period?.startsWith(currentMonthPeriod.substring(0, 7)),
-    );
-    const monthlyRevenue = monthlyData?.gross_total || 0;
-
-    // Pending jobs
-    const pendingJobs = jobs.filter(
-      (j) => j.status?.toLowerCase() === "pending",
-    ).length;
-
-    return {
-      totalGross,
-      companyNet,
-      totalJobs,
-      avgRevenuePerJob,
-      companyNetMargin,
-      monthlyRevenue,
-      pendingJobs,
-    };
-  }, [jobs, monthlySummaries]);
-
-  const currentDate = new Date().toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
-
+export function DashboardKPIs({ metrics, techCount }: DashboardKPIsProps) {
   const kpis = [
     {
-      label: "YTD Gross Revenue",
-      value: fmt(metrics.totalGross),
+      label: "Gross Revenue",
+      value: fmtUSD(metrics.grossRevenue),
       icon: DollarSign,
-      sub: `Jan 1 — ${currentDate}`,
+      sub: `From ${metrics.doneJobs} completed jobs`,
       up: true,
     },
     {
       label: "Company Net",
-      value: fmt(metrics.companyNet),
+      value: fmtUSD(metrics.companyNet),
       icon: TrendingUp,
       sub: "After tech payouts & parts",
       up: true,
     },
     {
-      label: "Monthly Gross",
-      value: fmt(metrics.monthlyRevenue),
-      icon: TrendingUp,
-      sub: new Date().toLocaleDateString("en-US", {
-        month: "long",
-        year: "numeric",
-      }),
+      label: "Net Revenue",
+      value: fmtUSD(metrics.netRevenue),
+      icon: Banknote,
+      sub: "Gross minus parts cost",
       up: true,
     },
     {
       label: "Net Margin",
-      value: `${metrics.companyNetMargin}%`,
+      value: `${metrics.companyNetMarginPct}%`,
       icon: Percent,
       sub: "Company net / gross",
-      up: true,
+      up: metrics.companyNetMarginPct > 0,
     },
     {
       label: "Total Jobs",
       value: metrics.totalJobs.toString(),
       icon: Briefcase,
-      sub: "YTD across all techs",
+      sub: `${metrics.doneJobs} done · ${metrics.pendingJobs} pending`,
       up: true,
     },
     {
       label: "Avg Revenue / Job",
-      value: fmt(metrics.avgRevenuePerJob),
+      value: fmtUSD(metrics.avgRevenuePerJob),
       icon: DollarSign,
-      sub: `Based on ${metrics.totalJobs} jobs`,
+      sub: `Based on ${metrics.doneJobs} done jobs`,
       up: true,
     },
     {
+      label: "Parts Cost",
+      value: fmtUSD(metrics.partsCost),
+      icon: Wrench,
+      sub: "Total parts expense",
+      up: false,
+    },
+    {
       label: "Active Technicians",
-      value: technicians.length.toString(),
+      value: techCount.toString(),
       icon: Users,
       sub: "Currently active",
       up: true,
     },
-    {
-      label: "Pending Jobs",
-      value: metrics.pendingJobs.toString(),
-      icon: FileText,
-      sub: "Awaiting completion",
-      up: false,
-    },
   ];
 
   return (
-    <QueryStatePanel
-      isLoading={isLoading}
-      isError={isError}
-      errorMessage={errorMessage}
-      loadingMessage="Loading KPI cards..."
-    >
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {kpis.map(({ label, value, icon: Icon, sub, up }) => (
-          <div
-            key={label}
-            className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900"
-          >
-            <div className="flex items-start justify-between">
-              <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
-                {label}
-              </p>
-              <div className="rounded-md bg-zinc-100 p-1.5 dark:bg-zinc-800">
-                <Icon className="h-4 w-4 text-zinc-600 dark:text-zinc-300" />
-              </div>
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      {kpis.map(({ label, value, icon: Icon, sub, up }) => (
+        <div
+          key={label}
+          className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900"
+        >
+          <div className="flex items-start justify-between">
+            <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+              {label}
+            </p>
+            <div className="rounded-md bg-zinc-100 p-1.5 dark:bg-zinc-800">
+              <Icon className="h-4 w-4 text-zinc-600 dark:text-zinc-300" />
             </div>
-            <p className="mt-3 text-2xl font-bold tabular-nums text-zinc-900 dark:text-zinc-50">
-              {value}
-            </p>
-            <p
-              className={cn(
-                "mt-1 text-xs",
-                up
-                  ? "text-emerald-600 dark:text-emerald-400"
-                  : "text-amber-600 dark:text-amber-400",
-              )}
-            >
-              {sub}
-            </p>
           </div>
-        ))}
-      </div>
-    </QueryStatePanel>
+          <p className="mt-3 text-2xl font-bold tabular-nums text-zinc-900 dark:text-zinc-50">
+            {value}
+          </p>
+          <p
+            className={cn(
+              "mt-1 text-xs",
+              up
+                ? "text-emerald-600 dark:text-emerald-400"
+                : "text-amber-600 dark:text-amber-400",
+            )}
+          >
+            {sub}
+          </p>
+        </div>
+      ))}
+    </div>
   );
 }

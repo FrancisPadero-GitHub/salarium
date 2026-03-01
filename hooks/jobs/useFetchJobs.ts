@@ -76,10 +76,7 @@ const resolveDateRange = (filter?: JobsSummaryFilter): ResolvedDateRange => {
   const now = new Date();
 
   if (mode === "all") {
-    return {
-      startDate: filter.startDate,
-      endDate: filter.endDate,
-    };
+    return {};
   }
 
   if (mode === "year") {

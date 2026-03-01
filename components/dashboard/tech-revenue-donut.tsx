@@ -10,8 +10,7 @@ import {
   ChartLegendContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-import { useFetchJobDetailed } from "@/hooks/jobs/useFetchJobs";
-import { useFetchTechSummary } from "@/hooks/technicians/useFetchTechSummary";
+import type { TechRevenue } from "@/hooks/dashboard/useDashboardData";
 
 const COLORS = [
   "var(--chart-1)",
@@ -21,43 +20,21 @@ const COLORS = [
   "var(--chart-5)",
 ];
 
-export function TechRevenueDonut() {
-  const { data: jobs = [] } = useFetchJobDetailed();
-  const { data: techSummaries = [] } = useFetchTechSummary();
+interface TechRevenueDonutProps {
+  data: TechRevenue[];
+}
 
-  const techNameMap = useMemo(() => {
-    const m = new Map<string, string>();
-    for (const t of techSummaries)
-      if (t.technician_id && t.name) m.set(t.technician_id, t.name);
-    return m;
-  }, [techSummaries]);
-
-  const chartData = useMemo(() => {
-    const techData: Record<string, number> = {};
-
-    jobs.forEach((job) => {
-      const tech = job.technician_id
-        ? (techNameMap.get(job.technician_id) ?? "Unassigned")
-        : "Unassigned";
-      techData[tech] = (techData[tech] || 0) + (job.subtotal || 0);
-    });
-
-    return Object.entries(techData).map(([name, value]) => ({
-      name,
-      value,
-    }));
-  }, [jobs]);
-
+export function TechRevenueDonut({ data }: TechRevenueDonutProps) {
   const chartConfig: ChartConfig = useMemo(() => {
     const config: ChartConfig = {};
-    chartData.forEach((item, idx) => {
+    data.forEach((item, idx) => {
       config[item.name] = {
         label: item.name,
         color: COLORS[idx % COLORS.length],
       };
     });
     return config;
-  }, [chartData]);
+  }, [data]);
 
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
@@ -66,42 +43,48 @@ export function TechRevenueDonut() {
           Gross Revenue by Technician
         </h3>
         <p className="text-xs text-zinc-500 dark:text-zinc-400">
-          YTD gross revenue share
+          Revenue share for selected period
         </p>
       </div>
-      <ChartContainer config={chartConfig} className="mx-auto h-70 w-full">
-        <PieChart>
-          <ChartTooltip
-            content={
-              <ChartTooltipContent
-                formatter={(value) =>
-                  `$${Number(value).toLocaleString("en-US", { minimumFractionDigits: 2 })}`
-                }
-                nameKey="name"
-              />
-            }
-          />
-          <Pie
-            data={chartData}
-            cx="50%"
-            cy="50%"
-            innerRadius={60}
-            outerRadius={100}
-            paddingAngle={3}
-            dataKey="value"
-            nameKey="name"
-            strokeWidth={2}
-          >
-            {chartData.map((_, index) => (
-              <Cell
-                key={`cell-${index}`}
-                fill={COLORS[index % COLORS.length]}
-              />
-            ))}
-          </Pie>
-          <ChartLegend content={<ChartLegendContent nameKey="name" />} />
-        </PieChart>
-      </ChartContainer>
+      {data.length === 0 ? (
+        <div className="flex h-70 items-center justify-center text-sm text-zinc-400 dark:text-zinc-500">
+          No data for this period
+        </div>
+      ) : (
+        <ChartContainer config={chartConfig} className="mx-auto h-70 w-full">
+          <PieChart>
+            <ChartTooltip
+              content={
+                <ChartTooltipContent
+                  formatter={(value) =>
+                    `$${Number(value).toLocaleString("en-US", { minimumFractionDigits: 2 })}`
+                  }
+                  nameKey="name"
+                />
+              }
+            />
+            <Pie
+              data={data}
+              cx="50%"
+              cy="50%"
+              innerRadius={60}
+              outerRadius={100}
+              paddingAngle={3}
+              dataKey="value"
+              nameKey="name"
+              strokeWidth={2}
+            >
+              {data.map((_, index) => (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={COLORS[index % COLORS.length]}
+                />
+              ))}
+            </Pie>
+            <ChartLegend content={<ChartLegendContent nameKey="name" />} />
+          </PieChart>
+        </ChartContainer>
+      )}
     </div>
   );
 }

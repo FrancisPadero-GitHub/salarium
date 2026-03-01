@@ -10,8 +10,7 @@ import {
   ChartLegendContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-import { useFetchJobDetailed } from "@/hooks/jobs/useFetchJobs";
-import { useFetchTechnicians } from "@/hooks/technicians/useFetchTechnicians";
+import type { ProfitSplit } from "@/hooks/dashboard/useDashboardData";
 
 const chartConfig = {
   "Company Net": { label: "Company Net", color: "var(--chart-1)" },
@@ -20,37 +19,12 @@ const chartConfig = {
 
 const COLORS = ["var(--chart-1)", "var(--chart-2)"];
 
-export function ProfitSplitChart() {
-  const { data: jobs = [] } = useFetchJobDetailed();
-  const { data: technicians = [] } = useFetchTechnicians();
+interface ProfitSplitChartProps {
+  data: ProfitSplit[];
+}
 
-  const chartData = useMemo(() => {
-    const currentYear = new Date().getFullYear();
-
-    // Calculate YTD totals from jobs
-    const ytdJobs = jobs.filter((j) => {
-      const jobDate = new Date(j.work_order_date || "");
-      return jobDate.getFullYear() === currentYear;
-    });
-
-    const totalCompanyNet = ytdJobs.reduce(
-      (sum, j) => sum + (j.total_company_net || 0),
-      0,
-    );
-
-    // Calculate total commissions (tech pay) from jobs
-    const totalTechPay = ytdJobs.reduce((sum, j) => {
-      const netRevenue = (j.subtotal || 0) - (j.parts_total_cost || 0);
-      const commissionRate =
-        technicians.find((t) => t.id === j.technician_id)?.commission || 0;
-      return sum + netRevenue * (commissionRate / 100);
-    }, 0);
-
-    return [
-      { name: "Company Net", value: Math.max(0, totalCompanyNet) },
-      { name: "Tech Pay", value: Math.max(0, totalTechPay) },
-    ];
-  }, [jobs, technicians]);
+export function ProfitSplitChart({ data }: ProfitSplitChartProps) {
+  const hasData = data.some((d) => d.value > 0);
 
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
@@ -59,42 +33,48 @@ export function ProfitSplitChart() {
           Revenue Split
         </h3>
         <p className="text-xs text-zinc-500 dark:text-zinc-400">
-          Company vs Technician - YTD
+          Company vs Technician for selected period
         </p>
       </div>
-      <ChartContainer config={chartConfig} className="mx-auto h-70 w-full">
-        <PieChart>
-          <ChartTooltip
-            content={
-              <ChartTooltipContent
-                formatter={(value) =>
-                  `$${Number(value).toLocaleString("en-US", { minimumFractionDigits: 2 })}`
-                }
-                nameKey="name"
-              />
-            }
-          />
-          <Pie
-            data={chartData}
-            cx="50%"
-            cy="50%"
-            innerRadius={60}
-            outerRadius={100}
-            paddingAngle={4}
-            dataKey="value"
-            nameKey="name"
-            strokeWidth={2}
-            label={({ name, percent }) =>
-              `${name} ${(percent * 100).toFixed(0)}%`
-            }
-          >
-            {chartData.map((_, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index]} />
-            ))}
-          </Pie>
-          <ChartLegend content={<ChartLegendContent nameKey="name" />} />
-        </PieChart>
-      </ChartContainer>
+      {!hasData ? (
+        <div className="flex h-70 items-center justify-center text-sm text-zinc-400 dark:text-zinc-500">
+          No data for this period
+        </div>
+      ) : (
+        <ChartContainer config={chartConfig} className="mx-auto h-70 w-full">
+          <PieChart>
+            <ChartTooltip
+              content={
+                <ChartTooltipContent
+                  formatter={(value) =>
+                    `$${Number(value).toLocaleString("en-US", { minimumFractionDigits: 2 })}`
+                  }
+                  nameKey="name"
+                />
+              }
+            />
+            <Pie
+              data={data}
+              cx="50%"
+              cy="50%"
+              innerRadius={60}
+              outerRadius={100}
+              paddingAngle={4}
+              dataKey="value"
+              nameKey="name"
+              strokeWidth={2}
+              label={({ name, percent }) =>
+                `${name} ${(percent * 100).toFixed(0)}%`
+              }
+            >
+              {data.map((_, index) => (
+                <Cell key={`cell-${index}`} fill={COLORS[index]} />
+              ))}
+            </Pie>
+            <ChartLegend content={<ChartLegendContent nameKey="name" />} />
+          </PieChart>
+        </ChartContainer>
+      )}
     </div>
   );
 }

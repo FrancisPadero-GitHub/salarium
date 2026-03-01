@@ -1,71 +1,72 @@
 "use client";
 
 import { TriangleAlert } from "lucide-react";
-import { useFetchJobsV2 } from "@/hooks/jobs/useFetchJobsV2";
-import { useFetchTechSummary } from "@/hooks/technicians/useFetchTechSummary";
+import { useDashboardData } from "@/hooks/dashboard/useDashboardData";
+import { DashboardDateFilter } from "@/components/dashboard/dashboard-date-filter";
+import { DashboardKPIs } from "@/components/dashboard/dashboard-kpis";
 import { RevenueTrendChart } from "@/components/dashboard/revenue-trend-chart";
 import { MonthlyComparisonChart } from "@/components/dashboard/monthly-comparison-chart";
 import { TechRevenueDonut } from "@/components/dashboard/tech-revenue-donut";
 import { ProfitSplitChart } from "@/components/dashboard/profit-split-chart";
-import { DashboardKPIs } from "@/components/dashboard/dashboard-kpis";
 import { RecentJobsTable } from "@/components/dashboard/recent-jobs-table";
+import { QueryStatePanel } from "@/components/misc/query-state-panel";
 
 export default function DashboardPage() {
-  const { isError: isJobsError, error: jobsError } = useFetchJobsV2();
-  const { isError: isTechniciansError, error: techniciansError } =
-    useFetchTechSummary();
-
-  const errorMessage =
-    jobsError?.message ||
-    techniciansError?.message ||
-    "Failed to fetch dashboard data";
-
-  if (isJobsError || isTechniciansError) {
-    return (
-      <div className="rounded-lg border border-zinc-200 bg-red-100 p-3 text-center dark:border-zinc-800 dark:bg-red-900/20">
-        <div className="flex items-center justify-center gap-2">
-          <TriangleAlert className="h-4 w-4 text-red-600 dark:text-red-400" />
-          <p className="text-md text-red-700 dark:text-red-400">
-            {errorMessage}
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  const currentDate = new Date().toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
+  const {
+    isLoading,
+    isError,
+    errorMessage,
+    metrics,
+    dailyRevenue,
+    monthlyBreakdown,
+    techRevenue,
+    profitSplit,
+    recentJobs,
+    techNameMap,
+    techSummaries,
+  } = useDashboardData();
 
   return (
     <div className="space-y-8">
-      <div>
-        <h2 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          Overview
-        </h2>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-          Financial snapshot for {currentDate}
-        </p>
+      {/* Header + Date Filters */}
+      <div className="space-y-4">
+        <div>
+          <h2 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+            Overview
+          </h2>
+          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+            Financial dashboard with date filtering
+          </p>
+        </div>
+        <DashboardDateFilter />
       </div>
 
-      {/* KPI Cards */}
-      <DashboardKPIs />
+      {/* Content — loading / error / data */}
+      <QueryStatePanel
+        isLoading={isLoading}
+        isError={isError}
+        errorMessage={errorMessage}
+        loadingMessage="Loading dashboard data..."
+      >
+        {/* KPI Cards */}
+        <div className="space-y-8">
+          <DashboardKPIs metrics={metrics} techCount={techSummaries.length} />
 
-      {/* Charts */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <RevenueTrendChart />
-        <MonthlyComparisonChart />
-      </div>
+          {/* Charts */}
+          <div className="grid gap-6 lg:grid-cols-2">
+            <RevenueTrendChart data={dailyRevenue} />
+            <MonthlyComparisonChart data={monthlyBreakdown} />
+          </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <TechRevenueDonut />
-        <ProfitSplitChart />
-      </div>
+          <div className="grid gap-6 lg:grid-cols-2">
+            <TechRevenueDonut data={techRevenue} />
+            <ProfitSplitChart data={profitSplit} />
+          </div>
 
-      {/* Recent Jobs */}
-      <RecentJobsTable />
+          {/* Recent Jobs */}
+          <RecentJobsTable jobs={recentJobs} techNameMap={techNameMap} />
+        </div>
+      </QueryStatePanel>
     </div>
   );
 }

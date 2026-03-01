@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
 import { Area, AreaChart, XAxis, YAxis, CartesianGrid } from "recharts";
 import {
   ChartContainer,
@@ -10,7 +9,7 @@ import {
   ChartLegendContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-import { useFetchJobDetailed } from "@/hooks/jobs/useFetchJobs";
+import type { DailyRevenue } from "@/hooks/dashboard/useDashboardData";
 
 const chartConfig = {
   gross: {
@@ -23,44 +22,11 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function RevenueTrendChart() {
-  const { data: jobs = [] } = useFetchJobDetailed();
+interface RevenueTrendChartProps {
+  data: DailyRevenue[];
+}
 
-  const chartData = useMemo(() => {
-    const dailyData: Record<
-      string,
-      { date: string; gross: number; net: number }
-    > = {};
-
-    jobs.forEach((job) => {
-      if (job.work_order_date) {
-        const date = new Date(job.work_order_date).toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-        });
-
-        if (!dailyData[date]) {
-          dailyData[date] = { date, gross: 0, net: 0 };
-        }
-        dailyData[date].gross += job.subtotal || 0;
-        dailyData[date].net += job.total_company_net || 0;
-      }
-    });
-
-    return Object.values(dailyData)
-      .sort((a, b) => {
-        const dateA = new Date(a.date);
-        const dateB = new Date(b.date);
-        return dateA.getTime() - dateB.getTime();
-      })
-      .slice(-30); // Last 30 days
-  }, [jobs]);
-
-  const currentMonth = new Date().toLocaleDateString("en-US", {
-    month: "long",
-    year: "numeric",
-  });
-
+export function RevenueTrendChart({ data }: RevenueTrendChartProps) {
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
       <div className="mb-4">
@@ -68,51 +34,57 @@ export function RevenueTrendChart() {
           Daily Revenue Trend
         </h3>
         <p className="text-xs text-zinc-500 dark:text-zinc-400">
-          {currentMonth} — Gross vs Company Net
+          Gross vs Company Net per day
         </p>
       </div>
-      <ChartContainer config={chartConfig} className="h-70 w-full">
-        <AreaChart data={chartData} margin={{ left: 12, right: 12 }}>
-          <CartesianGrid vertical={false} />
-          <XAxis
-            dataKey="date"
-            tickLine={false}
-            axisLine={false}
-            tickMargin={8}
-            tickFormatter={(v) => v.split(" ")[1]}
-          />
-          <YAxis
-            tickLine={false}
-            axisLine={false}
-            tickMargin={8}
-            tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
-          />
-          <ChartTooltip
-            content={
-              <ChartTooltipContent
-                formatter={(value) =>
-                  `$${Number(value).toLocaleString("en-US", { minimumFractionDigits: 2 })}`
-                }
-              />
-            }
-          />
-          <ChartLegend content={<ChartLegendContent />} />
-          <Area
-            type="monotone"
-            dataKey="gross"
-            stroke="var(--color-gross)"
-            fill="var(--color-gross)"
-            fillOpacity={0.4}
-          />
-          <Area
-            type="monotone"
-            dataKey="net"
-            stroke="var(--color-net)"
-            fill="var(--color-net)"
-            fillOpacity={0.4}
-          />
-        </AreaChart>
-      </ChartContainer>
+      {data.length === 0 ? (
+        <div className="flex h-70 items-center justify-center text-sm text-zinc-400 dark:text-zinc-500">
+          No data for this period
+        </div>
+      ) : (
+        <ChartContainer config={chartConfig} className="h-70 w-full">
+          <AreaChart data={data} margin={{ left: 12, right: 12 }}>
+            <CartesianGrid vertical={false} />
+            <XAxis
+              dataKey="date"
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              tickFormatter={(v) => v.split(" ")[1] ?? v}
+            />
+            <YAxis
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
+            />
+            <ChartTooltip
+              content={
+                <ChartTooltipContent
+                  formatter={(value) =>
+                    `$${Number(value).toLocaleString("en-US", { minimumFractionDigits: 2 })}`
+                  }
+                />
+              }
+            />
+            <ChartLegend content={<ChartLegendContent />} />
+            <Area
+              type="monotone"
+              dataKey="gross"
+              stroke="var(--color-gross)"
+              fill="var(--color-gross)"
+              fillOpacity={0.4}
+            />
+            <Area
+              type="monotone"
+              dataKey="net"
+              stroke="var(--color-net)"
+              fill="var(--color-net)"
+              fillOpacity={0.4}
+            />
+          </AreaChart>
+        </ChartContainer>
+      )}
     </div>
   );
 }
