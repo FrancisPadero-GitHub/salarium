@@ -337,7 +337,9 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
 
                   {/* Work Title */}
                   <div className="space-y-2">
-                    <Label htmlFor="job-work-title">Work Title</Label>
+                    <Label htmlFor="job-work-title">
+                      Work Title <span className="text-red-500">*</span>
+                    </Label>
                     <Input
                       id="job-work-title"
                       placeholder="e.g. HVAC Installation"
@@ -356,7 +358,9 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
                   {/* Date & Technician */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="job-date">Work Order Date</Label>
+                      <Label htmlFor="job-date">
+                        Work Order Date <span className="text-red-500">*</span>
+                      </Label>
                       <Input
                         id="job-date"
                         type="date"
@@ -373,7 +377,9 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="job-technician">Technician</Label>
+                      <Label htmlFor="job-technician">
+                        Technician <span className="text-red-500">*</span>
+                      </Label>
                       <Select
                         disabled={isPending}
                         value={watch("technician_id")}
@@ -491,7 +497,9 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
                   {/* Subtotal & Parts Cost */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="job-subtotal">Subtotal ($)</Label>
+                      <Label htmlFor="job-subtotal">
+                        Subtotal ($) <span className="text-red-500">*</span>
+                      </Label>
                       <Input
                         id="job-subtotal"
                         type="number"
@@ -605,7 +613,9 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
 
                   {/* Status */}
                   <div className="space-y-2">
-                    <Label htmlFor="job-status">Status</Label>
+                    <Label htmlFor="job-status">
+                      Status <span className="text-red-500">*</span>
+                    </Label>
                     <Select
                       disabled={isPending}
                       value={watch("status")}

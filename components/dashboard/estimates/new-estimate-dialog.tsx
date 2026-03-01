@@ -76,7 +76,7 @@ interface EstimateFormTypes {
 }
 
 interface PendingPromotionState {
-  workOrderId: string;
+  workOrderId?: string;
   estimateFormData: EstimateFormTypes;
 }
 
@@ -232,15 +232,15 @@ export function NewEstimateDialog({
     const isEditMode = mode === "edit";
     const workOrderId = data.work_order_id || selectedEstimate?.work_order_id;
     const shouldOpenPromoteDialog =
-      isEditMode &&
-      !!workOrderId &&
-      !isAlreadyPromoted &&
       data.status === "approved" &&
-      selectedEstimate?.estimate_status !== "approved";
+      !isAlreadyPromoted &&
+      (isEditMode
+        ? !!workOrderId && selectedEstimate?.estimate_status !== "approved"
+        : true);
 
-    if (shouldOpenPromoteDialog && workOrderId) {
+    if (shouldOpenPromoteDialog) {
       setPendingPromotion({
-        workOrderId,
+        workOrderId: workOrderId || undefined,
         estimateFormData: data,
       });
       setIsPromoteDialogOpen(true);
@@ -307,40 +307,75 @@ export function NewEstimateDialog({
 
     const { workOrderId, estimateFormData } = pendingPromotion;
 
-    promoteEstimateToJob(
-      {
-        workOrderId,
-        workOrderUpdates: {
-          technician_id: estimateFormData.technician_id,
-          work_title: estimateFormData.work_title,
-          description: estimateFormData.description || null,
-          category: estimateFormData.category || null,
-          region: estimateFormData.region || null,
-          address: estimateFormData.address || null,
-          work_order_date: estimateFormData.work_order_date,
-          notes: estimateFormData.notes || null,
+    const workOrderData = {
+      technician_id: estimateFormData.technician_id,
+      work_title: estimateFormData.work_title,
+      description: estimateFormData.description || null,
+      category: estimateFormData.category || null,
+      region: estimateFormData.region || null,
+      address: estimateFormData.address || null,
+      work_order_date: estimateFormData.work_order_date,
+      notes: estimateFormData.notes || null,
+    };
+
+    const estimateData = {
+      estimated_amount: Number(estimateFormData.estimated_amount),
+      handled_by: estimateFormData.handled_by.trim() || null,
+      status: "approved" as statusEnum,
+    };
+
+    const jobData = {
+      subtotal: Number(jobValues.subtotal),
+      parts_total_cost: Number(jobValues.parts_total_cost) || 0,
+      tip_amount: Number(jobValues.tip_amount) || 0,
+      payment_method_id: jobValues.payment_method_id || null,
+      status: jobValues.status,
+    };
+
+    if (workOrderId) {
+      // Edit mode: estimate already exists, just promote
+      promoteEstimateToJob(
+        {
+          workOrderId,
+          workOrderUpdates: workOrderData,
+          estimateUpdates: estimateData,
+          job: jobData,
         },
-        estimateUpdates: {
-          estimated_amount: Number(estimateFormData.estimated_amount),
-          handled_by: estimateFormData.handled_by.trim() || null,
-          status: "approved",
+        {
+          onSuccess: () => {
+            setIsPromoteDialogOpen(false);
+            setPendingPromotion(null);
+            closeDialog();
+          },
         },
-        job: {
-          subtotal: Number(jobValues.subtotal),
-          parts_total_cost: Number(jobValues.parts_total_cost) || 0,
-          tip_amount: Number(jobValues.tip_amount) || 0,
-          payment_method_id: jobValues.payment_method_id || null,
-          status: jobValues.status,
+      );
+    } else {
+      // Add mode: create the estimate first, then promote to job
+      addEstimate(
+        {
+          workOrder: workOrderData,
+          estimate: estimateData,
         },
-      },
-      {
-        onSuccess: () => {
-          setIsPromoteDialogOpen(false);
-          setPendingPromotion(null);
-          closeDialog();
+        {
+          onSuccess: (result) => {
+            promoteEstimateToJob(
+              {
+                workOrderId: result.workOrder.id,
+                estimateUpdates: { status: "approved" },
+                job: jobData,
+              },
+              {
+                onSuccess: () => {
+                  setIsPromoteDialogOpen(false);
+                  setPendingPromotion(null);
+                  closeDialog();
+                },
+              },
+            );
+          },
         },
-      },
-    );
+      );
+    }
   };
 
   const isPending = isAdding || isEditing || isPromoting || isDeletePending;
@@ -393,9 +428,10 @@ export function NewEstimateDialog({
             >
               <div className="overflow-y-auto flex-1 grid gap-4 py-2 pl-2 pr-1">
                 <div className="grid gap-2">
-                  <Label htmlFor="work_title">Work Title</Label>
+                  <Label htmlFor="work_title">Work Title <span className="text-red-500">*</span></Label>
                   <Input
                     id="work_title"
+                    placeholder="e.g. HVAC System Inspection"
                     {...register("work_title", {
                       required: "Work title is required",
                     })}
@@ -408,7 +444,7 @@ export function NewEstimateDialog({
                 </div>
 
                 <div className="grid gap-2">
-                  <Label htmlFor="technician_id">Technician</Label>
+                  <Label htmlFor="technician_id">Technician <span className="text-red-500">*</span></Label>
                   <Controller
                     name="technician_id"
                     control={control}
@@ -443,7 +479,7 @@ export function NewEstimateDialog({
 
                 <div className="grid gap-2 sm:grid-cols-2">
                   <div className="grid gap-2">
-                    <Label htmlFor="work_order_date">Work Order Date</Label>
+                    <Label htmlFor="work_order_date">Work Order Date <span className="text-red-500">*</span></Label>
                     <Input
                       id="work_order_date"
                       type="date"
@@ -459,12 +495,13 @@ export function NewEstimateDialog({
                   </div>
 
                   <div className="grid gap-2">
-                    <Label htmlFor="estimated_amount">Estimated Amount</Label>
+                    <Label htmlFor="estimated_amount">Estimated Amount <span className="text-red-500">*</span></Label>
                     <Input
                       id="estimated_amount"
                       type="number"
                       step="0.01"
                       min="0"
+                      placeholder="0.00"
                       {...register("estimated_amount", {
                         valueAsNumber: true,
                         required: "Estimated amount is required",
@@ -482,18 +519,18 @@ export function NewEstimateDialog({
                 <div className="grid gap-2 sm:grid-cols-2">
                   <div className="grid gap-2">
                     <Label htmlFor="category">Category</Label>
-                    <Input id="category" {...register("category")} />
+                    <Input id="category" placeholder="e.g. HVAC, Plumbing" {...register("category")} />
                   </div>
 
                   <div className="grid gap-2">
                     <Label htmlFor="region">Region</Label>
-                    <Input id="region" {...register("region")} />
+                    <Input id="region" placeholder="e.g. North, Downtown" {...register("region")} />
                   </div>
                 </div>
 
                 <div className="grid gap-2">
                   <Label htmlFor="address">Address</Label>
-                  <Input id="address" {...register("address")} />
+                  <Input id="address" placeholder="e.g. 123 Main St, Suite 4" {...register("address")} />
                 </div>
 
                 <div className="grid gap-2">
@@ -501,13 +538,14 @@ export function NewEstimateDialog({
                   <Textarea
                     id="description"
                     rows={3}
+                    placeholder="Describe the scope of work for this estimate..."
                     {...register("description")}
                   />
                 </div>
 
                 <div className="grid gap-2 sm:grid-cols-2">
                   <div className="grid gap-2">
-                    <Label htmlFor="status">Status</Label>
+                    <Label htmlFor="status">Status <span className="text-red-500">*</span></Label>
                     <Controller
                       name="status"
                       control={control}
@@ -545,13 +583,22 @@ export function NewEstimateDialog({
 
                   <div className="grid gap-2">
                     <Label htmlFor="handled_by">Handled By</Label>
-                    <Input id="handled_by" {...register("handled_by")} />
+                    <Input
+                      id="handled_by"
+                      placeholder="e.g. John Doe"
+                      {...register("handled_by")}
+                    />
                   </div>
                 </div>
 
                 <div className="grid gap-2">
                   <Label htmlFor="notes">Notes</Label>
-                  <Textarea id="notes" rows={2} {...register("notes")} />
+                  <Textarea
+                    id="notes"
+                    placeholder="Jot down important note here"
+                    rows={2}
+                    {...register("notes")}
+                  />
                 </div>
               </div>
 

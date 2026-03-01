@@ -294,7 +294,9 @@ export function AddTechnicianDialog() {
             <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 py-2">
               {/* Name */}
               <div className="space-y-2">
-                <Label htmlFor="tech-name">Name</Label>
+                <Label htmlFor="tech-name">
+                  Name <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="tech-name"
                   placeholder="Full name"
@@ -308,7 +310,9 @@ export function AddTechnicianDialog() {
 
               {/* Email */}
               <div className="space-y-2">
-                <Label htmlFor="tech-email">Email</Label>
+                <Label htmlFor="tech-email">
+                  Email <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="tech-email"
                   type="email"
@@ -331,7 +335,9 @@ export function AddTechnicianDialog() {
               <div className="grid grid-cols-2 gap-4">
                 {/* commission rate */}
                 <div className="space-y-2">
-                  <Label htmlFor="tech-commission">Commission Rate %</Label>
+                  <Label htmlFor="tech-commission">
+                    Commission Rate % <span className="text-red-500">*</span>
+                  </Label>
                   <Input
                     id="tech-commission"
                     type="number"
@@ -370,7 +376,9 @@ export function AddTechnicianDialog() {
 
                 {/* Hire Date */}
                 <div className="space-y-2">
-                  <Label htmlFor="tech-hired">Hire Date</Label>
+                  <Label htmlFor="tech-hired">
+                    Hire Date <span className="text-red-500">*</span>
+                  </Label>
                   <Input
                     id="tech-hired"
                     type="date"

@@ -332,7 +332,6 @@ export function EstimatesTable({
                 { key: "estimated_amount" as SortKey, label: "Amount" },
                 { key: "estimate_status" as SortKey, label: "Status" },
                 { key: "handled_by" as SortKey, label: "Handled By" },
-                { key: "work_title" as SortKey, label: "Actions" },
               ].map(({ key, label }, index) => (
                 <th
                   key={`${key}-${label}-${index}`}
