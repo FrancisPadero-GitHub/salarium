@@ -43,22 +43,24 @@ export function useEditJob() {
     mutationFn: dbEditJob,
     onSuccess: async (result) => {
       console.log("Job edited successfully:", result);
-      await queryClient.cancelQueries({ queryKey: ["jobs"] });
       await queryClient.invalidateQueries({
-        queryKey: ["jobs", "summary"],
+        queryKey: ["jobs"],
         exact: false,
       });
-      await queryClient.refetchQueries({
-        queryKey: ["jobs", "view-table"],
+      await queryClient.invalidateQueries({
+        queryKey: ["job-monthly-financial-summary"],
         exact: false,
       });
-      // technicians
-      await queryClient.refetchQueries({
-        queryKey: ["tech", "details"],
+      await queryClient.invalidateQueries({
+        queryKey: ["technicians"],
         exact: false,
       });
-      await queryClient.refetchQueries({
-        queryKey: ["tech", "summary"],
+      await queryClient.invalidateQueries({
+        queryKey: ["estimates"],
+        exact: false,
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["jobs", "work-orders"],
         exact: false,
       });
     },

@@ -72,14 +72,20 @@ export function useEditEstimate() {
     mutationFn: dbEditEstimate,
     onSuccess: async (result) => {
       console.log("Estimate edited successfully:", result);
-      await queryClient.cancelQueries({ queryKey: ["estimates"] });
-      await queryClient.refetchQueries({
-        queryKey: ["estimates", "view-table"],
+      await queryClient.invalidateQueries({
+        queryKey: ["estimates"],
         exact: false,
       });
-      await queryClient.cancelQueries({ queryKey: ["jobs", "work-orders"] });
-      await queryClient.refetchQueries({
+      await queryClient.invalidateQueries({
         queryKey: ["jobs", "work-orders"],
+        exact: false,
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["jobs"],
+        exact: false,
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["technicians"],
         exact: false,
       });
     },

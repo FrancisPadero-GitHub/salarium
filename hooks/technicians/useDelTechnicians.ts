@@ -25,14 +25,25 @@ export function useDelTechnician() {
     mutationFn: dbSoftDeleteTechnician,
     onSuccess: async (result) => {
       console.log("Technician soft-deleted successfully:", result);
-      await queryClient.cancelQueries({ queryKey: ["technicians"] });
       await queryClient.invalidateQueries({
         queryKey: ["technicians"],
         exact: false,
       });
-      await queryClient.refetchQueries({
-        queryKey: ["technicians"],
-        type: "active",
+      await queryClient.invalidateQueries({
+        queryKey: ["jobs"],
+        exact: false,
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["job-monthly-financial-summary"],
+        exact: false,
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["estimates"],
+        exact: false,
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["jobs", "work-orders"],
+        exact: false,
       });
     },
     onError: (error) => {

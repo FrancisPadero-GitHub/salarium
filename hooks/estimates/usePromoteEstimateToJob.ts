@@ -76,32 +76,24 @@ export function usePromoteEstimateToJob() {
   return useMutation({
     mutationFn: dbPromoteEstimateToJob,
     onSuccess: async () => {
-      await queryClient.cancelQueries({ queryKey: ["estimates"] });
-      await queryClient.refetchQueries({
-        queryKey: ["estimates", "view-table"],
-        exact: false,
-      });
-      await queryClient.cancelQueries({ queryKey: ["jobs", "work-orders"] });
-      await queryClient.refetchQueries({
-        queryKey: ["jobs", "work-orders"],
-        exact: false,
-      });
-
-      await queryClient.cancelQueries({ queryKey: ["jobs"] });
-      await queryClient.refetchQueries({
-        queryKey: ["jobs", "view-table"],
+      await queryClient.invalidateQueries({
+        queryKey: ["estimates"],
         exact: false,
       });
       await queryClient.invalidateQueries({
-        queryKey: ["jobs", "summary"],
+        queryKey: ["jobs", "work-orders"],
         exact: false,
       });
-      await queryClient.refetchQueries({
-        queryKey: ["tech", "details"],
+      await queryClient.invalidateQueries({
+        queryKey: ["jobs"],
         exact: false,
       });
-      await queryClient.refetchQueries({
-        queryKey: ["tech", "summary"],
+      await queryClient.invalidateQueries({
+        queryKey: ["job-monthly-financial-summary"],
+        exact: false,
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["technicians"],
         exact: false,
       });
     },
