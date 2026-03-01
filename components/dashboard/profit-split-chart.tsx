@@ -42,8 +42,7 @@ export function ProfitSplitChart() {
     const totalTechPay = ytdJobs.reduce((sum, j) => {
       const netRevenue = (j.subtotal || 0) - (j.parts_total_cost || 0);
       const commissionRate =
-        technicians.find((t) => t.technician_id === j.technician_id)
-          ?.commission || 0;
+        technicians.find((t) => t.id === j.technician_id)?.commission || 0;
       return sum + netRevenue * (commissionRate / 100);
     }, 0);
 
