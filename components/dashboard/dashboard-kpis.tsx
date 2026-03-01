@@ -10,6 +10,7 @@ import {
   Percent,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { QueryStatePanel } from "@/components/misc/query-state-panel";
 import { useFetchJobDetailed } from "@/hooks/jobs/useFetchJobs";
 import { useFetchTechSummary } from "@/hooks/technicians/useFetchTechSummary";
 import { useFetchJobMonthlyFinancialSummary } from "@/hooks/jobs/useFetchJobMonthlyFinancialSummary";
@@ -20,9 +21,29 @@ const fmt = (n: number) =>
   );
 
 export function DashboardKPIs() {
-  const { data: jobs = [] } = useFetchJobDetailed();
-  const { data: technicians = [] } = useFetchTechSummary();
-  const { data: monthlySummaries = [] } = useFetchJobMonthlyFinancialSummary();
+  const {
+    data: jobs = [],
+    isLoading: isJobsLoading,
+    isError: isJobsError,
+    error: jobsError,
+  } = useFetchJobDetailed();
+  const {
+    data: technicians = [],
+    isLoading: isTechLoading,
+    isError: isTechError,
+    error: techError,
+  } = useFetchTechSummary();
+  const {
+    data: monthlySummaries = [],
+    isLoading: isMonthlyLoading,
+    isError: isMonthlyError,
+    error: monthlyError,
+  } = useFetchJobMonthlyFinancialSummary();
+
+  const isLoading = isJobsLoading || isTechLoading || isMonthlyLoading;
+  const isError = isJobsError || isTechError || isMonthlyError;
+  const errorMessage =
+    jobsError?.message || techError?.message || monthlyError?.message;
 
   const metrics = useMemo(() => {
     if (jobs.length === 0)
@@ -149,35 +170,42 @@ export function DashboardKPIs() {
   ];
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      {kpis.map(({ label, value, icon: Icon, sub, up }) => (
-        <div
-          key={label}
-          className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900"
-        >
-          <div className="flex items-start justify-between">
-            <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
-              {label}
-            </p>
-            <div className="rounded-md bg-zinc-100 p-1.5 dark:bg-zinc-800">
-              <Icon className="h-4 w-4 text-zinc-600 dark:text-zinc-300" />
-            </div>
-          </div>
-          <p className="mt-3 text-2xl font-bold tabular-nums text-zinc-900 dark:text-zinc-50">
-            {value}
-          </p>
-          <p
-            className={cn(
-              "mt-1 text-xs",
-              up
-                ? "text-emerald-600 dark:text-emerald-400"
-                : "text-amber-600 dark:text-amber-400",
-            )}
+    <QueryStatePanel
+      isLoading={isLoading}
+      isError={isError}
+      errorMessage={errorMessage}
+      loadingMessage="Loading KPI cards..."
+    >
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {kpis.map(({ label, value, icon: Icon, sub, up }) => (
+          <div
+            key={label}
+            className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900"
           >
-            {sub}
-          </p>
-        </div>
-      ))}
-    </div>
+            <div className="flex items-start justify-between">
+              <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                {label}
+              </p>
+              <div className="rounded-md bg-zinc-100 p-1.5 dark:bg-zinc-800">
+                <Icon className="h-4 w-4 text-zinc-600 dark:text-zinc-300" />
+              </div>
+            </div>
+            <p className="mt-3 text-2xl font-bold tabular-nums text-zinc-900 dark:text-zinc-50">
+              {value}
+            </p>
+            <p
+              className={cn(
+                "mt-1 text-xs",
+                up
+                  ? "text-emerald-600 dark:text-emerald-400"
+                  : "text-amber-600 dark:text-amber-400",
+              )}
+            >
+              {sub}
+            </p>
+          </div>
+        ))}
+      </div>
+    </QueryStatePanel>
   );
 }

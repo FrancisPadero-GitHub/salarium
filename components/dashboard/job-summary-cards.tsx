@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { QueryStatePanel } from "@/components/misc/query-state-panel";
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
@@ -72,7 +73,7 @@ export function JobSummaryCards({
   const startDate = filter.startDate ?? "";
   const endDate = filter.endDate ?? "";
 
-  const { data: summary } = useFetchJobsV2(filter);
+  const { data: summary, isLoading, isError, error } = useFetchJobsV2(filter);
 
   const totalJobs = summary?.total_jobs ?? 0;
   const grossRevenue = summary?.gross_revenue ?? 0;
@@ -299,26 +300,33 @@ export function JobSummaryCards({
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {summaryCards.map(({ label, value, Icon, color, bg }) => (
-          <div
-            key={label}
-            className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900"
-          >
-            <div className="flex items-start justify-between">
-              <p className="text-xs font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-500">
-                {label}
-              </p>
-              <div className={cn("rounded-md p-1.5", bg)}>
-                <Icon className={cn("h-3.5 w-3.5", color)} />
+      <QueryStatePanel
+        isLoading={isLoading}
+        isError={isError}
+        errorMessage={error?.message}
+        loadingMessage="Loading summary cards..."
+      >
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {summaryCards.map(({ label, value, Icon, color, bg }) => (
+            <div
+              key={label}
+              className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900"
+            >
+              <div className="flex items-start justify-between">
+                <p className="text-xs font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-500">
+                  {label}
+                </p>
+                <div className={cn("rounded-md p-1.5", bg)}>
+                  <Icon className={cn("h-3.5 w-3.5", color)} />
+                </div>
               </div>
+              <p className={cn("mt-2 text-2xl font-bold tabular-nums", color)}>
+                {value}
+              </p>
             </div>
-            <p className={cn("mt-2 text-2xl font-bold tabular-nums", color)}>
-              {value}
-            </p>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      </QueryStatePanel>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { Bar, BarChart, XAxis, YAxis, CartesianGrid } from "recharts";
 import {
   ChartContainer,
@@ -9,7 +10,7 @@ import {
   ChartLegendContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-import { estimatesByTech } from "@/data/chart-data";
+import type { EstimatesRow } from "@/hooks/estimates/useFetchEstimates";
 
 const chartConfig = {
   value: {
@@ -22,7 +23,41 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function EstimatesByTechChart() {
+interface EstimatesByTechChartProps {
+  estimates: EstimatesRow[];
+  technicianNameById: Record<string, string>;
+}
+
+export function EstimatesByTechChart({
+  estimates,
+  technicianNameById,
+}: EstimatesByTechChartProps) {
+  const chartData = useMemo(() => {
+    const grouped = new Map<
+      string,
+      { name: string; count: number; value: number }
+    >();
+
+    for (const estimate of estimates) {
+      const technicianId = estimate.technician_id;
+      if (!technicianId) continue;
+
+      const name = technicianNameById[technicianId] ?? technicianId;
+      const existing = grouped.get(technicianId) ?? {
+        name,
+        count: 0,
+        value: 0,
+      };
+
+      existing.count += 1;
+      existing.value += Number(estimate.estimated_amount ?? 0);
+
+      grouped.set(technicianId, existing);
+    }
+
+    return Array.from(grouped.values()).sort((a, b) => b.value - a.value);
+  }, [estimates, technicianNameById]);
+
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
       <div className="mb-4">
@@ -34,7 +69,7 @@ export function EstimatesByTechChart() {
         </p>
       </div>
       <ChartContainer config={chartConfig} className="h-62.5 w-full">
-        <BarChart data={estimatesByTech} margin={{ left: 12, right: 12 }}>
+        <BarChart data={chartData} margin={{ left: 12, right: 12 }}>
           <CartesianGrid vertical={false} />
           <XAxis
             dataKey="name"

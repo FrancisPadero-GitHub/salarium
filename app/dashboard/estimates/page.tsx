@@ -197,8 +197,11 @@ export default function EstimatesPage() {
 
       {/* Charts */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <EstimateStatusChart />
-        <EstimatesByTechChart />
+        <EstimateStatusChart estimates={mergedEstimates} />
+        <EstimatesByTechChart
+          estimates={mergedEstimates}
+          technicianNameById={technicianNameById}
+        />
       </div>
 
       {/* Table */}

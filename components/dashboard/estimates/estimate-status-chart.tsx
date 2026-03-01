@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { Pie, PieChart, Cell } from "recharts";
 import {
   ChartContainer,
@@ -9,7 +10,7 @@ import {
   ChartLegendContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-import { estimateStatusData } from "@/data/chart-data";
+import type { EstimatesRow } from "@/hooks/estimates/useFetchEstimates";
 
 const chartConfig = {
   follow_up: { label: "Follow Up", color: "oklch(0.795 0.184 86.047)" },
@@ -23,7 +24,30 @@ const COLORS = [
   "var(--color-denied)",
 ];
 
-export function EstimateStatusChart() {
+interface EstimateStatusChartProps {
+  estimates: EstimatesRow[];
+}
+
+export function EstimateStatusChart({ estimates }: EstimateStatusChartProps) {
+  const chartData = useMemo(
+    () =>
+      (["follow_up", "approved", "denied"] as const).map((status) => {
+        const statusRows = estimates.filter(
+          (estimate) => estimate.estimate_status === status,
+        );
+
+        return {
+          status,
+          count: statusRows.length,
+          value: statusRows.reduce(
+            (sum, row) => sum + Number(row.estimated_amount ?? 0),
+            0,
+          ),
+        };
+      }),
+    [estimates],
+  );
+
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
       <div className="mb-4">
@@ -45,7 +69,7 @@ export function EstimateStatusChart() {
             }
           />
           <Pie
-            data={estimateStatusData}
+            data={chartData}
             cx="50%"
             cy="50%"
             innerRadius={50}
@@ -55,7 +79,7 @@ export function EstimateStatusChart() {
             nameKey="status"
             strokeWidth={2}
           >
-            {estimateStatusData.map((_, index) => (
+            {chartData.map((_, index) => (
               <Cell key={`cell-${index}`} fill={COLORS[index]} />
             ))}
           </Pie>
