@@ -237,7 +237,13 @@ export function AddEditReviewDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+        <DialogContent
+          className="max-h-[90vh] overflow-y-auto sm:max-w-lg"
+          onCloseAutoFocus={(event) => {
+            // Prevent auto-focus on close to avoid scroll jump
+            event.preventDefault();
+          }}
+        >
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold">
               {mode === "add" ? "New Review Record" : "Edit Review Record"}

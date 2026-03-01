@@ -213,7 +213,13 @@ export function AddTechnicianDialog() {
             Add Technician
           </Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent
+          className="sm:max-w-md"
+          onCloseAutoFocus={(event) => {
+            // Prevent auto-focus on close to avoid scroll jump
+            event.preventDefault();
+          }}
+        >
           <DialogHeader>
             <DialogTitle>
               {isDeleteSuccess

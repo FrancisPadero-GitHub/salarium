@@ -360,7 +360,13 @@ export function NewEstimateDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-lg max-h-[90vh] flex flex-col overflow-hidden">
+        <DialogContent
+          className="sm:max-w-lg max-h-[90vh] flex flex-col overflow-hidden"
+          onCloseAutoFocus={(event) => {
+            // Prevent auto-focus on close to avoid scroll jump
+            event.preventDefault();
+          }}
+        >
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
             <DialogDescription>{description}</DialogDescription>

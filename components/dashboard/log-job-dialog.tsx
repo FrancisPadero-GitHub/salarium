@@ -114,6 +114,7 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
     formState: { errors, isDirty },
   } = useForm<JobFormValues>({
     defaultValues: form,
+    shouldFocusError: false,
   });
 
   // Sync form when dialog opens; resolve payment_method_id from name when editing
@@ -222,6 +223,7 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
   return (
     <>
       <Dialog
+        modal
         open={isDialogOpen}
         onOpenChange={(newOpen) => {
           if (newOpen) {
@@ -242,7 +244,20 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
           </DialogTrigger>
         ) : null}
 
-        <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
+        <DialogContent
+          className="sm:max-w-2xl max-h-[90vh] flex flex-col overflow-hidden"
+          onCloseAutoFocus={(event) => {
+            // Prevent auto-focus on close to avoid scroll jump
+            event.preventDefault();
+          }}
+          // onPointerDownOutside={(e) => {
+          //   // Prevent scroll jump when clicking outside
+          //   e.preventDefault();
+          //   if (!isSubmitting && !isPending) {
+          //     closeDialog();
+          //   }
+          // }}
+        >
           <DialogHeader>
             <DialogTitle>
               {isDeleteSuccess
