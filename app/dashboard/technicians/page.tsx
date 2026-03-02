@@ -1,11 +1,11 @@
 "use client";
 
 import { TriangleAlert } from "lucide-react";
-import { TechPerformanceChart } from "@/components/dashboard/tech-performance-chart";
-import { TechJobsDonut } from "@/components/dashboard/tech-jobs-donut";
-import { AddTechnicianDialog } from "@/components/dashboard/form-technician-dialog";
-import { TechnicianCardsGrid } from "@/components/dashboard/technician-cards-grid";
-import { TechnicianTable } from "@/components/dashboard/technician-table";
+import { TechPerformanceChart } from "@/components/dashboard/technician/tech-performance-chart";
+import { TechJobsDonut } from "@/components/dashboard/technician/tech-jobs-donut";
+import { AddTechnicianDialog } from "@/components/dashboard/technician/form-technician-dialog";
+import { TechnicianCardsGrid } from "@/components/dashboard/technician/technician-cards-grid";
+import { TechnicianTable } from "@/components/dashboard/technician/technician-table";
 import { useFetchTechSummary } from "@/hooks/technicians/useFetchTechSummary";
 
 // toasts

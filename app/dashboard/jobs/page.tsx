@@ -7,13 +7,13 @@ import {
   type JobsSummaryFilter,
 } from "@/hooks/jobs/useFetchJobsV2";
 
-import { TopCategoriesChart } from "@/components/dashboard/job-top-categories";
-import { TechRevenueBarChart } from "@/components/dashboard/tech-revenue-bar-chart";
-import { TopJobsChart } from "@/components/dashboard/top-jobs-chart";
-import { LogJobDialog } from "@/components/dashboard/log-job-dialog";
-import { JobsTable } from "@/components/dashboard/jobs-table";
+import { TopCategoriesChart } from "@/components/dashboard/jobs/job-top-categories";
+import { TechRevenueBarChart } from "@/components/dashboard/technician/tech-revenue-bar-chart";
+import { TopJobsChart } from "@/components/dashboard/technician/top-jobs-chart";
+import { LogJobDialog } from "@/components/dashboard/jobs/log-job-dialog";
+import { JobsTable } from "@/components/dashboard/jobs/jobs-table";
 import { JobsErrorToast } from "@/components/toasts/jobs-error";
-import { JobSummaryCards } from "@/components/dashboard/job-summary-cards";
+import { JobSummaryCards } from "@/components/dashboard/jobs/job-summary-cards";
 
 export default function JobsPage() {
   const now = new Date();

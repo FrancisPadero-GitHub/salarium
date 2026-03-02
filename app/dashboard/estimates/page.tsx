@@ -14,7 +14,7 @@ import { EstimatesByTechChart } from "@/components/dashboard/estimates/estimates
 
 import { EstimatesTable } from "@/components/dashboard/estimates/estimates-table";
 import { NewEstimateDialog } from "@/components/dashboard/estimates/new-estimate-dialog";
-import { LogJobDialog } from "@/components/dashboard/log-job-dialog";
+import { LogJobDialog } from "@/components/dashboard/jobs/log-job-dialog";
 import { Button } from "@/components/ui/button";
 
 // hooks

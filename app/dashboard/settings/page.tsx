@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { PaymentMethodsTable } from "@/components/dashboard/settings/payment-methods-table";
-import { ReviewTypesTable } from "@/components/dashboard/settings/review-types-table";
+import { PaymentMethodsTable } from "@/components/dashboard/settings/payment-methods";
+import { ReviewTypesTable } from "@/components/dashboard/settings/review-types";
 import { cn } from "@/lib/utils";
 import { CreditCard, ClipboardList } from "lucide-react";
 

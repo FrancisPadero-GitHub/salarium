@@ -6,9 +6,9 @@ import { DashboardDateFilter } from "@/components/dashboard/dashboard-date-filte
 import { DashboardKPIs } from "@/components/dashboard/dashboard-kpis";
 import { RevenueTrendChart } from "@/components/dashboard/revenue-trend-chart";
 import { MonthlyComparisonChart } from "@/components/dashboard/monthly-comparison-chart";
-import { TechRevenueDonut } from "@/components/dashboard/tech-revenue-donut";
+import { TechRevenueDonut } from "@/components/dashboard/technician/tech-revenue-donut";
 import { ProfitSplitChart } from "@/components/dashboard/profit-split-chart";
-import { RecentJobsTable } from "@/components/dashboard/recent-jobs-table";
+import { RecentJobsTable } from "@/components/dashboard/jobs/recent-jobs-table";
 import { QueryStatePanel } from "@/components/misc/query-state-panel";
 
 export default function DashboardPage() {
