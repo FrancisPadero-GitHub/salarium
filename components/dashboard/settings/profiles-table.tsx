@@ -73,7 +73,7 @@ export function ProfilesTable() {
                     Role
                   </TableHead>
                   <TableHead className="font-semibold text-zinc-700 dark:text-zinc-300">
-                    Website
+                    Email
                   </TableHead>
                   <TableHead className="font-semibold text-zinc-700 dark:text-zinc-300 text-right">
                     Last Updated
@@ -120,19 +120,8 @@ export function ProfilesTable() {
                       <TableCell>
                         <RoleBadge role={profile.role} />
                       </TableCell>
-                      <TableCell className="text-zinc-600 dark:text-zinc-400">
-                        {profile.website ? (
-                          <a
-                            href={profile.website}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="hover:underline text-sm truncate max-w-40 block"
-                          >
-                            {profile.website}
-                          </a>
-                        ) : (
-                          <span className="text-zinc-400 italic">—</span>
-                        )}
+                      <TableCell>
+                        <RoleBadge role={profile.email} />
                       </TableCell>
                       <TableCell className="text-right text-sm text-zinc-500 dark:text-zinc-400">
                         {updatedAt}
