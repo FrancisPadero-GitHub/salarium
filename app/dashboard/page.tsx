@@ -8,6 +8,7 @@ import { MonthlyComparisonChart } from "@/components/dashboard/monthly-compariso
 import { TechRevenueDonut } from "@/components/dashboard/technician/tech-revenue-donut";
 import { ProfitSplitChart } from "@/components/dashboard/profit-split-chart";
 import { RecentJobsTable } from "@/components/dashboard/jobs/recent-jobs-table";
+import { DashboardExportButton } from "@/components/dashboard/dashboard-export-button";
 import { QueryStatePanel } from "@/components/misc/query-state-panel";
 
 export default function DashboardPage() {
@@ -23,9 +24,11 @@ export default function DashboardPage() {
     monthlyBreakdown,
     techRevenue,
     profitSplit,
+    jobs,
     recentJobs,
     techNameMap,
     techSummaries,
+    technicians,
   } = useDashboardData();
 
   return (
@@ -40,7 +43,14 @@ export default function DashboardPage() {
             Financial dashboard with date filtering
           </p>
         </div>
-        <DashboardDateFilter />
+        <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+          <DashboardDateFilter />
+          <DashboardExportButton
+            currentJobs={jobs}
+            technicians={technicians}
+            techNameMap={techNameMap}
+          />
+        </div>
       </div>
 
       {/* Content, loading / error / data */}
