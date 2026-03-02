@@ -165,13 +165,22 @@ export function EstimateViewDialog({
             )}
           </div>
 
-          <DialogFooter className="flex flex-row items-center justify-between sm:justify-between">
+          <DialogFooter className="border-t border-zinc-200 pt-4 dark:border-zinc-700 sm:justify-between">
             <DialogClose asChild>
               <Button variant="outline" size="sm">
                 Close
               </Button>
             </DialogClose>
             <div className="flex gap-2">
+              <Button
+                variant="destructive"
+                size="sm"
+                className="gap-1.5"
+                onClick={onDelete}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                Delete
+              </Button>
               <Button
                 variant="outline"
                 size="sm"
@@ -183,15 +192,6 @@ export function EstimateViewDialog({
               >
                 <Pencil className="h-3.5 w-3.5" />
                 Edit
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-1.5 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950 dark:hover:text-red-300"
-                onClick={onDelete}
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-                Delete
               </Button>
             </div>
           </DialogFooter>
