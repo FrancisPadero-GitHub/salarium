@@ -1,5 +1,4 @@
 "use client";
-import { Spinner } from "@/components/ui/spinner";
 import { Pie, PieChart, Cell } from "recharts";
 import {
   ChartContainer,
@@ -9,6 +8,7 @@ import {
   ChartLegendContent,
   type ChartConfig,
 } from "@/components/ui/chart";
+import { QueryStatePanel } from "@/components/misc/query-state-panel";
 
 const PALETTE = [
   "var(--chart-1)",
@@ -41,55 +41,55 @@ export function TopCategoriesChart() {
     ]),
   ) satisfies ChartConfig;
 
-  if (isLoading)
-    return (
-      <div className="flex items-center justify-center">
-        <Spinner />
-      </div>
-    );
-  if (isError) return <div>Error loading technicians</div>;
-
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-      <div className="mb-4">
-        <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
-          Top Categories
-        </h3>
-        <p className="text-xs text-zinc-500 dark:text-zinc-400">
-          Distribution by job count
-        </p>
+    <QueryStatePanel
+      isLoading={isLoading}
+      isError={isError}
+      errorMessage="Failed to load top categories chart."
+      loadingMessage="Loading top categories chart..."
+      className="min-h-80"
+    >
+      <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="mb-4">
+          <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
+            Top Categories
+          </h3>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            Distribution by job count
+          </p>
+        </div>
+        <ChartContainer config={chartConfig} className="mx-auto h-62.5 w-full">
+          <PieChart>
+            <ChartTooltip
+              content={
+                <ChartTooltipContent
+                  formatter={(value) => `${value} jobs`}
+                  nameKey="category"
+                />
+              }
+            />
+            <Pie
+              data={categoryChartData}
+              cx="50%"
+              cy="50%"
+              innerRadius={50}
+              outerRadius={85}
+              paddingAngle={3}
+              dataKey="count"
+              nameKey="category"
+              strokeWidth={2}
+            >
+              {categoryChartData.map((_, index) => (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={PALETTE[index % PALETTE.length]}
+                />
+              ))}
+            </Pie>
+            <ChartLegend content={<ChartLegendContent nameKey="category" />} />
+          </PieChart>
+        </ChartContainer>
       </div>
-      <ChartContainer config={chartConfig} className="mx-auto h-62.5 w-full">
-        <PieChart>
-          <ChartTooltip
-            content={
-              <ChartTooltipContent
-                formatter={(value) => `${value} jobs`}
-                nameKey="category"
-              />
-            }
-          />
-          <Pie
-            data={categoryChartData}
-            cx="50%"
-            cy="50%"
-            innerRadius={50}
-            outerRadius={85}
-            paddingAngle={3}
-            dataKey="count"
-            nameKey="category"
-            strokeWidth={2}
-          >
-            {categoryChartData.map((_, index) => (
-              <Cell
-                key={`cell-${index}`}
-                fill={PALETTE[index % PALETTE.length]}
-              />
-            ))}
-          </Pie>
-          <ChartLegend content={<ChartLegendContent nameKey="category" />} />
-        </PieChart>
-      </ChartContainer>
-    </div>
+    </QueryStatePanel>
   );
 }

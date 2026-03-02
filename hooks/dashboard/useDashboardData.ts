@@ -98,6 +98,42 @@ export function useDashboardData() {
     techSummaryQuery.error?.message ??
     techniciansQuery.error?.message;
 
+  const kpisState = {
+    isLoading,
+    isError,
+    errorMessage,
+  };
+
+  const revenueTrendState = {
+    isLoading: jobsQuery.isLoading || techniciansQuery.isLoading,
+    isError: jobsQuery.isError || techniciansQuery.isError,
+    errorMessage: jobsQuery.error?.message ?? techniciansQuery.error?.message,
+  };
+
+  const monthlyComparisonState = {
+    isLoading: jobsQuery.isLoading || techniciansQuery.isLoading,
+    isError: jobsQuery.isError || techniciansQuery.isError,
+    errorMessage: jobsQuery.error?.message ?? techniciansQuery.error?.message,
+  };
+
+  const techRevenueState = {
+    isLoading: jobsQuery.isLoading || techSummaryQuery.isLoading,
+    isError: jobsQuery.isError || techSummaryQuery.isError,
+    errorMessage: jobsQuery.error?.message ?? techSummaryQuery.error?.message,
+  };
+
+  const profitSplitState = {
+    isLoading: jobsQuery.isLoading || techniciansQuery.isLoading,
+    isError: jobsQuery.isError || techniciansQuery.isError,
+    errorMessage: jobsQuery.error?.message ?? techniciansQuery.error?.message,
+  };
+
+  const recentJobsState = {
+    isLoading: jobsQuery.isLoading || techSummaryQuery.isLoading,
+    isError: jobsQuery.isError || techSummaryQuery.isError,
+    errorMessage: jobsQuery.error?.message ?? techSummaryQuery.error?.message,
+  };
+
   // Build a tech name map
   const techNameMap = useMemo(() => {
     const m = new Map<string, string>();
@@ -311,6 +347,12 @@ export function useDashboardData() {
     isLoading,
     isError,
     errorMessage,
+    kpisState,
+    revenueTrendState,
+    monthlyComparisonState,
+    techRevenueState,
+    profitSplitState,
+    recentJobsState,
 
     // Raw data
     jobs,

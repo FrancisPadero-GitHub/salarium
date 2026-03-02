@@ -2,6 +2,7 @@
 
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
+import { AlertCircle } from "lucide-react";
 
 interface QueryStatePanelProps {
   isLoading: boolean;
@@ -40,11 +41,14 @@ export function QueryStatePanel({
     return (
       <div
         className={cn(
-          "rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-900/20 dark:text-red-300",
+          "flex min-h-40 items-center justify-center rounded-xl border border-red-200 bg-white p-4 dark:border-red-900/40 dark:bg-zinc-900",
           className,
         )}
       >
-        {errorMessage ?? "Failed to load data."}
+        <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
+          <AlertCircle className="size-4 shrink-0" />
+          <span>{errorMessage ?? "Failed to load data."}</span>
+        </div>
       </div>
     );
   }

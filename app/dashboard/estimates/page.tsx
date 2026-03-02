@@ -14,7 +14,7 @@ import { EstimatesByTechChart } from "@/components/dashboard/estimates/estimates
 
 import { EstimatesTable } from "@/components/dashboard/estimates/estimates-table";
 import { NewEstimateDialog } from "@/components/dashboard/estimates/new-estimate-dialog";
-import { LogJobDialog } from "@/components/dashboard/jobs/log-job-dialog";
+import { QueryStatePanel } from "@/components/misc/query-state-panel";
 import { Button } from "@/components/ui/button";
 
 // hooks
@@ -55,13 +55,23 @@ export default function EstimatesPage() {
 
   const {
     data: estimates = [],
-    isLoading,
-    isError,
-    error,
+    isLoading: isEstimatesLoading,
+    isError: isEstimatesError,
+    error: estimatesError,
   } = useFetchEstimates();
-  const { data: workOrders = [] } = useFetchWorkOrdersRow();
+  const {
+    data: workOrders = [],
+    isLoading: isWorkOrdersLoading,
+    isError: isWorkOrdersError,
+    error: workOrdersError,
+  } = useFetchWorkOrdersRow();
 
-  const { data: technicians = [] } = useFetchTechnicians();
+  const {
+    data: technicians = [],
+    isLoading: isTechniciansLoading,
+    isError: isTechniciansError,
+    error: techniciansError,
+  } = useFetchTechnicians();
 
   // merges estimate data with related work order notes for display in the table
   const mergedEstimates = useMemo<EstimateWithNotes[]>(() => {
@@ -104,8 +114,6 @@ export default function EstimatesPage() {
     [mergedEstimates],
   );
 
-  const handlePromoteToJob = () => {};
-
   const technicianNameById = useMemo(
     () =>
       technicians.reduce(
@@ -117,6 +125,40 @@ export default function EstimatesPage() {
       ),
     [technicians],
   );
+
+  const summaryState = {
+    isLoading: isEstimatesLoading,
+    isError: isEstimatesError,
+    errorMessage: estimatesError?.message,
+  };
+
+  const pipelineState = {
+    isLoading: isEstimatesLoading,
+    isError: isEstimatesError,
+    errorMessage: estimatesError?.message,
+  };
+
+  const estimateStatusChartState = {
+    isLoading: isEstimatesLoading,
+    isError: isEstimatesError,
+    errorMessage: estimatesError?.message,
+  };
+
+  const estimatesByTechChartState = {
+    isLoading: isEstimatesLoading || isTechniciansLoading,
+    isError: isEstimatesError || isTechniciansError,
+    errorMessage: estimatesError?.message ?? techniciansError?.message,
+  };
+
+  const estimatesTableState = {
+    isLoading:
+      isEstimatesLoading || isWorkOrdersLoading || isTechniciansLoading,
+    isError: isEstimatesError || isWorkOrdersError || isTechniciansError,
+    errorMessage:
+      estimatesError?.message ??
+      workOrdersError?.message ??
+      techniciansError?.message,
+  };
 
   const handleOpenAddDialog = () => {
     setSelectedEstimate(null);
@@ -139,7 +181,9 @@ export default function EstimatesPage() {
             Estimates / Qoutation
           </h2>
           <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-            {/* {summary?.total_jobs ?? 0} jobs logged */}
+            {isEstimatesLoading
+              ? "Loading estimates..."
+              : `${mergedEstimates.length} estimates logged`}
           </p>
         </div>
         <div className="flex items-center justify-between">
@@ -157,69 +201,95 @@ export default function EstimatesPage() {
         onOpenChange={setIsDialogOpen}
       />
 
-      {isLoading ? (
-        <div className="rounded-xl border border-zinc-200 bg-white p-4 text-sm text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
-          Loading estimates...
-        </div>
-      ) : null}
-
-      {isError ? (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-900/20 dark:text-red-300">
-          {error?.message ?? "Failed to load estimates."}
-        </div>
-      ) : null}
-
       {/* Status summary */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-        {(["follow_up", "approved", "denied"] as EstimateStatus[]).map(
-          (status) => {
-            return (
-              <div
-                key={status}
-                className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900"
-              >
-                <span
-                  className={cn(
-                    "inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium",
-                    statusStyles[status],
-                  )}
+      <QueryStatePanel
+        isLoading={summaryState.isLoading}
+        isError={summaryState.isError}
+        errorMessage={summaryState.errorMessage}
+        loadingMessage="Loading estimate summary..."
+      >
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+          {(["follow_up", "approved", "denied"] as EstimateStatus[]).map(
+            (status) => {
+              return (
+                <div
+                  key={status}
+                  className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900"
                 >
-                  {statusLabels[status]}
-                </span>
-                <p className="mt-3 text-2xl font-bold tabular-nums text-zinc-900 dark:text-zinc-50">
-                  {counts[status] ?? 0}
-                </p>
-              </div>
-            );
-          },
-        )}
-      </div>
+                  <span
+                    className={cn(
+                      "inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium",
+                      statusStyles[status],
+                    )}
+                  >
+                    {statusLabels[status]}
+                  </span>
+                  <p className="mt-3 text-2xl font-bold tabular-nums text-zinc-900 dark:text-zinc-50">
+                    {counts[status] ?? 0}
+                  </p>
+                </div>
+              );
+            },
+          )}
+        </div>
+      </QueryStatePanel>
 
       {/* Pipeline value */}
-      <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-        <p className="text-xs font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-500">
-          Total Pipeline Value
-        </p>
-        <p className="mt-1 text-2xl font-bold tabular-nums text-zinc-900 dark:text-zinc-50">
-          {fmt(totalValue)}
-        </p>
-      </div>
+      <QueryStatePanel
+        isLoading={pipelineState.isLoading}
+        isError={pipelineState.isError}
+        errorMessage={pipelineState.errorMessage}
+        loadingMessage="Loading pipeline value..."
+      >
+        <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+          <p className="text-xs font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-500">
+            Total Pipeline Value
+          </p>
+          <p className="mt-1 text-2xl font-bold tabular-nums text-zinc-900 dark:text-zinc-50">
+            {fmt(totalValue)}
+          </p>
+        </div>
+      </QueryStatePanel>
 
       {/* Charts */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <EstimateStatusChart estimates={mergedEstimates} />
-        <EstimatesByTechChart
-          estimates={mergedEstimates}
-          technicianNameById={technicianNameById}
-        />
+        <QueryStatePanel
+          isLoading={estimateStatusChartState.isLoading}
+          isError={estimateStatusChartState.isError}
+          errorMessage={estimateStatusChartState.errorMessage}
+          loadingMessage="Loading estimate status chart..."
+          className="min-h-80"
+        >
+          <EstimateStatusChart estimates={mergedEstimates} />
+        </QueryStatePanel>
+        <QueryStatePanel
+          isLoading={estimatesByTechChartState.isLoading}
+          isError={estimatesByTechChartState.isError}
+          errorMessage={estimatesByTechChartState.errorMessage}
+          loadingMessage="Loading estimates by technician chart..."
+          className="min-h-80"
+        >
+          <EstimatesByTechChart
+            estimates={mergedEstimates}
+            technicianNameById={technicianNameById}
+          />
+        </QueryStatePanel>
       </div>
 
       {/* Table */}
-      <EstimatesTable
-        estimates={mergedEstimates}
-        technicianNameById={technicianNameById}
-        onEdit={handleOpenEditDialog}
-      />
+      <QueryStatePanel
+        isLoading={estimatesTableState.isLoading}
+        isError={estimatesTableState.isError}
+        errorMessage={estimatesTableState.errorMessage}
+        loadingMessage="Loading estimates table..."
+        className="min-h-80"
+      >
+        <EstimatesTable
+          estimates={mergedEstimates}
+          technicianNameById={technicianNameById}
+          onEdit={handleOpenEditDialog}
+        />
+      </QueryStatePanel>
     </div>
   );
 }

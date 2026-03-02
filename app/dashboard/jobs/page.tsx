@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { TriangleAlert } from "lucide-react";
 import {
   useFetchJobsV2,
   type JobsSummaryFilter,
@@ -12,7 +11,6 @@ import { TechRevenueBarChart } from "@/components/dashboard/technician/tech-reve
 import { TopJobsChart } from "@/components/dashboard/technician/top-jobs-chart";
 import { LogJobDialog } from "@/components/dashboard/jobs/log-job-dialog";
 import { JobsTable } from "@/components/dashboard/jobs/jobs-table";
-import { JobsErrorToast } from "@/components/toasts/jobs-error";
 import { JobSummaryCards } from "@/components/dashboard/jobs/job-summary-cards";
 
 export default function JobsPage() {
@@ -39,33 +37,7 @@ export default function JobsPage() {
     };
   }, [mode, year, month, isoWeek, date, startDate, endDate]);
 
-  const { isError: isJobsError, error: jobsError } = useFetchJobsV2(filter);
-  const {
-    data: summary,
-    isError: jobSummaryError,
-    error: jobSummaryErrorMessage,
-  } = useFetchJobsV2(filter);
-
-  const errorMessage =
-    jobsError?.message ||
-    jobSummaryErrorMessage?.message ||
-    "Failed to fetch jobs";
-
-  if (isJobsError || jobSummaryError) {
-    return (
-      <>
-        <JobsErrorToast />
-        <div className="rounded-lg border border-zinc-200 bg-red-100 p-3 text-center dark:border-zinc-800 dark:bg-red-900/20">
-          <div className="flex items-center justify-center gap-2">
-            <TriangleAlert className="h-4 w-4 text-red-600 dark:text-red-400" />
-            <p className="text-md text-red-700 dark:text-red-400">
-              {errorMessage}
-            </p>
-          </div>
-        </div>
-      </>
-    );
-  }
+  const { data: summary } = useFetchJobsV2(filter);
 
   return (
     <div className="space-y-6">

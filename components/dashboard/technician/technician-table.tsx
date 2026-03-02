@@ -16,7 +16,7 @@ import {
   useDelTechnician,
   useRestoreTechnician,
 } from "@/hooks/technicians/useDelTechnicians";
-import { Spinner } from "@/components/ui/spinner";
+import { QueryStatePanel } from "@/components/misc/query-state-panel";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -260,219 +260,213 @@ export function TechnicianTable() {
     });
   }
 
-  if (isLoading)
-    return (
-      <div className="flex items-center justify-center py-10">
-        <Spinner />
-      </div>
-    );
-
-  if (isError)
-    return (
-      <div className="rounded-lg border border-zinc-200 bg-red-100 p-4 text-center dark:border-zinc-800 dark:bg-red-900/20">
-        <p className="text-sm text-red-700 dark:text-red-400">
-          Failed to load table
-        </p>
-      </div>
-    );
-
   return (
     <>
-      <div className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-        {/* Toolbar */}
-        <div className="flex flex-col gap-3 border-b border-zinc-200 p-4 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
-              Technicians
-            </h3>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              {filtered.length} of {mergedData.length} technicians
-            </p>
-          </div>
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <Input
-              placeholder="Search name, email…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="h-8 w-full text-sm sm:w-56"
-            />
-            <div className="flex gap-1">
-              {COMMISSION_FILTERS.map((f) => (
+      <QueryStatePanel
+        isLoading={isLoading}
+        isError={isError}
+        errorMessage="Failed to load technicians table"
+        loadingMessage="Loading technicians table..."
+        className="min-h-80"
+      >
+        <div className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+          {/* Toolbar */}
+          <div className="flex flex-col gap-3 border-b border-zinc-200 p-4 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
+                Technicians
+              </h3>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                {filtered.length} of {mergedData.length} technicians
+              </p>
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Input
+                placeholder="Search name, email…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="h-8 w-full text-sm sm:w-56"
+              />
+              <div className="flex gap-1">
+                {COMMISSION_FILTERS.map((f) => (
+                  <button
+                    key={f.value}
+                    onClick={() => setCommissionFilter(f.value)}
+                    className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                      commissionFilter === f.value
+                        ? "bg-zinc-900 text-white dark:bg-zinc-50 dark:text-zinc-900"
+                        : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
                 <button
-                  key={f.value}
-                  onClick={() => setCommissionFilter(f.value)}
+                  onClick={() => setShowRemoved(!showRemoved)}
                   className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
-                    commissionFilter === f.value
-                      ? "bg-zinc-900 text-white dark:bg-zinc-50 dark:text-zinc-900"
+                    showRemoved
+                      ? "bg-rose-600 text-white dark:bg-rose-700"
                       : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
                   }`}
                 >
-                  {f.label}
+                  Removed
                 </button>
-              ))}
-              <button
-                onClick={() => setShowRemoved(!showRemoved)}
-                className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
-                  showRemoved
-                    ? "bg-rose-600 text-white dark:bg-rose-700"
-                    : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
-                }`}
-              >
-                Removed
-              </button>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Table */}
-        <div className="min-h-96 max-h-96 overflow-x-auto">
-          <Table className="min-w-225 text-sm">
-            <TableHeader className="sticky top-0 bg-white dark:bg-zinc-900">
-              <TableRow className="border-zinc-200 dark:border-zinc-800">
-                {(
-                  [
-                    { key: "name", label: "Name" },
-                    { key: "commission", label: "Commission" },
-                    { key: "total_jobs", label: "Jobs" },
-                    { key: "hired_date", label: "Hired" },
-                  ] as { key: SortKey; label: string }[]
-                ).map(({ key, label }) => (
-                  <TableHead
-                    key={key}
-                    onClick={() => handleSort(key)}
-                    className="cursor-pointer select-none text-xs font-semibold uppercase tracking-wide text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
-                  >
-                    {label}
-                    <SortIcon col={key} />
-                  </TableHead>
-                ))}
-                <TableHead className="text-xs font-semibold uppercase  text-zinc-500 dark:text-zinc-400">
-                  Contact
-                </TableHead>
-                <TableHead className="text-center text-xs font-semibold uppercase  text-zinc-500 dark:text-zinc-400">
-                  Actions
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filtered.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={9}
-                    className="py-8 text-center text-sm text-zinc-400 dark:text-zinc-600"
-                  >
-                    No technicians match your filters.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filtered.map((tech) => {
-                  const initials = (tech.name || "?")
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("");
-                  const isRemoved = tech.deleted_at !== null;
-                  const canView = !showRemoved && !isRemoved;
-                  return (
-                    <TableRow
-                      key={tech.technician_id}
-                      onClick={() => canView && setSelectedTech(tech)}
-                      className={cn(
-                        canView
-                          ? "cursor-pointer border-zinc-100 transition-colors hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-800/50"
-                          : "cursor-default border-zinc-100 dark:border-zinc-800",
-                        isRemoved &&
-                          "opacity-50 line-through decoration-zinc-400",
-                      )}
+          {/* Table */}
+          <div className="min-h-96 max-h-96 overflow-x-auto">
+            <Table className="min-w-225 text-sm">
+              <TableHeader className="sticky top-0 bg-white dark:bg-zinc-900">
+                <TableRow className="border-zinc-200 dark:border-zinc-800">
+                  {(
+                    [
+                      { key: "name", label: "Name" },
+                      { key: "commission", label: "Commission" },
+                      { key: "total_jobs", label: "Jobs" },
+                      { key: "hired_date", label: "Hired" },
+                    ] as { key: SortKey; label: string }[]
+                  ).map(({ key, label }) => (
+                    <TableHead
+                      key={key}
+                      onClick={() => handleSort(key)}
+                      className="cursor-pointer select-none text-xs font-semibold uppercase tracking-wide text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
                     >
-                      {/* Name */}
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xs font-semibold text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-                            {initials}
-                          </div>
-                          <span className="font-medium text-zinc-900 dark:text-zinc-50">
-                            {tech.name || "Unknown"}
-                          </span>
-                        </div>
-                      </TableCell>
-                      {/* Commission */}
-                      <TableCell className="text-zinc-700 dark:text-zinc-300">
-                        {tech.commission ?? 0} %
-                      </TableCell>
-                      {/* Jobs */}
-                      <TableCell className="font-semibold text-zinc-900 dark:text-zinc-50">
-                        {tech.total_jobs ?? 0}
-                      </TableCell>
-
-                      {/* Hired */}
-                      <TableCell className="text-zinc-500 dark:text-zinc-400">
-                        {tech.hired_date
-                          ? new Date(tech.hired_date).toLocaleDateString()
-                          : "N/A"}
-                      </TableCell>
-                      {/* Contact */}
-                      <TableCell>
-                        <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                          {tech.email || "—"}
-                        </span>
-                      </TableCell>
-                      {/* Actions */}
-                      <TableCell
-                        onClick={(e) => e.stopPropagation()}
-                        className="text-center"
+                      {label}
+                      <SortIcon col={key} />
+                    </TableHead>
+                  ))}
+                  <TableHead className="text-xs font-semibold uppercase  text-zinc-500 dark:text-zinc-400">
+                    Contact
+                  </TableHead>
+                  <TableHead className="text-center text-xs font-semibold uppercase  text-zinc-500 dark:text-zinc-400">
+                    Actions
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filtered.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={9}
+                      className="py-8 text-center text-sm text-zinc-400 dark:text-zinc-600"
+                    >
+                      No technicians match your filters.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filtered.map((tech) => {
+                    const initials = (tech.name || "?")
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("");
+                    const isRemoved = tech.deleted_at !== null;
+                    const canView = !showRemoved && !isRemoved;
+                    return (
+                      <TableRow
+                        key={tech.technician_id}
+                        onClick={() => canView && setSelectedTech(tech)}
+                        className={cn(
+                          canView
+                            ? "cursor-pointer border-zinc-100 transition-colors hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-800/50"
+                            : "cursor-default border-zinc-100 dark:border-zinc-800",
+                          isRemoved &&
+                            "opacity-50 line-through decoration-zinc-400",
+                        )}
                       >
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7"
-                            >
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            {showRemoved ? (
-                              <DropdownMenuItem
-                                className="text-emerald-600 focus:text-emerald-600 dark:text-emerald-400 dark:focus:text-emerald-400"
-                                onClick={() =>
-                                  handleUnremove(tech.technician_id ?? "")
-                                }
+                        {/* Name */}
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xs font-semibold text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+                              {initials}
+                            </div>
+                            <span className="font-medium text-zinc-900 dark:text-zinc-50">
+                              {tech.name || "Unknown"}
+                            </span>
+                          </div>
+                        </TableCell>
+                        {/* Commission */}
+                        <TableCell className="text-zinc-700 dark:text-zinc-300">
+                          {tech.commission ?? 0} %
+                        </TableCell>
+                        {/* Jobs */}
+                        <TableCell className="font-semibold text-zinc-900 dark:text-zinc-50">
+                          {tech.total_jobs ?? 0}
+                        </TableCell>
+
+                        {/* Hired */}
+                        <TableCell className="text-zinc-500 dark:text-zinc-400">
+                          {tech.hired_date
+                            ? new Date(tech.hired_date).toLocaleDateString()
+                            : "N/A"}
+                        </TableCell>
+                        {/* Contact */}
+                        <TableCell>
+                          <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                            {tech.email || "—"}
+                          </span>
+                        </TableCell>
+                        {/* Actions */}
+                        <TableCell
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-center"
+                        >
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7"
                               >
-                                <Trash2 className="mr-2 h-3.5 w-3.5" />
-                                Unremove
-                              </DropdownMenuItem>
-                            ) : (
-                              <>
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              {showRemoved ? (
                                 <DropdownMenuItem
-                                  onClick={() => handleEditTech(tech)}
-                                >
-                                  <Pencil className="mr-2 h-3.5 w-3.5" />
-                                  Edit
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                  className="text-rose-600 focus:text-rose-600 dark:text-rose-400 dark:focus:text-rose-400"
+                                  className="text-emerald-600 focus:text-emerald-600 dark:text-emerald-400 dark:focus:text-emerald-400"
                                   onClick={() =>
-                                    setConfirmDeleteId(tech.technician_id ?? "")
+                                    handleUnremove(tech.technician_id ?? "")
                                   }
                                 >
                                   <Trash2 className="mr-2 h-3.5 w-3.5" />
-                                  Remove
+                                  Unremove
                                 </DropdownMenuItem>
-                              </>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
+                              ) : (
+                                <>
+                                  <DropdownMenuItem
+                                    onClick={() => handleEditTech(tech)}
+                                  >
+                                    <Pencil className="mr-2 h-3.5 w-3.5" />
+                                    Edit
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    className="text-rose-600 focus:text-rose-600 dark:text-rose-400 dark:focus:text-rose-400"
+                                    onClick={() =>
+                                      setConfirmDeleteId(
+                                        tech.technician_id ?? "",
+                                      )
+                                    }
+                                  >
+                                    <Trash2 className="mr-2 h-3.5 w-3.5" />
+                                    Remove
+                                  </DropdownMenuItem>
+                                </>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </div>
-      </div>
+      </QueryStatePanel>
 
       <TechnicianDetailDialog
         selectedTech={selectedTech}

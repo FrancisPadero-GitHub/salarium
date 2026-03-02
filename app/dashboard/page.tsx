@@ -1,6 +1,5 @@
 "use client";
 
-import { TriangleAlert } from "lucide-react";
 import { useDashboardData } from "@/hooks/dashboard/useDashboardData";
 import { DashboardDateFilter } from "@/components/dashboard/dashboard-date-filter";
 import { DashboardKPIs } from "@/components/dashboard/dashboard-kpis";
@@ -13,9 +12,12 @@ import { QueryStatePanel } from "@/components/misc/query-state-panel";
 
 export default function DashboardPage() {
   const {
-    isLoading,
-    isError,
-    errorMessage,
+    kpisState,
+    revenueTrendState,
+    monthlyComparisonState,
+    techRevenueState,
+    profitSplitState,
+    recentJobsState,
     metrics,
     dailyRevenue,
     monthlyBreakdown,
@@ -42,31 +44,70 @@ export default function DashboardPage() {
       </div>
 
       {/* Content, loading / error / data */}
-      <QueryStatePanel
-        isLoading={isLoading}
-        isError={isError}
-        errorMessage={errorMessage}
-        loadingMessage="Loading dashboard data..."
-      >
-        {/* KPI Cards */}
-        <div className="space-y-8">
+      <div className="space-y-8">
+        <QueryStatePanel
+          isLoading={kpisState.isLoading}
+          isError={kpisState.isError}
+          errorMessage={kpisState.errorMessage}
+          loadingMessage="Loading KPI cards..."
+        >
           <DashboardKPIs metrics={metrics} techCount={techSummaries.length} />
+        </QueryStatePanel>
 
-          {/* Charts */}
-          <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-6 lg:grid-cols-2">
+          <QueryStatePanel
+            isLoading={revenueTrendState.isLoading}
+            isError={revenueTrendState.isError}
+            errorMessage={revenueTrendState.errorMessage}
+            loadingMessage="Loading revenue trend chart..."
+            className="min-h-80"
+          >
             <RevenueTrendChart data={dailyRevenue} />
+          </QueryStatePanel>
+
+          <QueryStatePanel
+            isLoading={monthlyComparisonState.isLoading}
+            isError={monthlyComparisonState.isError}
+            errorMessage={monthlyComparisonState.errorMessage}
+            loadingMessage="Loading monthly comparison chart..."
+            className="min-h-80"
+          >
             <MonthlyComparisonChart data={monthlyBreakdown} />
-          </div>
-
-          <div className="grid gap-6 lg:grid-cols-2">
-            <TechRevenueDonut data={techRevenue} />
-            <ProfitSplitChart data={profitSplit} />
-          </div>
-
-          {/* Recent Jobs */}
-          <RecentJobsTable jobs={recentJobs} techNameMap={techNameMap} />
+          </QueryStatePanel>
         </div>
-      </QueryStatePanel>
+
+        <div className="grid gap-6 lg:grid-cols-2">
+          <QueryStatePanel
+            isLoading={techRevenueState.isLoading}
+            isError={techRevenueState.isError}
+            errorMessage={techRevenueState.errorMessage}
+            loadingMessage="Loading technician revenue chart..."
+            className="min-h-80"
+          >
+            <TechRevenueDonut data={techRevenue} />
+          </QueryStatePanel>
+
+          <QueryStatePanel
+            isLoading={profitSplitState.isLoading}
+            isError={profitSplitState.isError}
+            errorMessage={profitSplitState.errorMessage}
+            loadingMessage="Loading profit split chart..."
+            className="min-h-80"
+          >
+            <ProfitSplitChart data={profitSplit} />
+          </QueryStatePanel>
+        </div>
+
+        <QueryStatePanel
+          isLoading={recentJobsState.isLoading}
+          isError={recentJobsState.isError}
+          errorMessage={recentJobsState.errorMessage}
+          loadingMessage="Loading recent jobs table..."
+          className="min-h-80"
+        >
+          <RecentJobsTable jobs={recentJobs} techNameMap={techNameMap} />
+        </QueryStatePanel>
+      </div>
     </div>
   );
 }

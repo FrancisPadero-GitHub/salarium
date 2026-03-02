@@ -5,6 +5,7 @@ import { PaymentMethodsTable } from "@/components/dashboard/settings/payment-met
 import { ReviewTypesTable } from "@/components/dashboard/settings/review-types";
 import { cn } from "@/lib/utils";
 import { CreditCard, ClipboardList } from "lucide-react";
+import { QueryStatePanel } from "@/components/misc/query-state-panel";
 
 type SettingsTab = "payment-methods" | "review-types";
 
