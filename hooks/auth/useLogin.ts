@@ -16,7 +16,8 @@ export function useLogin() {
 
   return useMutation({
     mutationFn: (values: LoginFormValues) => loginWithEmail(values),
-    onSuccess: () => {
+    onSuccess: (data) => {
+      queryClient.setQueryData(AUTH_QUERY_KEY, data.session ?? null);
       queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEY });
       router.replace("/dashboard");
     },

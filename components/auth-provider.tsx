@@ -26,7 +26,7 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
  */
 export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
-  const { data: session, isLoading } = useUser();
+  const { data: session, isLoading, isFetching } = useUser();
 
   // Listen for Supabase auth events and keep the cache in sync
   useEffect(() => {
@@ -57,10 +57,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     () => ({
       user: session?.user ?? null,
       session: session ?? null,
-      isLoading,
+      isLoading: isLoading || isFetching,
       signOut: signOutApi,
     }),
-    [session, isLoading],
+    [session, isLoading, isFetching],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
