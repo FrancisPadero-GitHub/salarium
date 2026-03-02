@@ -1,12 +1,42 @@
 "use client";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useFetchTechSummary } from "@/hooks/technicians/useFetchTechSummary";
 import { useFetchTechnicians } from "@/hooks/technicians/useFetchTechnicians";
+import {
+  useDelTechnician,
+  useRestoreTechnician,
+} from "@/hooks/technicians/useDelTechnicians";
 import { Spinner } from "@/components/ui/spinner";
-import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  ChevronUp,
+  ChevronDown,
+  ChevronsUpDown,
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 import { useFilterTechTable } from "@/features/store/technician/useFilterTechTable";
 import { useTechnicianStore } from "@/features/store/technician/useFormTechnicianStore";
+import { TechnicianDetailDialog } from "@/components/dashboard/technician/technician-detail-dialog";
+import { TechnicianRemoveAlert } from "@/components/dashboard/technician/technician-remove-alert";
+import { cn } from "@/lib/utils";
 
 /** Merged row combining v_technicians_summary + v_technicians detail fields */
 type MergedTechRow = {
@@ -15,6 +45,7 @@ type MergedTechRow = {
   commission: number | null;
   email: string | null;
   hired_date: string | null;
+  deleted_at: string | null;
   total_jobs: number | null;
   gross_revenue: number | null;
   total_company_net: number | null;
@@ -42,6 +73,12 @@ const fmt = (n: number) =>
 export function TechnicianTable() {
   const { data: techDetails } = useFetchTechnicians();
   const { data: techSummary, isLoading, isError } = useFetchTechSummary();
+  const { mutate: deleteTechnician } = useDelTechnician();
+  const { mutate: restoreTechnician } = useRestoreTechnician();
+
+  // Local UI state
+  const [selectedTech, setSelectedTech] = useState<MergedTechRow | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   // merges data from the technicians details and summary queries into a single array for easier display and filtering
   const mergedData: MergedTechRow[] = useMemo(
@@ -56,6 +93,7 @@ export function TechnicianTable() {
           commission: baseRow.commission,
           email: baseRow.email,
           hired_date: baseRow.hired_date,
+          deleted_at: baseRow.deleted_at,
           total_jobs: summaryRow?.total_jobs ?? null,
           gross_revenue: summaryRow?.gross_revenue ?? null,
           total_company_net: summaryRow?.total_company_net ?? null,
@@ -82,6 +120,8 @@ export function TechnicianTable() {
   );
   const setSortKey = useFilterTechTable((state) => state.setSortKey);
   const setSortDir = useFilterTechTable((state) => state.setSortDir);
+  const showRemoved = useFilterTechTable((state) => state.showRemoved);
+  const setShowRemoved = useFilterTechTable((state) => state.setShowRemoved);
 
   const techCommissionRates = useMemo(
     () => mergedData.map((t) => ({ name: t.name, commission: t.commission })),
@@ -104,11 +144,6 @@ export function TechnicianTable() {
     };
     return [percentile(0.33), percentile(0.66)];
   }, [techCommissionRates]);
-
-  console.log("Technician commission rates:", techCommissionRates, {
-    p33,
-    p66,
-  });
 
   const COMMISSION_FILTERS = useMemo(
     () => [
@@ -140,7 +175,11 @@ export function TechnicianTable() {
           (commissionFilter === "mid" && rate >= p33 && rate <= p66) ||
           (commissionFilter === "high" && rate > p66);
 
-        return matchesSearch && matchesCommission;
+        const matchesRemoved = showRemoved
+          ? t.deleted_at !== null
+          : t.deleted_at === null;
+
+        return matchesSearch && matchesCommission && matchesRemoved;
       })
       .sort((a, b) => {
         let av = a[sortKey] ?? "";
@@ -160,7 +199,16 @@ export function TechnicianTable() {
         }
         return sortDir === "asc" ? cmp : -cmp;
       });
-  }, [mergedData, search, commissionFilter, sortKey, sortDir, p33, p66]);
+  }, [
+    mergedData,
+    search,
+    commissionFilter,
+    showRemoved,
+    sortKey,
+    sortDir,
+    p33,
+    p66,
+  ]);
 
   function handleSort(key: SortKey) {
     if (sortKey === key) {
@@ -181,6 +229,37 @@ export function TechnicianTable() {
     );
   }
 
+  function handleEditTech(tech: MergedTechRow) {
+    openEdit({
+      id: tech.technician_id ?? "",
+      name: tech.name ?? "",
+      email: tech.email ?? null,
+      commission: tech.commission ?? 0,
+      hired_date: tech.hired_date ?? null,
+      created_at: "",
+      deleted_at: null,
+    });
+  }
+
+  function handleConfirmDelete() {
+    if (!confirmDeleteId) return;
+    deleteTechnician(confirmDeleteId, {
+      onSuccess: () => {
+        setConfirmDeleteId(null);
+        setSelectedTech(null);
+      },
+    });
+  }
+
+  function handleUnremove(technicianId: string) {
+    if (!technicianId) return;
+    restoreTechnician(technicianId, {
+      onSuccess: () => {
+        setSelectedTech(null);
+      },
+    });
+  }
+
   if (isLoading)
     return (
       <div className="flex items-center justify-center py-10">
@@ -198,154 +277,216 @@ export function TechnicianTable() {
     );
 
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-      {/* Toolbar */}
-      <div className="flex flex-col gap-3 border-b border-zinc-200 p-4 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
-            Technicians
-          </h3>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">
-            {filtered.length} of {mergedData.length} technicians
-          </p>
-        </div>
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <Input
-            placeholder="Search name, email…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="h-8 w-full text-sm sm:w-56"
-          />
-          <div className="flex gap-1">
-            {COMMISSION_FILTERS.map((f) => (
+    <>
+      <div className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+        {/* Toolbar */}
+        <div className="flex flex-col gap-3 border-b border-zinc-200 p-4 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
+              Technicians
+            </h3>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              {filtered.length} of {mergedData.length} technicians
+            </p>
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Input
+              placeholder="Search name, email…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="h-8 w-full text-sm sm:w-56"
+            />
+            <div className="flex gap-1">
+              {COMMISSION_FILTERS.map((f) => (
+                <button
+                  key={f.value}
+                  onClick={() => setCommissionFilter(f.value)}
+                  className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                    commissionFilter === f.value
+                      ? "bg-zinc-900 text-white dark:bg-zinc-50 dark:text-zinc-900"
+                      : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
+                  }`}
+                >
+                  {f.label}
+                </button>
+              ))}
               <button
-                key={f.value}
-                onClick={() => setCommissionFilter(f.value)}
+                onClick={() => setShowRemoved(!showRemoved)}
                 className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
-                  commissionFilter === f.value
-                    ? "bg-zinc-900 text-white dark:bg-zinc-50 dark:text-zinc-900"
+                  showRemoved
+                    ? "bg-rose-600 text-white dark:bg-rose-700"
                     : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
                 }`}
               >
-                {f.label}
+                Removed
               </button>
-            ))}
+            </div>
           </div>
+        </div>
+
+        {/* Table */}
+        <div className="min-h-96 max-h-96 overflow-x-auto">
+          <Table className="min-w-225 text-sm">
+            <TableHeader className="sticky top-0 bg-white dark:bg-zinc-900">
+              <TableRow className="border-zinc-200 dark:border-zinc-800">
+                {(
+                  [
+                    { key: "name", label: "Name" },
+                    { key: "commission", label: "Commission" },
+                    { key: "total_jobs", label: "Jobs" },
+                    { key: "hired_date", label: "Hired" },
+                  ] as { key: SortKey; label: string }[]
+                ).map(({ key, label }) => (
+                  <TableHead
+                    key={key}
+                    onClick={() => handleSort(key)}
+                    className="cursor-pointer select-none text-xs font-semibold uppercase tracking-wide text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+                  >
+                    {label}
+                    <SortIcon col={key} />
+                  </TableHead>
+                ))}
+                <TableHead className="text-xs font-semibold uppercase  text-zinc-500 dark:text-zinc-400">
+                  Contact
+                </TableHead>
+                <TableHead className="text-center text-xs font-semibold uppercase  text-zinc-500 dark:text-zinc-400">
+                  Actions
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filtered.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={9}
+                    className="py-8 text-center text-sm text-zinc-400 dark:text-zinc-600"
+                  >
+                    No technicians match your filters.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filtered.map((tech) => {
+                  const initials = (tech.name || "?")
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("");
+                  const isRemoved = tech.deleted_at !== null;
+                  const canView = !showRemoved && !isRemoved;
+                  return (
+                    <TableRow
+                      key={tech.technician_id}
+                      onClick={() => canView && setSelectedTech(tech)}
+                      className={cn(
+                        canView
+                          ? "cursor-pointer border-zinc-100 transition-colors hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-800/50"
+                          : "cursor-default border-zinc-100 dark:border-zinc-800",
+                        isRemoved &&
+                          "opacity-50 line-through decoration-zinc-400",
+                      )}
+                    >
+                      {/* Name */}
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xs font-semibold text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+                            {initials}
+                          </div>
+                          <span className="font-medium text-zinc-900 dark:text-zinc-50">
+                            {tech.name || "Unknown"}
+                          </span>
+                        </div>
+                      </TableCell>
+                      {/* Commission */}
+                      <TableCell className="text-zinc-700 dark:text-zinc-300">
+                        {tech.commission ?? 0} %
+                      </TableCell>
+                      {/* Jobs */}
+                      <TableCell className="font-semibold text-zinc-900 dark:text-zinc-50">
+                        {tech.total_jobs ?? 0}
+                      </TableCell>
+
+                      {/* Hired */}
+                      <TableCell className="text-zinc-500 dark:text-zinc-400">
+                        {tech.hired_date
+                          ? new Date(tech.hired_date).toLocaleDateString()
+                          : "N/A"}
+                      </TableCell>
+                      {/* Contact */}
+                      <TableCell>
+                        <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                          {tech.email || "—"}
+                        </span>
+                      </TableCell>
+                      {/* Actions */}
+                      <TableCell
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-center"
+                      >
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7"
+                            >
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            {showRemoved ? (
+                              <DropdownMenuItem
+                                className="text-emerald-600 focus:text-emerald-600 dark:text-emerald-400 dark:focus:text-emerald-400"
+                                onClick={() =>
+                                  handleUnremove(tech.technician_id ?? "")
+                                }
+                              >
+                                <Trash2 className="mr-2 h-3.5 w-3.5" />
+                                Unremove
+                              </DropdownMenuItem>
+                            ) : (
+                              <>
+                                <DropdownMenuItem
+                                  onClick={() => handleEditTech(tech)}
+                                >
+                                  <Pencil className="mr-2 h-3.5 w-3.5" />
+                                  Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  className="text-rose-600 focus:text-rose-600 dark:text-rose-400 dark:focus:text-rose-400"
+                                  onClick={() =>
+                                    setConfirmDeleteId(tech.technician_id ?? "")
+                                  }
+                                >
+                                  <Trash2 className="mr-2 h-3.5 w-3.5" />
+                                  Remove
+                                </DropdownMenuItem>
+                              </>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
         </div>
       </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto min-h-96 max-h-96">
-        <table className="w-full min-w-225 text-sm">
-          <thead>
-            <tr className="border-b border-zinc-200 dark:border-zinc-800 sticky top-0 bg-white dark:bg-zinc-900">
-              {(
-                [
-                  { key: "name", label: "Name" },
-                  { key: "commission", label: "Commission" },
-                  { key: "total_jobs", label: "Jobs" },
-                  { key: "gross_revenue", label: "Total Gross" },
-                  { key: "total_company_net", label: "Company Net" },
-                  { key: "total_commission_earned", label: "Tech Earned" },
-                  { key: "hired_date", label: "Hired" },
-                ] as { key: SortKey; label: string }[]
-              ).map(({ key, label }) => (
-                <th
-                  key={key}
-                  onClick={() => handleSort(key)}
-                  className="cursor-pointer select-none px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
-                >
-                  {label}
-                  <SortIcon col={key} />
-                </th>
-              ))}
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                Contact
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-            {filtered.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={8}
-                  className="px-4 py-8 text-center text-sm text-zinc-400 dark:text-zinc-600"
-                >
-                  No technicians match your filters.
-                </td>
-              </tr>
-            ) : (
-              filtered.map((tech) => {
-                const initials = (tech.name || "?")
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("");
-                return (
-                  <tr
-                    key={tech.technician_id}
-                    onClick={() =>
-                      openEdit({
-                        id: tech.technician_id ?? "",
-                        name: tech.name ?? "",
-                        email: tech.email ?? null,
-                        commission: tech.commission ?? 0,
-                        hired_date: tech.hired_date ?? null,
-                        created_at: "",
-                        deleted_at: null,
-                      })
-                    }
-                    className="cursor-pointer transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
-                  >
-                    {/* Name */}
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xs font-semibold text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-                          {initials}
-                        </div>
-                        <span className="font-medium text-zinc-900 dark:text-zinc-50">
-                          {tech.name || "Unknown"}
-                        </span>
-                      </div>
-                    </td>
-                    {/* Commission */}
-                    <td className="px-4 py-3 text-zinc-700 dark:text-zinc-300">
-                      {tech.commission ?? 0} %
-                    </td>
-                    {/* Jobs */}
-                    <td className="px-4 py-3 font-semibold text-zinc-900 dark:text-zinc-50">
-                      {tech.total_jobs ?? 0}
-                    </td>
-                    {/* Total Gross */}
-                    <td className="px-4 py-3 tabular-nums text-zinc-700 dark:text-zinc-300">
-                      {fmt(tech.gross_revenue ?? 0)}
-                    </td>
-                    {/* Company Net */}
-                    <td className="px-4 py-3 tabular-nums font-medium text-cyan-700 dark:text-cyan-400">
-                      {fmt(tech.total_company_net ?? 0)}
-                    </td>
-                    {/* Tech Earned */}
-                    <td className="px-4 py-3 tabular-nums font-medium text-emerald-600 dark:text-emerald-400">
-                      {fmt(tech.total_commission_earned ?? 0)}
-                    </td>
-                    {/* Hired */}
-                    <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">
-                      {tech.hired_date
-                        ? new Date(tech.hired_date).toLocaleDateString()
-                        : "N/A"}
-                    </td>
-                    {/* Contact */}
-                    <td className="px-4 py-3">
-                      <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                        {tech.email || "—"}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
+      <TechnicianDetailDialog
+        selectedTech={selectedTech}
+        formatCurrency={fmt}
+        onClose={() => setSelectedTech(null)}
+        onRemove={(technicianId) => setConfirmDeleteId(technicianId)}
+        onEdit={handleEditTech}
+      />
+
+      <TechnicianRemoveAlert
+        open={!!confirmDeleteId}
+        onOpenChange={(open) => !open && setConfirmDeleteId(null)}
+        onConfirm={handleConfirmDelete}
+      />
+    </>
   );
 }

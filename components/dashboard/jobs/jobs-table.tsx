@@ -45,6 +45,7 @@ import { useFetchTechnicians } from "@/hooks/technicians/useFetchTechnicians";
 import { useDelJob } from "@/hooks/jobs/useDelJob";
 import { type ViewJobsRow } from "@/hooks/jobs/useFetchJobTable";
 import { JobViewDialog } from "@/components/dashboard/jobs/job-view-dialog";
+import { JobDeleteAlert } from "@/components/dashboard/jobs/job-delete-alert";
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
@@ -89,6 +90,7 @@ export function JobsTable() {
 
   const [viewJob, setViewJob] = useState<ViewJobsRow | null>(null);
   const [viewOpen, setViewOpen] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const searchParams = useSearchParams();
   const highlightId = searchParams.get("highlight");
@@ -443,13 +445,13 @@ export function JobsTable() {
                   <TableHead
                     key={key}
                     onClick={() => handleSort(key)}
-                    className="cursor-pointer select-none px-4 py-3 text-xs font-semibold uppercase tracking-wide text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+                    className="cursor-pointer select-none  text-xs font-semibold uppercase tracking-wide text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
                   >
                     {label}
                     <SortIcon col={key} />
                   </TableHead>
                 ))}
-                <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                <TableHead className=" text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                   Actions
                 </TableHead>
               </TableRow>
@@ -512,25 +514,25 @@ export function JobsTable() {
                       )}
                     >
                       {/* Job Name */}
-                      <TableCell className="px-4 py-3 font-medium text-zinc-800 dark:text-zinc-200">
+                      <TableCell className=" font-medium text-zinc-800 dark:text-zinc-200">
                         {job.work_title ?? "—"}
                       </TableCell>
                       {/* Description */}
-                      <TableCell className="px-4 py-3 text-zinc-500 dark:text-zinc-400">
+                      <TableCell className=" text-zinc-500 dark:text-zinc-400">
                         {job.description ?? "—"}
                       </TableCell>
                       {/* Category */}
-                      <TableCell className="px-4 py-3 text-zinc-500 dark:text-zinc-400">
+                      <TableCell className=" text-zinc-500 dark:text-zinc-400">
                         {job.category ?? "—"}
                       </TableCell>
                       {/* Date */}
-                      <TableCell className="whitespace-nowrap px-4 py-3 text-zinc-500 dark:text-zinc-400">
+                      <TableCell className="whitespace-nowrap  text-zinc-500 dark:text-zinc-400">
                         {job.work_order_date
                           ? new Date(job.work_order_date).toLocaleDateString()
                           : "—"}
                       </TableCell>
                       {/* Address */}
-                      <TableCell className="px-4 py-3 font-medium text-zinc-800 dark:text-zinc-200">
+                      <TableCell className=" font-medium text-zinc-800 dark:text-zinc-200">
                         {job.address ?? "—"}
                         {job.region && (
                           <span className="ml-1.5 text-xs text-zinc-400 dark:text-zinc-500">
@@ -539,7 +541,7 @@ export function JobsTable() {
                         )}
                       </TableCell>
                       {/* Technician */}
-                      <TableCell className="whitespace-nowrap px-4 py-3">
+                      <TableCell className="whitespace-nowrap ">
                         <div className="flex items-center gap-2">
                           <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xs font-semibold text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
                             {(techName === "—" ? "?" : techName)
@@ -558,19 +560,19 @@ export function JobsTable() {
                         </div>
                       </TableCell>
                       {/* Gross */}
-                      <TableCell className="px-4 py-3 tabular-nums font-medium text-zinc-900 dark:text-zinc-100">
+                      <TableCell className=" tabular-nums font-medium text-zinc-900 dark:text-zinc-100">
                         {fmt(job.subtotal ?? 0)}
                       </TableCell>
                       {/* Commission */}
-                      <TableCell className="px-4 py-3 tabular-nums text-amber-600 dark:text-amber-400">
+                      <TableCell className=" tabular-nums text-amber-600 dark:text-amber-400">
                         {fmt(job.total_commission ?? 0)}
                       </TableCell>
                       {/* Company Net */}
-                      <TableCell className="px-4 py-3 tabular-nums font-medium text-emerald-600 dark:text-emerald-400">
+                      <TableCell className=" tabular-nums font-medium text-emerald-600 dark:text-emerald-400">
                         {fmt(job.total_company_net ?? 0)}
                       </TableCell>
                       {/* Payment */}
-                      <TableCell className="px-4 py-3">
+                      <TableCell className="">
                         <span
                           className={cn(
                             "inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
@@ -582,7 +584,7 @@ export function JobsTable() {
                         </span>
                       </TableCell>
                       {/* Status */}
-                      <TableCell className="px-4 py-3">
+                      <TableCell className="">
                         <span
                           className={cn(
                             "inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
@@ -595,7 +597,7 @@ export function JobsTable() {
                       </TableCell>
                       {/* Actions */}
                       <TableCell
-                        className="px-4 py-3"
+                        className="text-center "
                         onClick={(e) => e.stopPropagation()}
                       >
                         <DropdownMenu>
@@ -622,7 +624,7 @@ export function JobsTable() {
                             <DropdownMenuItem
                               onClick={() =>
                                 job.work_order_id &&
-                                deleteJob(job.work_order_id)
+                                setConfirmDeleteId(job.work_order_id)
                               }
                               className="gap-2 text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
                             >
@@ -655,6 +657,40 @@ export function JobsTable() {
         }
         open={viewOpen}
         onOpenChange={setViewOpen}
+        onEdit={() => {
+          if (!viewJob) return;
+          openEdit({
+            work_order_id: viewJob.work_order_id ?? "",
+            work_title: viewJob.work_title ?? "",
+            description: viewJob.description ?? "",
+            work_order_date:
+              viewJob.work_order_date ?? new Date().toISOString().slice(0, 10),
+            technician_id: viewJob.technician_id ?? "",
+            category: viewJob.category ?? "",
+            address: viewJob.address ?? "",
+            region: viewJob.region ?? "",
+            payment_method_id: "",
+            payment_method: viewJob.payment_method,
+            parts_total_cost: viewJob.parts_total_cost ?? 0,
+            subtotal: viewJob.subtotal ?? 0,
+            tip_amount: viewJob.tip_amount ?? 0,
+            notes: viewJob.notes ?? "",
+            status: viewJob.status ?? "pending",
+          });
+        }}
+        onDelete={() => {
+          if (viewJob?.work_order_id) setConfirmDeleteId(viewJob.work_order_id);
+        }}
+      />
+
+      <JobDeleteAlert
+        open={!!confirmDeleteId}
+        onOpenChange={(open) => !open && setConfirmDeleteId(null)}
+        onConfirm={() => {
+          if (confirmDeleteId) deleteJob(confirmDeleteId);
+          setConfirmDeleteId(null);
+          setViewOpen(false);
+        }}
       />
     </div>
   );

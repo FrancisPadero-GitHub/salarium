@@ -9,6 +9,7 @@ import {
   useFetchTechnicians,
   type TechnicianDetailRow,
 } from "@/hooks/technicians/useFetchTechnicians";
+import { useFilterTechTable } from "@/features/store/technician/useFilterTechTable";
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
@@ -16,6 +17,8 @@ const fmt = (n: number) =>
   );
 
 export function TechnicianCardsGrid() {
+  const showRemoved = useFilterTechTable((state) => state.showRemoved);
+
   const {
     data: summaries = [],
     isLoading: isSummaryLoading,
@@ -46,13 +49,21 @@ export function TechnicianCardsGrid() {
         const detail = s.technician_id ? detailMap.get(s.technician_id) : null;
         return {
           ...s,
-          isDeleted: !detail,
+          isDeleted: detail?.deleted_at != null,
           commission: detail?.commission ?? null,
           email: detail?.email ?? null,
           hired_date: detail?.hired_date ?? null,
         };
       }),
     [summaries, detailMap],
+  );
+
+  const visibleTechnicians = useMemo(
+    () =>
+      technicians.filter((tech) =>
+        showRemoved ? tech.isDeleted : !tech.isDeleted,
+      ),
+    [technicians, showRemoved],
   );
 
   return (
@@ -63,7 +74,7 @@ export function TechnicianCardsGrid() {
       loadingMessage="Loading technicians..."
     >
       <div className="flex h-full gap-4 overflow-x-auto pb-2">
-        {technicians.map((tech) => {
+        {visibleTechnicians.map((tech) => {
           const initials = (tech.name || "?")
             .split(" ")
             .map((n) => n[0])
@@ -102,7 +113,7 @@ export function TechnicianCardsGrid() {
                     badgeClass,
                   )}
                 >
-                  {tech.isDeleted ? "Deleted" : "Active"}
+                  {tech.isDeleted ? "Removed" : "Active"}
                 </span>
               </div>
 
