@@ -12,14 +12,37 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
   ChevronUp,
   ChevronDown,
   ChevronsUpDown,
   SlidersHorizontal,
   X,
+  MoreHorizontal,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import type { EstimateStatus } from "@/types/estimate";
 import type { EstimatesRow } from "@/hooks/estimates/useFetchEstimates";
+import { useDelEstimate } from "@/hooks/estimates/useDelEstimate";
+import { EstimateViewDialog } from "@/components/dashboard/estimates/estimate-view-dialog";
+import { EstimateDeleteAlert } from "@/components/dashboard/estimates/estimate-delete-alert";
+
+export type EstimatesRowWithNotes = EstimatesRow & { notes?: string | null };
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
@@ -55,18 +78,23 @@ type StatusFilter = "all" | EstimateStatus;
 type DynamicFilter = "all" | (string & {});
 
 interface EstimatesTableProps {
-  estimates: EstimatesRow[];
+  estimates: EstimatesRowWithNotes[];
   technicianNameById: Record<string, string>;
-  onPromoteToJob: (estimate: EstimatesRow) => void;
-  onRowClick: (estimate: EstimatesRow) => void;
+  onPromoteToJob?: (estimate: EstimatesRowWithNotes) => void;
+  onEdit: (estimate: EstimatesRowWithNotes) => void;
 }
 
 export function EstimatesTable({
   estimates,
   technicianNameById,
-  onPromoteToJob,
-  onRowClick,
+  onEdit,
 }: EstimatesTableProps) {
+  const { mutate: deleteEstimate } = useDelEstimate();
+
+  const [viewEstimate, setViewEstimate] =
+    useState<EstimatesRowWithNotes | null>(null);
+  const [viewOpen, setViewOpen] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [technicianFilter, setTechnicianFilter] =
@@ -320,47 +348,45 @@ export function EstimatesTable({
       )}
 
       <div className="min-h-80 overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="sticky top-0 border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-              {[
-                { key: "work_order_date" as SortKey, label: "Date" },
-                { key: "work_title" as SortKey, label: "Work Title" },
-                { key: "address" as SortKey, label: "Address" },
-                { key: "technician" as SortKey, label: "Technician" },
-                { key: "description" as SortKey, label: "Description" },
-                { key: "estimated_amount" as SortKey, label: "Amount" },
-                { key: "estimate_status" as SortKey, label: "Status" },
-                { key: "handled_by" as SortKey, label: "Handled By" },
-              ].map(({ key, label }, index) => (
-                <th
-                  key={`${key}-${label}-${index}`}
-                  onClick={
-                    label === "Actions" ? undefined : () => handleSort(key)
-                  }
-                  className={cn(
-                    "px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400",
-                    label === "Actions"
-                      ? "cursor-default"
-                      : "cursor-pointer select-none hover:text-zinc-700 dark:hover:text-zinc-200",
-                  )}
+        <Table>
+          <TableHeader>
+            <TableRow className="sticky top-0 border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 hover:bg-white dark:hover:bg-zinc-900">
+              {(
+                [
+                  { key: "work_order_date" as SortKey, label: "Date" },
+                  { key: "work_title" as SortKey, label: "Work Title" },
+                  { key: "address" as SortKey, label: "Address" },
+                  { key: "technician" as SortKey, label: "Technician" },
+                  { key: "description" as SortKey, label: "Description" },
+                  { key: "estimated_amount" as SortKey, label: "Amount" },
+                  { key: "estimate_status" as SortKey, label: "Status" },
+                  { key: "handled_by" as SortKey, label: "Handled By" },
+                ] as { key: SortKey; label: string }[]
+              ).map(({ key, label }) => (
+                <TableHead
+                  key={key}
+                  onClick={() => handleSort(key)}
+                  className="cursor-pointer select-none text-xs font-semibold uppercase tracking-wide text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
                 >
                   {label}
-                  {label === "Actions" ? null : <SortIcon col={key} />}
-                </th>
+                  <SortIcon col={key} />
+                </TableHead>
               ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+              <TableHead className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Actions
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody className="divide-y divide-zinc-100 dark:divide-zinc-800">
             {filtered.length === 0 ? (
-              <tr>
-                <td
+              <TableRow>
+                <TableCell
                   colSpan={9}
                   className="px-4 py-8 text-center text-sm text-zinc-400 dark:text-zinc-600"
                 >
                   No estimates match your filters.
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ) : (
               filtered.map((estimate, index) => {
                 const techName = estimate.technician_id
@@ -369,42 +395,52 @@ export function EstimatesTable({
                   : "—";
 
                 return (
-                  <tr
+                  <TableRow
                     key={
                       estimate.work_order_id ??
                       `${estimate.created_at}-${index}`
                     }
-                    onClick={() => onRowClick(estimate)}
+                    onClick={() => {
+                      setViewEstimate(estimate);
+                      setViewOpen(true);
+                    }}
                     className="cursor-pointer transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
                   >
-                    <td className="whitespace-nowrap px-4 py-3 text-zinc-500 dark:text-zinc-400">
+                    {/* Date */}
+                    <TableCell className="whitespace-nowrap text-zinc-500 dark:text-zinc-400">
                       {estimate.work_order_date
                         ? new Date(
                             estimate.work_order_date,
                           ).toLocaleDateString()
                         : "—"}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3 font-medium text-zinc-800 dark:text-zinc-200">
+                    </TableCell>
+                    {/* Work Title */}
+                    <TableCell className="whitespace-nowrap font-medium text-zinc-800 dark:text-zinc-200">
                       {estimate.work_title ?? "—"}
-                    </td>
-                    <td className="px-4 py-3 font-medium text-zinc-800 dark:text-zinc-200">
+                    </TableCell>
+                    {/* Address */}
+                    <TableCell className="font-medium text-zinc-800 dark:text-zinc-200">
                       {estimate.address ?? "—"}
                       {estimate.region && (
                         <span className="ml-1.5 text-xs text-zinc-400 dark:text-zinc-500">
                           {estimate.region}
                         </span>
                       )}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-zinc-600 dark:text-zinc-300">
+                    </TableCell>
+                    {/* Technician */}
+                    <TableCell className="whitespace-nowrap text-zinc-600 dark:text-zinc-300">
                       {techName}
-                    </td>
-                    <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">
+                    </TableCell>
+                    {/* Description */}
+                    <TableCell className="text-zinc-600 dark:text-zinc-300">
                       {estimate.description ?? "—"}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3 tabular-nums font-medium text-zinc-900 dark:text-zinc-100">
+                    </TableCell>
+                    {/* Amount — blue */}
+                    <TableCell className="whitespace-nowrap tabular-nums font-medium text-blue-600 dark:text-blue-400">
                       {fmt(Number(estimate.estimated_amount ?? 0))}
-                    </td>
-                    <td className="px-4 py-3">
+                    </TableCell>
+                    {/* Status */}
+                    <TableCell>
                       {estimate.estimate_status ? (
                         <span
                           className={cn(
@@ -416,20 +452,89 @@ export function EstimatesTable({
                         </span>
                       ) : (
                         <span className="text-xs text-zinc-400 dark:text-zinc-500">
-                          ,
+                          —
                         </span>
                       )}
-                    </td>
-                    <td className="px-4 py-3 text-xs text-zinc-500 dark:text-zinc-400">
+                    </TableCell>
+                    {/* Handled By */}
+                    <TableCell className="text-xs text-zinc-500 dark:text-zinc-400">
                       {estimate.handled_by ?? "—"}
-                    </td>
-                  </tr>
+                    </TableCell>
+                    {/* Actions */}
+                    <TableCell
+                      className="text-center"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Open actions</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={() => onEdit(estimate)}
+                            className="gap-2"
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() =>
+                              estimate.work_order_id &&
+                              setConfirmDeleteId(estimate.work_order_id)
+                            }
+                            className="gap-2 text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
                 );
               })
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
+
+      <EstimateViewDialog
+        estimate={viewEstimate}
+        techName={
+          viewEstimate?.technician_id
+            ? technicianNameById[viewEstimate.technician_id]
+            : undefined
+        }
+        open={viewOpen}
+        onOpenChange={setViewOpen}
+        onEdit={() => {
+          if (!viewEstimate) return;
+          onEdit(viewEstimate);
+        }}
+        onDelete={() => {
+          if (viewEstimate?.work_order_id)
+            setConfirmDeleteId(viewEstimate.work_order_id);
+        }}
+      />
+
+      <EstimateDeleteAlert
+        open={!!confirmDeleteId}
+        onOpenChange={(open) => !open && setConfirmDeleteId(null)}
+        onConfirm={() => {
+          if (confirmDeleteId) deleteEstimate(confirmDeleteId);
+          setConfirmDeleteId(null);
+          setViewOpen(false);
+        }}
+      />
     </div>
   );
 }

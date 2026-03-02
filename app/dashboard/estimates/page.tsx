@@ -218,8 +218,7 @@ export default function EstimatesPage() {
       <EstimatesTable
         estimates={mergedEstimates}
         technicianNameById={technicianNameById}
-        onPromoteToJob={handlePromoteToJob}
-        onRowClick={handleOpenEditDialog}
+        onEdit={handleOpenEditDialog}
       />
     </div>
   );

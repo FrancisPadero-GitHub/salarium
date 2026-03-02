@@ -1,6 +1,4 @@
 "use client";
-
-import { useState } from "react";
 import { cn } from "@/lib/utils";
 import {
   Dialog,
@@ -12,7 +10,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import type { ViewJobsRow } from "@/hooks/jobs/useFetchJobTable";
-import { JobDeleteAlert } from "@/components/dashboard/jobs/job-delete-alert";
 import {
   MapPin,
   User,
@@ -120,7 +117,6 @@ export function JobViewDialog({
 }: JobViewDialogProps) {
   if (!job) return null;
 
-  const [confirmOpen, setConfirmOpen] = useState(false);
   const statusKey = (job.status ?? "pending").toLowerCase();
   const paymentKey = (job.payment_method ?? "").toLowerCase();
   const initials = techName
@@ -318,7 +314,7 @@ export function JobViewDialog({
                 variant="destructive"
                 size="sm"
                 className="gap-1.5"
-                onClick={() => setConfirmOpen(true)}
+                onClick={onDelete}
               >
                 <Trash2 className="h-3.5 w-3.5" />
                 Delete
@@ -338,16 +334,6 @@ export function JobViewDialog({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <JobDeleteAlert
-        open={confirmOpen}
-        onOpenChange={setConfirmOpen}
-        onConfirm={() => {
-          onDelete?.();
-          onOpenChange(false);
-        }}
-        actionClassName="bg-rose-600 hover:bg-rose-700 dark:bg-rose-700 dark:hover:bg-rose-800"
-      />
     </>
   );
 }
