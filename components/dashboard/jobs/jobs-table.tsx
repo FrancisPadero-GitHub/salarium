@@ -18,12 +18,33 @@ import {
   ChevronsUpDown,
   SlidersHorizontal,
   X,
+  MoreHorizontal,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useJobStore } from "@/features/store/jobs/useFormJobStore";
 import { useFetchViewJobRow } from "@/hooks/jobs/useFetchJobTable";
 import { useFetchTechSummary } from "@/hooks/technicians/useFetchTechSummary";
 import { useFetchTechnicians } from "@/hooks/technicians/useFetchTechnicians";
+import { useDelJob } from "@/hooks/jobs/useDelJob";
+import { type ViewJobsRow } from "@/hooks/jobs/useFetchJobTable";
+import { JobViewDialog } from "@/components/dashboard/jobs/job-view-dialog";
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
@@ -64,6 +85,10 @@ export function JobsTable() {
   const { data: techSummary = [] } = useFetchTechSummary();
   const { data: techDetails = [] } = useFetchTechnicians();
   const { openEdit } = useJobStore();
+  const { mutate: deleteJob } = useDelJob();
+
+  const [viewJob, setViewJob] = useState<ViewJobsRow | null>(null);
+  const [viewOpen, setViewOpen] = useState(false);
 
   const searchParams = useSearchParams();
   const highlightId = searchParams.get("highlight");
@@ -397,9 +422,9 @@ export function JobsTable() {
         </div>
       ) : (
         <div className="min-h-96 max-h-1/2 overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="sticky top-0 border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+          <Table>
+            <TableHeader>
+              <TableRow className="sticky top-0 border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 hover:bg-white dark:hover:bg-zinc-900">
                 {(
                   [
                     { key: "work_title" as SortKey, label: "Job Name" },
@@ -415,27 +440,30 @@ export function JobsTable() {
                     { key: "status", label: "Status" },
                   ] as { key: SortKey; label: string }[]
                 ).map(({ key, label }) => (
-                  <th
+                  <TableHead
                     key={key}
                     onClick={() => handleSort(key)}
-                    className="cursor-pointer select-none px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+                    className="cursor-pointer select-none px-4 py-3 text-xs font-semibold uppercase tracking-wide text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
                   >
                     {label}
                     <SortIcon col={key} />
-                  </th>
+                  </TableHead>
                 ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                  Actions
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody className="divide-y divide-zinc-100 dark:divide-zinc-800">
               {filtered.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={11}
+                <TableRow>
+                  <TableCell
+                    colSpan={12}
                     className="px-4 py-8 text-center text-sm text-zinc-400 dark:text-zinc-600"
                   >
                     No jobs match your filters.
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : (
                 filtered.map((job) => {
                   const statusKey = (job.status ?? "pending").toLowerCase();
@@ -448,32 +476,35 @@ export function JobsTable() {
                     : null;
                   const isHighlighted =
                     !!highlightId && job.work_order_id === highlightId;
+
+                  const editPayload = {
+                    work_order_id: job.work_order_id ?? "",
+                    work_title: job.work_title ?? "",
+                    description: job.description ?? "",
+                    work_order_date:
+                      job.work_order_date ??
+                      new Date().toISOString().slice(0, 10),
+                    technician_id: job.technician_id ?? "",
+                    category: job.category ?? "",
+                    address: job.address ?? "",
+                    region: job.region ?? "",
+                    payment_method_id: "",
+                    payment_method: job.payment_method,
+                    parts_total_cost: job.parts_total_cost ?? 0,
+                    subtotal: job.subtotal ?? 0,
+                    tip_amount: job.tip_amount ?? 0,
+                    notes: job.notes ?? "",
+                    status: job.status ?? "pending",
+                  };
+
                   return (
-                    <tr
+                    <TableRow
                       key={job.work_order_id}
                       ref={isHighlighted ? highlightRowRef : undefined}
-                      onClick={() =>
-                        openEdit({
-                          work_order_id: job.work_order_id ?? "",
-                          work_title: job.work_title ?? "",
-                          description: job.description ?? "",
-                          work_order_date:
-                            job.work_order_date ??
-                            new Date().toISOString().slice(0, 10),
-                          technician_id: job.technician_id ?? "",
-                          category: job.category ?? "",
-                          address: job.address ?? "",
-                          region: job.region ?? "",
-                          // v_jobs has payment method name, not id, dialog resolves id by name
-                          payment_method_id: "",
-                          payment_method: job.payment_method,
-                          parts_total_cost: job.parts_total_cost ?? 0,
-                          subtotal: job.subtotal ?? 0,
-                          tip_amount: job.tip_amount ?? 0,
-                          notes: job.notes ?? "",
-                          status: job.status ?? "pending",
-                        })
-                      }
+                      onClick={() => {
+                        setViewJob(job);
+                        setViewOpen(true);
+                      }}
                       className={cn(
                         "cursor-pointer transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50",
                         isHighlighted &&
@@ -481,36 +512,34 @@ export function JobsTable() {
                       )}
                     >
                       {/* Job Name */}
-                      <td className="px-4 py-3 font-medium text-zinc-800 dark:text-zinc-200">
+                      <TableCell className="px-4 py-3 font-medium text-zinc-800 dark:text-zinc-200">
                         {job.work_title ?? "—"}
-                      </td>
+                      </TableCell>
                       {/* Description */}
-                      <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">
+                      <TableCell className="px-4 py-3 text-zinc-500 dark:text-zinc-400">
                         {job.description ?? "—"}
-                      </td>
-
+                      </TableCell>
                       {/* Category */}
-                      <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">
+                      <TableCell className="px-4 py-3 text-zinc-500 dark:text-zinc-400">
                         {job.category ?? "—"}
-                      </td>
-
+                      </TableCell>
                       {/* Date */}
-                      <td className="whitespace-nowrap px-4 py-3 text-zinc-500 dark:text-zinc-400">
+                      <TableCell className="whitespace-nowrap px-4 py-3 text-zinc-500 dark:text-zinc-400">
                         {job.work_order_date
                           ? new Date(job.work_order_date).toLocaleDateString()
                           : "—"}
-                      </td>
+                      </TableCell>
                       {/* Address */}
-                      <td className="px-4 py-3 font-medium text-zinc-800 dark:text-zinc-200">
+                      <TableCell className="px-4 py-3 font-medium text-zinc-800 dark:text-zinc-200">
                         {job.address ?? "—"}
                         {job.region && (
                           <span className="ml-1.5 text-xs text-zinc-400 dark:text-zinc-500">
                             {job.region}
                           </span>
                         )}
-                      </td>
+                      </TableCell>
                       {/* Technician */}
-                      <td className="whitespace-nowrap px-4 py-3">
+                      <TableCell className="whitespace-nowrap px-4 py-3">
                         <div className="flex items-center gap-2">
                           <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xs font-semibold text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
                             {(techName === "—" ? "?" : techName)
@@ -527,21 +556,21 @@ export function JobsTable() {
                             </span>
                           )}
                         </div>
-                      </td>
+                      </TableCell>
                       {/* Gross */}
-                      <td className="px-4 py-3 tabular-nums font-medium text-zinc-900 dark:text-zinc-100">
+                      <TableCell className="px-4 py-3 tabular-nums font-medium text-zinc-900 dark:text-zinc-100">
                         {fmt(job.subtotal ?? 0)}
-                      </td>
+                      </TableCell>
                       {/* Commission */}
-                      <td className="px-4 py-3 tabular-nums text-amber-600 dark:text-amber-400">
+                      <TableCell className="px-4 py-3 tabular-nums text-amber-600 dark:text-amber-400">
                         {fmt(job.total_commission ?? 0)}
-                      </td>
+                      </TableCell>
                       {/* Company Net */}
-                      <td className="px-4 py-3 tabular-nums font-medium text-emerald-600 dark:text-emerald-400">
+                      <TableCell className="px-4 py-3 tabular-nums font-medium text-emerald-600 dark:text-emerald-400">
                         {fmt(job.total_company_net ?? 0)}
-                      </td>
+                      </TableCell>
                       {/* Payment */}
-                      <td className="px-4 py-3">
+                      <TableCell className="px-4 py-3">
                         <span
                           className={cn(
                             "inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
@@ -551,9 +580,9 @@ export function JobsTable() {
                         >
                           {job.payment_method ?? "—"}
                         </span>
-                      </td>
+                      </TableCell>
                       {/* Status */}
-                      <td className="px-4 py-3">
+                      <TableCell className="px-4 py-3">
                         <span
                           className={cn(
                             "inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
@@ -563,15 +592,70 @@ export function JobsTable() {
                         >
                           {job.status ?? "—"}
                         </span>
-                      </td>
-                    </tr>
+                      </TableCell>
+                      {/* Actions */}
+                      <TableCell
+                        className="px-4 py-3"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">Open actions</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={() => openEdit(editPayload)}
+                              className="gap-2"
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onClick={() =>
+                                job.work_order_id &&
+                                deleteJob(job.work_order_id)
+                              }
+                              className="gap-2 text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
                   );
                 })
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       )}
+
+      <JobViewDialog
+        job={viewJob}
+        techName={
+          viewJob?.technician_id
+            ? techNameMap.get(viewJob.technician_id)
+            : undefined
+        }
+        commRate={
+          viewJob?.technician_id
+            ? techCommissionMap.get(viewJob.technician_id)
+            : null
+        }
+        open={viewOpen}
+        onOpenChange={setViewOpen}
+      />
     </div>
   );
 }

@@ -8,7 +8,8 @@ export type TechnicianDetailRow =
 export const fetchTechnicians = async (): Promise<TechnicianDetailRow[]> => {
   const { data: result, error } = await supabase
     .from("technicians")
-    .select("*");
+    .select("*")
+    .is("deleted_at", null);
 
   if (error) {
     throw new Error(error.message || "Failed to fetch technicians");

@@ -46,6 +46,7 @@ export function TechnicianCardsGrid() {
         const detail = s.technician_id ? detailMap.get(s.technician_id) : null;
         return {
           ...s,
+          isDeleted: !detail,
           commission: detail?.commission ?? null,
           email: detail?.email ?? null,
           hired_date: detail?.hired_date ?? null,
@@ -67,12 +68,17 @@ export function TechnicianCardsGrid() {
             .split(" ")
             .map((n) => n[0])
             .join("");
+          const badgeClass = tech.isDeleted
+            ? "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400"
+            : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400";
+
           return (
             <div
               key={tech.technician_id}
               className={cn(
                 "w-md shrink-0 rounded-xl border bg-white p-6 dark:bg-zinc-900",
                 "border-zinc-200 dark:border-zinc-800",
+                tech.isDeleted && "opacity-70",
               )}
             >
               {/* Header */}
@@ -90,8 +96,13 @@ export function TechnicianCardsGrid() {
                     </p>
                   </div>
                 </div>
-                <span className="inline-flex rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-                  Active
+                <span
+                  className={cn(
+                    "inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium",
+                    badgeClass,
+                  )}
+                >
+                  {tech.isDeleted ? "Deleted" : "Active"}
                 </span>
               </div>
 
@@ -141,12 +152,14 @@ export function TechnicianCardsGrid() {
 
               {/* Footer */}
               <div className="mt-4 border-t border-zinc-100 pt-4 text-xs text-zinc-400 dark:border-zinc-800 dark:text-zinc-500">
-                <span className="mx-2">·</span>
                 <span>
-                  Hired{" "}
-                  {tech.hired_date
-                    ? new Date(tech.hired_date).toLocaleDateString()
-                    : "N/A"}
+                  {tech.isDeleted
+                    ? "Removed"
+                    : `Hired ${
+                        tech.hired_date
+                          ? new Date(tech.hired_date).toLocaleDateString()
+                          : "N/A"
+                      }`}
                 </span>
               </div>
             </div>
