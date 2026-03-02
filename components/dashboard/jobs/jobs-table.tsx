@@ -53,26 +53,20 @@ const fmt = (n: number) =>
   );
 
 type SortKey =
+  | "work_title"
   | "work_order_date"
   | "address"
   | "technician_id"
   | "subtotal"
+  | "net_revenue"
+  | "parts_total_cost"
   | "total_commission"
   | "total_company_net"
-  | "payment_method"
   | "status";
 
 type SortDir = "asc" | "desc";
 type StatusFilter = "all" | "done" | "pending" | "cancelled";
 type DynamicFilter = "all" | (string & {});
-
-const paymentColors: Record<string, string> = {
-  cash: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
-  check: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-  "credit card":
-    "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
-  zelle: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-};
 
 const statusColors: Record<string, string> = {
   done: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
@@ -429,16 +423,15 @@ export function JobsTable() {
               <TableRow className="sticky top-0 border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 hover:bg-white dark:hover:bg-zinc-900">
                 {(
                   [
-                    { key: "work_title" as SortKey, label: "Job Name" },
-                    { key: "description" as SortKey, label: "Description" },
-                    { key: "category" as SortKey, label: "Category" },
+                    { key: "work_title", label: "Job Name" },
                     { key: "work_order_date", label: "Date" },
                     { key: "address", label: "Address" },
                     { key: "technician_id", label: "Technician" },
                     { key: "subtotal", label: "Gross" },
+                    { key: "parts_total_cost", label: "Parts Cost" },
+                    { key: "net_revenue", label: "Net Revenue" },
                     { key: "total_commission", label: "Commission" },
                     { key: "total_company_net", label: "Company Net" },
-                    { key: "payment_method", label: "Payment" },
                     { key: "status", label: "Status" },
                   ] as { key: SortKey; label: string }[]
                 ).map(({ key, label }) => (
@@ -460,7 +453,7 @@ export function JobsTable() {
               {filtered.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={12}
+                    colSpan={11}
                     className="px-4 py-8 text-center text-sm text-zinc-400 dark:text-zinc-600"
                   >
                     No jobs match your filters.
@@ -469,7 +462,6 @@ export function JobsTable() {
               ) : (
                 filtered.map((job) => {
                   const statusKey = (job.status ?? "pending").toLowerCase();
-                  const paymentKey = (job.payment_method ?? "").toLowerCase();
                   const techName = job.technician_id
                     ? (techNameMap.get(job.technician_id) ?? "—")
                     : "—";
@@ -517,14 +509,6 @@ export function JobsTable() {
                       <TableCell className=" font-medium text-zinc-800 dark:text-zinc-200">
                         {job.work_title ?? "—"}
                       </TableCell>
-                      {/* Description */}
-                      <TableCell className=" text-zinc-500 dark:text-zinc-400">
-                        {job.description ?? "—"}
-                      </TableCell>
-                      {/* Category */}
-                      <TableCell className=" text-zinc-500 dark:text-zinc-400">
-                        {job.category ?? "—"}
-                      </TableCell>
                       {/* Date */}
                       <TableCell className="whitespace-nowrap  text-zinc-500 dark:text-zinc-400">
                         {job.work_order_date
@@ -563,6 +547,15 @@ export function JobsTable() {
                       <TableCell className=" tabular-nums font-medium text-zinc-900 dark:text-zinc-100">
                         {fmt(job.subtotal ?? 0)}
                       </TableCell>
+                      {/* Parts Cost */}
+                      <TableCell className=" tabular-nums text-orange-600 dark:text-orange-300">
+                        {fmt(job.parts_total_cost ?? 0)}
+                      </TableCell>
+                      {/* Net Revenue */}
+                      <TableCell className=" tabular-nums font-medium text-sky-600 dark:text-sky-400">
+                        {fmt(job.net_revenue ?? 0)}
+                      </TableCell>
+
                       {/* Commission */}
                       <TableCell className=" tabular-nums text-amber-600 dark:text-amber-400">
                         {fmt(job.total_commission ?? 0)}
@@ -570,18 +563,6 @@ export function JobsTable() {
                       {/* Company Net */}
                       <TableCell className=" tabular-nums font-medium text-emerald-600 dark:text-emerald-400">
                         {fmt(job.total_company_net ?? 0)}
-                      </TableCell>
-                      {/* Payment */}
-                      <TableCell className="">
-                        <span
-                          className={cn(
-                            "inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
-                            paymentColors[paymentKey] ??
-                              "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
-                          )}
-                        >
-                          {job.payment_method ?? "—"}
-                        </span>
                       </TableCell>
                       {/* Status */}
                       <TableCell className="">

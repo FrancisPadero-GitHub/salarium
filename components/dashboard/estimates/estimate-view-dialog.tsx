@@ -96,14 +96,14 @@ export function EstimateViewDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden">
           <DialogHeader>
             <DialogTitle className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
               {estimate.work_title ?? "Estimate Details"}
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-3 py-2">
+          <div className="min-h-0 flex-1 space-y-3 overflow-y-auto py-2 pr-2">
             <InfoRow icon={Calendar} label="Date">
               {estimate.work_order_date
                 ? new Date(estimate.work_order_date).toLocaleDateString()
