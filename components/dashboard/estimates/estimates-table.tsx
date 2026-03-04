@@ -389,7 +389,7 @@ export function EstimatesTable({
             {filtered.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={9}
+                  colSpan={10}
                   className="px-4 py-8 text-center text-sm text-zinc-400 dark:text-zinc-600"
                 >
                   No estimates match your filters.

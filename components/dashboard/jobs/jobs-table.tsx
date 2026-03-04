@@ -461,7 +461,7 @@ export function JobsTable() {
               {filtered.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={11}
+                    colSpan={12}
                     className="px-4 py-8 text-center text-sm text-zinc-400 dark:text-zinc-600"
                   >
                     No jobs match your filters.
