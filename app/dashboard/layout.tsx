@@ -54,7 +54,7 @@ export default function DashboardLayout({
   const { data: profile, isLoading: isRoleLoading } = useFetchRole(user?.id);
   const logoutMutation = useLogout();
 
-  const isAdmin = profile?.role === "admin";
+  const isAdmin = profile?.role === "admin" || "super_admin";
   const isRestrictedRoute =
     pathname.startsWith("/dashboard/technicians") ||
     pathname.startsWith("/dashboard/settings");

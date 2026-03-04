@@ -1,7 +1,10 @@
 import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/components/auth-provider";
 import { supabase } from "@/lib/supabase";
-//  (( SELECT auth.uid() AS uid) = id)
+
+// For the RLS parameters use this:   (( SELECT auth.uid() AS uid) = id)
+
+// Make sure this does have the same fields as the create_user/admin edge function input
 type CreateRole = "user" | "admin";
 
 export type CreateUserInput = {
@@ -48,6 +51,7 @@ export function useCreateUser() {
         throw new Error("Admin is not authenticated");
       }
 
+      const edgeFunction = role === "admin" ? "create_admin" : "create_users";
       const profileRole = role === "admin" ? "admin" : "user";
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 
@@ -55,17 +59,20 @@ export function useCreateUser() {
         throw new Error("NEXT_PUBLIC_SUPABASE_URL is not configured");
       }
 
-      const response = await fetch(`${supabaseUrl}/functions/v1/create_users`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
+      const response = await fetch(
+        `${supabaseUrl}/functions/v1/${edgeFunction}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({
+            email,
+            password,
+          }),
         },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
-      });
+      );
 
       const text = await response.text();
       let json: CreateUserResponse = {};
