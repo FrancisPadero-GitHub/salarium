@@ -232,6 +232,7 @@ export function TechnicianTable() {
   function handleEditTech(tech: MergedTechRow) {
     openEdit({
       id: tech.technician_id ?? "",
+      company_id: "",
       name: tech.name ?? "",
       email: tech.email ?? null,
       commission: tech.commission ?? 0,
