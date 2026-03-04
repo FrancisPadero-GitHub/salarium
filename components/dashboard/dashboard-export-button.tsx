@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Download, FileSpreadsheet, FileText } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/components/auth-provider";
 import { fetchJobs, type VJobsRow } from "@/hooks/jobs/useFetchJobs";
 import type { TechnicianDetailRow } from "@/hooks/technicians/useFetchTechnicians";
 import {
@@ -38,6 +39,11 @@ export function DashboardExportButton({
   technicians,
   techNameMap,
 }: DashboardExportButtonProps) {
+  const { session } = useAuth();
+  const companyId = session?.user?.app_metadata?.company_id as
+    | string
+    | undefined;
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedFormat, setSelectedFormat] = useState<ExportFormat | null>(
     null,
@@ -55,7 +61,14 @@ export function DashboardExportButton({
     setIsExporting(true);
     try {
       const jobsToExport =
-        scope === "current" ? currentJobs : await fetchJobs({ mode: "all" });
+        scope === "current"
+          ? currentJobs
+          : await (async () => {
+              if (!companyId) {
+                throw new Error("Company ID is missing from user session");
+              }
+              return fetchJobs(companyId, { mode: "all" });
+            })();
 
       const report = buildDashboardExportReport({
         jobs: jobsToExport,
