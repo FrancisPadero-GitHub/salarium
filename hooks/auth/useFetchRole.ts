@@ -39,6 +39,7 @@ export const fetchAllProfiles = async (): Promise<ProfilesRow[]> => {
   const { data: result, error } = await supabase
     .from("profiles")
     .select("*")
+    .neq("role", "super_admin")
     .order("updated_at", { ascending: false });
 
   if (error) {
