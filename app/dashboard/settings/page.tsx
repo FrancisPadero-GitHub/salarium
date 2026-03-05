@@ -6,8 +6,10 @@ import { ReviewTypesTable } from "@/components/dashboard/settings/review-types";
 import { ProfilesTable } from "@/components/dashboard/settings/profiles-table";
 import { cn } from "@/lib/utils";
 import { CreditCard, ClipboardList, Users } from "lucide-react";
-
-type SettingsTab = "payment-methods" | "review-types" | "profiles";
+import {
+  useSettingsStore,
+  type SettingsTab,
+} from "@/features/store/settings/useSettingStore";
 
 const tabs: Array<{
   id: SettingsTab;
@@ -36,7 +38,7 @@ const tabs: Array<{
 ];
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<SettingsTab>("payment-methods");
+  const { activeTab, setActiveTab } = useSettingsStore();
 
   return (
     <div className="space-y-8">
