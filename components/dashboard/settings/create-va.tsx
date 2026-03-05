@@ -22,7 +22,10 @@ import { Label } from "@/components/ui/label";
 // hooks
 
 import { useCreateUser } from "@/hooks/auth/useCreateCredentials";
-import { allProfilesQueryKey } from "@/hooks/auth/useFetchRole";
+import {
+  allProfilesQueryKey,
+  useFetchProfiles,
+} from "@/hooks/auth/useFetchRole";
 
 type Role = "user" | "admin";
 
@@ -53,6 +56,18 @@ export function CreateLoginCredentials() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const createUserMutation = useCreateUser();
   const queryClient = useQueryClient();
+  const { data: profiles } = useFetchProfiles();
+
+  const emailExists = Boolean(
+    profiles?.some(
+      (profile) =>
+        profile.email?.toLowerCase() === form.email.trim().toLowerCase(),
+    ),
+  );
+
+  const passwordsMatch = form.password === form.confirmPassword;
+  const showPasswordMismatch =
+    form.confirmPassword.length > 0 && !passwordsMatch;
 
   const handleOpenChange = (next: boolean) => {
     setOpen(next);
@@ -73,8 +88,13 @@ export function CreateLoginCredentials() {
       return;
     }
 
-    if (form.password !== form.confirmPassword) {
+    if (!passwordsMatch) {
       toast.error("Passwords do not match");
+      return;
+    }
+
+    if (emailExists) {
+      toast.error("Email already exists");
       return;
     }
 
@@ -175,6 +195,11 @@ export function CreateLoginCredentials() {
                 disabled={createUserMutation.isPending}
                 required
               />
+              {form.email.trim().length > 0 && emailExists && (
+                <p className="text-sm font-medium text-destructive">
+                  Email already exists
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="credentials-username">Username (optional)</Label>
@@ -256,6 +281,11 @@ export function CreateLoginCredentials() {
                 {showConfirmPassword ? <EyeOff /> : <Eye />}
               </Button>
             </div>
+            {showPasswordMismatch && (
+              <p className="text-sm font-medium text-destructive">
+                Passwords do not match
+              </p>
+            )}
           </div>
 
           {/* <div className="space-y-2">
@@ -292,7 +322,14 @@ export function CreateLoginCredentials() {
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={createUserMutation.isPending}>
+            <Button
+              type="submit"
+              disabled={
+                createUserMutation.isPending ||
+                emailExists ||
+                showPasswordMismatch
+              }
+            >
               {createUserMutation.isPending ? "Creating..." : "Create"}
             </Button>
           </div>
