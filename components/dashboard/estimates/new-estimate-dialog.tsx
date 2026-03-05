@@ -2,8 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -12,16 +10,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -38,7 +26,6 @@ import {
 import { useFetchTechnicians } from "@/hooks/technicians/useFetchTechnicians";
 import { useAddEstimate } from "@/hooks/estimates/useAddEstimate";
 import { useEditEstimate } from "@/hooks/estimates/useEditEstimate";
-import { useDelEstimate } from "@/hooks/estimates/useDelEstimate";
 import { usePromoteEstimateToJob } from "@/hooks/estimates/usePromoteEstimateToJob";
 import { useFetchViewJobRow } from "@/hooks/jobs/useFetchJobTable";
 
@@ -144,14 +131,8 @@ export function NewEstimateDialog({
     error: promoteError,
     reset: resetPromoteMutation,
   } = usePromoteEstimateToJob();
-  const {
-    mutate: deleteEstimate,
-    isPending: isDeletePending,
-    reset: resetDeleteMutation,
-  } = useDelEstimate();
 
   const [isPromoteDialogOpen, setIsPromoteDialogOpen] = useState(false);
-  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
   const [pendingPromotion, setPendingPromotion] =
     useState<PendingPromotionState | null>(null);
 
@@ -181,9 +162,7 @@ export function NewEstimateDialog({
     resetAddMutation();
     resetEditMutation();
     resetPromoteMutation();
-    resetDeleteMutation();
     setIsPromoteDialogOpen(false);
-    setIsConfirmDeleteOpen(false);
     setPendingPromotion(null);
 
     if (mode === "edit" && selectedEstimate) {
@@ -200,29 +179,12 @@ export function NewEstimateDialog({
     resetAddMutation,
     resetEditMutation,
     resetPromoteMutation,
-    resetDeleteMutation,
   ]);
 
   const closeDialog = () => {
-    setIsConfirmDeleteOpen(false);
     setIsPromoteDialogOpen(false);
     setPendingPromotion(null);
     onOpenChange(false);
-  };
-
-  const handleDelete = () => {
-    const workOrderId = selectedEstimate?.work_order_id;
-    if (!workOrderId) return;
-
-    deleteEstimate(workOrderId, {
-      onSuccess: () => {
-        setIsConfirmDeleteOpen(false);
-        closeDialog();
-      },
-      onError: (err) => {
-        toast.error(err.message || "Failed to hide estimate");
-      },
-    });
   };
 
   const onSubmit = (data: EstimateFormTypes) => {
@@ -375,7 +337,7 @@ export function NewEstimateDialog({
     }
   };
 
-  const isPending = isAdding || isEditing || isPromoting || isDeletePending;
+  const isPending = isAdding || isEditing || isPromoting;
   const title = mode === "edit" ? "Edit Estimate" : "New Estimate";
   const description =
     mode === "edit"
@@ -612,18 +574,7 @@ export function NewEstimateDialog({
               </div>
             </div>
 
-            <DialogFooter className="flex-row items-center justify-between sm:justify-between pt-5">
-              {mode === "edit" ? (
-                <Button
-                  type="button"
-                  variant="destructive"
-                  onClick={() => setIsConfirmDeleteOpen(true)}
-                  disabled={isPending || !selectedEstimate?.work_order_id}
-                >
-                  <Trash2 className="mr-2 h-4 w-4 " />
-                  Delete
-                </Button>
-              ) : null}
+            <DialogFooter className="pt-5">
               <div className="ml-auto flex gap-2">
                 <Button
                   type="button"
@@ -647,45 +598,6 @@ export function NewEstimateDialog({
           </form>
         </DialogContent>
       </Dialog>
-
-      <AlertDialog
-        open={isConfirmDeleteOpen}
-        onOpenChange={setIsConfirmDeleteOpen}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Hide this estimate?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This estimate will be hidden from all views and reports but{" "}
-              <span className="font-medium text-zinc-900 dark:text-zinc-50">
-                not permanently deleted
-              </span>
-              .
-              {isAlreadyPromoted ? (
-                <>
-                  {" "}
-                  This estimate was promoted to approved, so its related record
-                  in the jobs table will also be hidden.
-                </>
-              ) : null}{" "}
-              Related records remain in the database and can be restored if
-              needed.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeletePending}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              disabled={isDeletePending || !selectedEstimate?.work_order_id}
-              className="bg-red-600 hover:bg-red-700 focus:ring-red-600 dark:bg-red-700 dark:text-zinc-300 dark:hover:bg-red-800"
-            >
-              {isDeletePending ? "Hiding..." : "Yes, hide estimate"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       <PromoteEstimateDialog
         open={isPromoteDialogOpen}

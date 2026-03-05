@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import {
-  Trash2,
   Briefcase,
   CalendarDays,
   MapPin,
@@ -21,16 +20,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -42,7 +31,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
 
 // Db types
 import type { Database } from "@/database.types";
@@ -50,7 +38,6 @@ import type { Database } from "@/database.types";
 // Hooks
 import { useAddReviewRecord } from "@/hooks/reviews/useAddReviewRecords";
 import { useEditReviewRecord } from "@/hooks/reviews/useEditReviewRecords";
-import { useDelReviewRecord } from "@/hooks/reviews/useDelReviewRecords";
 import {
   useFetchReviewTypes,
   type ReviewTypeRow,
@@ -112,8 +99,6 @@ export function AddEditReviewDialog({
   onOpenChange,
   prefilledJobId,
 }: AddEditReviewDialogProps) {
-  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
-
   // TanStack Query mutations
   const {
     mutate: addReview,
@@ -132,13 +117,6 @@ export function AddEditReviewDialog({
     isSuccess: isEditSuccess,
     reset: resetEditMutation,
   } = useEditReviewRecord();
-
-  const {
-    mutate: deleteReview,
-    isPending: isDelPending,
-    isSuccess: isDelSuccess,
-    reset: resetDelMutation,
-  } = useDelReviewRecord();
 
   // Fetch review types, payment methods, and jobs
   const { data: reviewTypes = EMPTY_REVIEW_TYPES } = useFetchReviewTypes();
@@ -198,8 +176,6 @@ export function AddEditReviewDialog({
 
     resetAddMutation();
     resetEditMutation();
-    resetDelMutation();
-    setIsDeleteAlertOpen(false);
 
     if (mode === "edit" && selectedReview) {
       const reviewTypeId =
@@ -252,25 +228,22 @@ export function AddEditReviewDialog({
     setValue,
     resetAddMutation,
     resetEditMutation,
-    resetDelMutation,
   ]);
 
   const closeDialog = () => {
-    setIsDeleteAlertOpen(false);
     onOpenChange(false);
   };
 
   // Handle success
   useEffect(() => {
-    if (isAddSuccess || isEditSuccess || isDelSuccess) {
+    if (isAddSuccess || isEditSuccess) {
       closeDialog();
       resetAddMutation();
       resetEditMutation();
-      resetDelMutation();
     }
-  }, [isAddSuccess, isEditSuccess, isDelSuccess]);
+  }, [isAddSuccess, isEditSuccess, closeDialog, resetAddMutation, resetEditMutation]);
 
-  const isSubmitting = isAddPending || isEditPending || isDelPending;
+  const isSubmitting = isAddPending || isEditPending;
 
   const onSubmit = (data: ReviewRecordFormValues) => {
     if (mode === "add") {
@@ -280,13 +253,6 @@ export function AddEditReviewDialog({
         ...data,
         id: selectedReview.review_id,
       });
-    }
-  };
-
-  const handleDelete = () => {
-    if (mode === "edit" && selectedReview?.review_id) {
-      deleteReview(selectedReview.review_id);
-      setIsDeleteAlertOpen(false);
     }
   };
 
@@ -681,25 +647,7 @@ export function AddEditReviewDialog({
             )}
 
             {/* ── Footer ───────────────────────────────────── */}
-            <DialogFooter
-              className={cn(
-                "flex items-center gap-2 pt-2",
-                mode === "edit" ? "justify-between" : "justify-end",
-              )}
-            >
-              {mode === "edit" && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsDeleteAlertOpen(true)}
-                  disabled={isSubmitting}
-                  className="mr-auto h-8 gap-1.5 text-xs text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                  Delete
-                </Button>
-              )}
+            <DialogFooter className="flex items-center justify-end gap-2 pt-2">
               <div className="flex gap-2">
                 <Button
                   type="button"
@@ -727,31 +675,6 @@ export function AddEditReviewDialog({
           </form>
         </DialogContent>
       </Dialog>
-
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Review Record</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this review record? This action
-              cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDelPending}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              disabled={isDelPending}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              {isDelPending ? "Deleting..." : "Delete"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 }

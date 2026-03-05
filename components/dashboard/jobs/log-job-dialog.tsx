@@ -1,9 +1,8 @@
 ﻿"use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { Briefcase, Trash2 } from "lucide-react";
+import { Briefcase } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -13,16 +12,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,7 +33,6 @@ import {
 // Hooks
 import { useAddJob } from "@/hooks/jobs/useAddJobs";
 import { useEditJob } from "@/hooks/jobs/useEditJob";
-import { useDelJob } from "@/hooks/jobs/useDelJob";
 import { useFetchTechnicians } from "@/hooks/technicians/useFetchTechnicians";
 import { useFetchPaymentMethods } from "@/hooks/payment-methods/useFetchPaymentMethods";
 
@@ -89,15 +77,7 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
     reset: resetEditMutation,
   } = useEditJob();
 
-  const {
-    mutate: deleteJob,
-    isPending: isDeletePending,
-    reset: resetDeleteMutation,
-  } = useDelJob();
-
   const isPending = isEdit ? isEditPending : isAddPending;
-
-  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
 
   const {
     register,
@@ -189,24 +169,6 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
         },
       );
     }
-  };
-
-  const handleDelete = () => {
-    if (!form.work_order_id) return;
-    deleteJob(form.work_order_id, {
-      onSuccess: () => {
-        setIsConfirmDeleteOpen(false);
-        closeDialog();
-        setTimeout(() => {
-          resetDeleteMutation?.();
-          resetForm();
-          reset();
-        }, 300);
-      },
-      onError: (err) => {
-        toast.error(err.message || "Failed to delete job");
-      },
-    });
   };
 
   return (
@@ -571,18 +533,7 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
               </div>
             </div>
 
-            <DialogFooter className="flex-row items-center justify-between sm:justify-between pt-5">
-              {isEdit && (
-                <Button
-                  type="button"
-                  variant="destructive"
-                  disabled={isSubmitting || isPending || isDeletePending}
-                  onClick={() => setIsConfirmDeleteOpen(true)}
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
-                </Button>
-              )}
+            <DialogFooter className="pt-5">
               <div className="flex gap-2 ml-auto">
                 <Button
                   type="button"
@@ -613,37 +564,6 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
           </form>
         </DialogContent>
       </Dialog>
-
-      <AlertDialog
-        open={isConfirmDeleteOpen}
-        onOpenChange={setIsConfirmDeleteOpen}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Hide this job?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This job will be hidden from all views and reports but{" "}
-              <span className="font-medium text-zinc-900 dark:text-zinc-50">
-                not permanently deleted
-              </span>
-              . Its data will remain in the database and can be restored if
-              needed.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeletePending}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              disabled={isDeletePending}
-              className="bg-red-600 hover:bg-red-700 focus:ring-red-600 dark:bg-red-700 dark:text-zinc-100 dark:hover:bg-red-800"
-            >
-              {isDeletePending ? "Hiding..." : "Yes, hide job"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 }
