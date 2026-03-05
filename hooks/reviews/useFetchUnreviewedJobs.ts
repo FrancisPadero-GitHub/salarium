@@ -24,9 +24,7 @@ const fetchUnreviewedJobs = async (
 
 export function useFetchUnreviewedJobs() {
   const { session } = useAuth();
-  const companyId = session?.user?.app_metadata?.company_id as
-    | string
-    | undefined;
+  const companyId = session?.user.app_metadata.company_id as string | undefined;
 
   return useQuery<UnreviewedJobRow[], Error>({
     queryKey: ["jobs", "unreviewed", companyId ?? null],

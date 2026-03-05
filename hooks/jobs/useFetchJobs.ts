@@ -152,9 +152,7 @@ export const fetchJobs = async (
 
 export function useFetchJobDetailed(filter?: JobsSummaryFilter) {
   const { session } = useAuth();
-  const companyId = session?.user?.app_metadata?.company_id as
-    | string
-    | undefined;
+  const companyId = session?.user.app_metadata.company_id as string | undefined;
 
   return useQuery<VJobsRow[], Error>({
     queryKey: ["jobs", "table-detailed", companyId ?? null, filter ?? null],

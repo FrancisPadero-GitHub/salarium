@@ -24,9 +24,7 @@ export const fetchTechSummary = async (
 
 export function useFetchTechSummary() {
   const { session } = useAuth();
-  const companyId = session?.user?.app_metadata?.company_id as
-    | string
-    | undefined;
+  const companyId = session?.user.app_metadata.company_id as string | undefined;
 
   return useQuery<TechnicianSummaryRow[], Error>({
     queryKey: ["technicians", "summary", companyId ?? null],

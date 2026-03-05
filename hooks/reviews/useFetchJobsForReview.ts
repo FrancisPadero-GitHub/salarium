@@ -20,9 +20,7 @@ const fetchJobs = async (companyId: string): Promise<JobRow[]> => {
 
 export function useFetchJobsForReview() {
   const { session } = useAuth();
-  const companyId = session?.user?.app_metadata?.company_id as
-    | string
-    | undefined;
+  const companyId = session?.user.app_metadata.company_id as string | undefined;
 
   return useQuery<JobRow[], Error>({
     queryKey: ["jobs", "for-review", companyId ?? null],

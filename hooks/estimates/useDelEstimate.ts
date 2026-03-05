@@ -50,7 +50,7 @@ export function useDelEstimate() {
 
   return useMutation<WorkOrderRow, Error, string>({
     mutationFn: async (workOrderId: string) => {
-      const companyId = session?.user?.app_metadata?.company_id as
+      const companyId = session?.user.app_metadata.company_id as
         | string
         | undefined;
 

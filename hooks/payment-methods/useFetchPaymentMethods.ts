@@ -24,9 +24,7 @@ export const fetchPaymentMethods = async (
 
 export function useFetchPaymentMethods() {
   const { session } = useAuth();
-  const companyId = session?.user?.app_metadata?.company_id as
-    | string
-    | undefined;
+  const companyId = session?.user.app_metadata.company_id as string | undefined;
 
   return useQuery<PaymentMethodRow[], Error>({
     queryKey: ["payment-methods", companyId ?? null],

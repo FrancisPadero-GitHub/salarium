@@ -24,9 +24,7 @@ export const fetchJobSummary = async (
 
 export function useFetchJobSummary() {
   const { session } = useAuth();
-  const companyId = session?.user?.app_metadata?.company_id as
-    | string
-    | undefined;
+  const companyId = session?.user.app_metadata.company_id as string | undefined;
 
   return useQuery<VJobsRow[], Error>({
     queryKey: ["jobs", "summary", companyId ?? null],

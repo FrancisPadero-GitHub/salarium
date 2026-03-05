@@ -30,7 +30,7 @@ export function useEditTechnician() {
 
   return useMutation<TechnicianRow, Error, TechnicianUpdate>({
     mutationFn: async (data) => {
-      const companyId = session?.user?.app_metadata?.company_id as
+      const companyId = session?.user.app_metadata.company_id as
         | string
         | undefined;
 

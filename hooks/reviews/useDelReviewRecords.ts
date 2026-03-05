@@ -44,7 +44,7 @@ export function useDelReviewRecord() {
 
   return useMutation<ReviewRecordRow, Error, string>({
     mutationFn: async (id) => {
-      const companyId = session?.user?.app_metadata?.company_id as
+      const companyId = session?.user.app_metadata.company_id as
         | string
         | undefined;
 

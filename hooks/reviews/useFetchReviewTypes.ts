@@ -22,9 +22,7 @@ const fetchReviewTypes = async (
 
 export function useFetchReviewTypes() {
   const { session } = useAuth();
-  const companyId = session?.user?.app_metadata?.company_id as
-    | string
-    | undefined;
+  const companyId = session?.user.app_metadata.company_id as string | undefined;
 
   return useQuery<ReviewTypeRow[], Error>({
     queryKey: ["review-types", companyId ?? null],

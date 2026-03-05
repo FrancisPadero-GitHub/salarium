@@ -30,9 +30,7 @@ export const fetchTechnicians = async (
 
 export function useFetchTechnicians() {
   const { session } = useAuth();
-  const companyId = session?.user?.app_metadata?.company_id as
-    | string
-    | undefined;
+  const companyId = session?.user.app_metadata.company_id as string | undefined;
 
   return useQuery<TechnicianDetailRow[], Error>({
     queryKey: ["technicians", "details", companyId ?? null],

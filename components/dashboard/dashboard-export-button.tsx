@@ -41,9 +41,7 @@ export function DashboardExportButton({
   techNameMap,
 }: DashboardExportButtonProps) {
   const { session } = useAuth();
-  const companyId = session?.user?.app_metadata?.company_id as
-    | string
-    | undefined;
+  const companyId = session?.user.app_metadata.company_id as string | undefined;
   const companyQuery = useFetchCompany(companyId);
 
   const [dialogOpen, setDialogOpen] = useState(false);

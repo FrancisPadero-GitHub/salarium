@@ -32,9 +32,7 @@ export const fetchProfileById = async (
 // use the role from the session instead of fetching the profile for every user
 export function useFetchRole(userId?: string) {
   const { session } = useAuth();
-  const companyId = session?.user?.app_metadata?.company_id as
-    | string
-    | undefined;
+  const companyId = session?.user.app_metadata.company_id as string | undefined;
 
   return useQuery<ProfilesRow | null, Error>({
     queryKey: [...profileQueryKey(userId), companyId ?? null],
@@ -72,9 +70,7 @@ export const fetchAllProfiles = async (
 
 export function useFetchProfiles() {
   const { session } = useAuth();
-  const companyId = session?.user?.app_metadata?.company_id as
-    | string
-    | undefined;
+  const companyId = session?.user.app_metadata.company_id as string | undefined;
 
   return useQuery<ProfilesRow[], Error>({
     queryKey: [...allProfilesQueryKey, companyId ?? null],

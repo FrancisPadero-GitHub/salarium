@@ -33,7 +33,7 @@ export function useEditReviewRecord() {
 
   return useMutation<ReviewRecordRow, Error, ReviewRecordUpdate>({
     mutationFn: async (data) => {
-      const companyId = session?.user?.app_metadata?.company_id as
+      const companyId = session?.user.app_metadata.company_id as
         | string
         | undefined;
 
@@ -47,41 +47,40 @@ export function useEditReviewRecord() {
       void result;
       toast.success("Review record updated successfully");
       // Invalidate review-related queries
-      await queryClient.invalidateQueries({
-        queryKey: ["reviews", "review-records"],
-        exact: false,
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ["reviews", "review-records-summaries"],
-        exact: false,
-      });
-      // Invalidate job-related queries
-      await queryClient.invalidateQueries({
-        queryKey: ["jobs"],
-        exact: false,
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ["jobs", "unreviewed"],
-        exact: false,
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ["jobs", "for-review"],
-        exact: false,
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ["jobs", "work-orders"],
-        exact: false,
-      });
-      // Invalidate financial summaries
-      await queryClient.invalidateQueries({
-        queryKey: ["job-monthly-financial-summary"],
-        exact: false,
-      });
-      // Invalidate estimates (in case job was promoted from estimate)
-      await queryClient.invalidateQueries({
-        queryKey: ["estimates"],
-        exact: false,
-      });
+      void Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ["reviews", "review-records"],
+          exact: false,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["reviews", "review-records-summaries"],
+          exact: false,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["jobs"],
+          exact: false,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["jobs", "unreviewed"],
+          exact: false,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["jobs", "for-review"],
+          exact: false,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["jobs", "work-orders"],
+          exact: false,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["job-monthly-financial-summary"],
+          exact: false,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["estimates"],
+          exact: false,
+        }),
+      ]);
     },
     onError: (error) => {
       toast.error(error.message || "Failed to update review record");

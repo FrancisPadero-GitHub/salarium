@@ -27,7 +27,7 @@ export function useAddTechnician() {
 
   return useMutation<TechnicianRow, Error, TechnicianInsert>({
     mutationFn: async (data: TechnicianInsert) => {
-      const companyId = session?.user?.app_metadata?.company_id as
+      const companyId = session?.user.app_metadata.company_id as
         | string
         | undefined;
 

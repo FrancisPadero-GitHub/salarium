@@ -27,7 +27,7 @@ export function useAddPaymentMethod() {
 
   return useMutation({
     mutationFn: async (method: PaymentMethodInsert) => {
-      const companyId = session?.user?.app_metadata?.company_id as
+      const companyId = session?.user.app_metadata.company_id as
         | string
         | undefined;
 

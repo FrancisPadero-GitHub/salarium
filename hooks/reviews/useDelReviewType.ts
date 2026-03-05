@@ -27,7 +27,7 @@ export function useDelReviewType() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const companyId = session?.user?.app_metadata?.company_id as
+      const companyId = session?.user.app_metadata.company_id as
         | string
         | undefined;
 

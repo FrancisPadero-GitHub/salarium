@@ -23,9 +23,7 @@ const fetchReviewRecordsSummaries = async (
 
 export function useFetchReviewRecordsSummaries() {
   const { session } = useAuth();
-  const companyId = session?.user?.app_metadata?.company_id as
-    | string
-    | undefined;
+  const companyId = session?.user.app_metadata.company_id as string | undefined;
 
   return useQuery<ReviewRecordRowSummaries[], Error>({
     queryKey: ["reviews", "review-records-summaries", companyId ?? null],

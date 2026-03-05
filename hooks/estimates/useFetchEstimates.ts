@@ -24,9 +24,7 @@ export const fetchEstimates = async (
 
 export function useFetchEstimates() {
   const { session } = useAuth();
-  const companyId = session?.user?.app_metadata?.company_id as
-    | string
-    | undefined;
+  const companyId = session?.user.app_metadata.company_id as string | undefined;
 
   return useQuery<EstimatesRow[], Error>({
     queryKey: ["estimates", "view-table", companyId ?? null],

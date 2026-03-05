@@ -44,7 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Refetches to the user id and company_id changes
   useEffect(() => {
     const userId = session?.user?.id;
-    const companyId = session?.user?.app_metadata?.company_id as
+    const companyId = session?.user.app_metadata.company_id as
       | string
       | undefined;
 
@@ -56,14 +56,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       queryKey: [...profileQueryKey(userId), companyId],
       queryFn: () => fetchProfileById(userId, companyId),
     });
-  }, [queryClient, session?.user?.id, session?.user?.app_metadata?.company_id]);
+  }, [queryClient, session?.user?.id, session?.user.app_metadata.company_id]);
 
   const value = useMemo<AuthContextValue>(
     () => ({
       user: session?.user ?? null,
       session: session ?? null,
       role: session?.user?.app_metadata?.role ?? null,
-      company_id: session?.user?.app_metadata?.company_id ?? null,
+      company_id: session?.user.app_metadata.company_id ?? null,
       isLoading: isLoading || isFetching,
       signOut: signOutApi,
     }),

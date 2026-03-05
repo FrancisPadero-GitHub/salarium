@@ -50,9 +50,7 @@ export const useFetchJobMonthlyFinancialSummary = (
   initialData?: MonthlyFinancialSummary[],
 ) => {
   const { session } = useAuth();
-  const companyId = session?.user?.app_metadata?.company_id as
-    | string
-    | undefined;
+  const companyId = session?.user.app_metadata.company_id as string | undefined;
 
   return useQuery({
     queryKey: ["job-monthly-financial-summary", companyId ?? null],

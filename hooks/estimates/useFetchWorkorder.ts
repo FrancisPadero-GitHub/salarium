@@ -24,9 +24,7 @@ export const fetchWorkOrdersRow = async (
 
 export function useFetchWorkOrdersRow() {
   const { session } = useAuth();
-  const companyId = session?.user?.app_metadata?.company_id as
-    | string
-    | undefined;
+  const companyId = session?.user.app_metadata.company_id as string | undefined;
 
   return useQuery<WorkOrdersRow[], Error>({
     queryKey: ["jobs", "work-orders", companyId ?? null],

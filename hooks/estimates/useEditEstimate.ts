@@ -87,7 +87,7 @@ export function useEditEstimate() {
 
   return useMutation({
     mutationFn: async (payload: EditEstimatePayload) => {
-      const companyId = session?.user?.app_metadata?.company_id as
+      const companyId = session?.user.app_metadata.company_id as
         | string
         | undefined;
 

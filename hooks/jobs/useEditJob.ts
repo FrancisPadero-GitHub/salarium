@@ -47,7 +47,8 @@ const dbEditJob = async (payload: EditJobPayload, companyId: string) => {
 
       if (estimatePromoteError) {
         throw new Error(
-          estimatePromoteError.message || "Failed to update estimate promoted date",
+          estimatePromoteError.message ||
+            "Failed to update estimate promoted date",
         );
       }
     }
@@ -86,7 +87,7 @@ export function useEditJob() {
 
   return useMutation({
     mutationFn: async (payload: EditJobPayload) => {
-      const companyId = session?.user?.app_metadata?.company_id as
+      const companyId = session?.user.app_metadata.company_id as
         | string
         | undefined;
 

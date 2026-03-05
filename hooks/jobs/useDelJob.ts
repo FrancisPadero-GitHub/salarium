@@ -39,7 +39,7 @@ export function useDelJob() {
 
   return useMutation({
     mutationFn: async (workOrderId: string) => {
-      const companyId = session?.user?.app_metadata?.company_id as
+      const companyId = session?.user.app_metadata.company_id as
         | string
         | undefined;
 

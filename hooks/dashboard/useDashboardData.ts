@@ -58,9 +58,7 @@ export interface ProfitSplit {
  */
 export function useDashboardData() {
   const { session, isLoading: isAuthLoading } = useAuth();
-  const companyId = session?.user?.app_metadata?.company_id as
-    | string
-    | undefined;
+  const companyId = session?.user.app_metadata.company_id as string | undefined;
 
   const mode = useDashboardFilterStore((s) => s.mode);
   const year = useDashboardFilterStore((s) => s.year);

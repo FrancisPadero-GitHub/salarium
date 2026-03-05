@@ -69,7 +69,7 @@ export function useDelTechnician() {
 
   return useMutation<TechnicianRow, Error, string>({
     mutationFn: async (id) => {
-      const companyId = session?.user?.app_metadata?.company_id as
+      const companyId = session?.user.app_metadata.company_id as
         | string
         | undefined;
 
@@ -96,7 +96,7 @@ export function useRestoreTechnician() {
 
   return useMutation<TechnicianRow, Error, string>({
     mutationFn: async (id) => {
-      const companyId = session?.user?.app_metadata?.company_id as
+      const companyId = session?.user.app_metadata.company_id as
         | string
         | undefined;
 

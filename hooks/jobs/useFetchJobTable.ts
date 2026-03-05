@@ -24,9 +24,7 @@ export const fetchViewJobRow = async (
 
 export function useFetchViewJobRow() {
   const { session } = useAuth();
-  const companyId = session?.user?.app_metadata?.company_id as
-    | string
-    | undefined;
+  const companyId = session?.user.app_metadata.company_id as string | undefined;
 
   return useQuery<ViewJobsRow[], Error>({
     queryKey: ["jobs", "view-table", companyId ?? null],
