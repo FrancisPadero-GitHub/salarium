@@ -20,6 +20,9 @@ import { cn } from "@/lib/utils";
 import { ModeToggle } from "@/components/mode-toggle";
 import { ProtectedRoute } from "@/components/protected-route";
 import { useAuth } from "@/components/auth-provider";
+
+// hooks
+import { useFetchCompany } from "@/hooks/company/useFetchCompany";
 import { useLogout } from "@/hooks/auth/useLogout";
 
 const navItems = [
@@ -51,7 +54,13 @@ export default function DashboardLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Auth to determine which nav items to show and whether to allow access to certain routes
-  const { user, role, isLoading: isRoleLoading } = useAuth();
+  const { user, role, company_id, isLoading: isRoleLoading } = useAuth();
+
+  // fetches the company_id for the current user and displays it in the sidebar.
+  const comp_id =
+    typeof company_id === "string" && company_id ? company_id : undefined;
+  const { data: company } = useFetchCompany(comp_id);
+  const companyName = company?.name || "No Company";
 
   const logoutMutation = useLogout();
 
@@ -77,11 +86,15 @@ export default function DashboardLayout({
     <>
       {/* Logo */}
       <Link href="/" onClick={() => setSidebarOpen(false)}>
-        <div className="flex h-16 items-center gap-2 border-b border-zinc-200 px-6 dark:border-zinc-800">
-          <WalletMinimal className="h-6 w-6 text-zinc-700 dark:text-zinc-300" />
-          <span className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-            Klicktiv
+        <div className="flex h-16 py-2 items-center justify-center border-b border-zinc-200 dark:border-zinc-800">
+          <span className="absolute top-4 left-28 z-99 text-[9px] font-bold uppercase tracking-widest text-zinc-00 dark:text-zinc-500">
+            {companyName || "No Company"}
           </span>
+          <img
+            src="/kt_logo_name.png"
+            alt="Klicktiv Logo"
+            className="h-12 w-auto dark:brightness-0 dark:invert"
+          />
         </div>
       </Link>
 

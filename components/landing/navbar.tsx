@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Menu, X, WalletMinimal } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ModeToggle } from "@/components/mode-toggle";
 
@@ -10,17 +10,18 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 border-b border-zinc-200 bg-white/80 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-950/80">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+    <header className="fixed top-0 left-0 right-0 z-50 border-b border-zinc-200/80 bg-white/90 backdrop-blur-md dark:border-zinc-800/80 dark:bg-zinc-950/90">
+      <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-6">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2">
-          <WalletMinimal className="h-7 w-7 text-zinc-900 dark:text-zinc-50" />
-          <span className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-            Klicktiv
-          </span>
+        <Link href="/" className="flex shrink-0 items-center">
+          <img
+            src="/kt_logo_name.png"
+            alt="Klicktiv Logo"
+            className="h-10 pl-20 w-auto dark:brightness-0 dark:invert"
+          />
         </Link>
 
-        {/* Desktop nav */}
+        {/* Desktop nav — centered */}
         <nav className="hidden items-center gap-8 md:flex">
           <Link
             href="#features"
@@ -42,46 +43,43 @@ export default function Navbar() {
           </Link>
         </nav>
 
-        {/* Desktop CTA */}
-        <div className="hidden items-center gap-3 md:flex">
-          <Link
-            href="/auth/login"
-            className="rounded-lg px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
-          >
-            Log In
-          </Link>
-          {/* <Link
-            href="/auth/signup"
-            className="rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
-          >
-            Get Started
-          </Link> */}
+        {/* Right side: CTA (desktop) + theme toggle + hamburger (mobile) */}
+        <div className="flex items-center gap-2">
+          {/* Desktop-only CTAs */}
+          <div className="hidden items-center gap-2 md:flex">
+            <Link
+              href="/auth/login"
+              className="rounded-lg px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            >
+              Log In
+            </Link>
+            <Link
+              href="/dashboard"
+              title="Temporary, will remove it till auth is ready"
+              className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+            >
+              Go to Dashboard
+            </Link>
+          </div>
 
-          <Link
-            href="/dashboard"
-            title="Temporary, will remove it till auth is ready"
-            className="rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+          <ModeToggle />
+
+          {/* Mobile hamburger */}
+          <button
+            onClick={() => setOpen(!open)}
+            className="rounded-md p-2 text-zinc-600 transition-colors hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800 md:hidden"
+            aria-label="Toggle menu"
           >
-            Go to Dashboard
-          </Link>
+            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
         </div>
-
-        {/* Mobile menu toggle */}
-        <ModeToggle />
-        <button
-          onClick={() => setOpen(!open)}
-          className="rounded-md p-2 text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800 md:hidden"
-          aria-label="Toggle menu"
-        >
-          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
       </div>
 
       {/* Mobile menu */}
       <div
         className={cn(
           "border-t border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950 md:hidden",
-          open ? "block" : "hidden", // Show/hide based on state and is if mobile
+          open ? "block" : "hidden",
         )}
       >
         <div className="flex flex-col gap-1 px-6 py-4">
@@ -114,17 +112,11 @@ export default function Navbar() {
             >
               Log In
             </Link>
-            {/* <Link
-              href="/auth/signup"
-              onClick={() => setOpen(false)}
-              className="rounded-lg bg-zinc-800 px-4 py-2 text-center text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900"
-            >
-              Get Started
-            </Link> */}
             <Link
               href="/dashboard"
               title="Temporary"
-              className="rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+              onClick={() => setOpen(false)}
+              className="rounded-lg bg-zinc-900 px-4 py-2 text-center text-sm font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
             >
               Go to Dashboard
             </Link>

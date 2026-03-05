@@ -48,16 +48,15 @@ export default function SuperAdminLayout({
     <>
       {/* Logo */}
       <Link href="/" onClick={() => setSidebarOpen(false)}>
-        <div className="flex h-16 items-center gap-2 border-b border-zinc-200 px-6 dark:border-zinc-800">
-          <WalletMinimal className="h-6 w-6 text-zinc-700 dark:text-zinc-300" />
-          <div className="flex flex-col">
-            <span className="text-lg font-semibold leading-none tracking-tight text-zinc-900 dark:text-zinc-50">
-              Klicktiv
-            </span>
-            <span className="text-[10px] font-medium uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
-              Super Admin
-            </span>
-          </div>
+        <div className="flex flex-col items-center justify-center border-b border-zinc-200 px-6 pt-2 pb-2 dark:border-zinc-800">
+          <span className="absolute top-4 left-28 z-99 text-[9px] font-bold uppercase tracking-widest text-zinc-00 dark:text-zinc-500">
+            Super Admin
+          </span>
+          <img
+            src="/kt_logo_name.png"
+            alt="Klicktiv Logo"
+            className="h-12 w-auto dark:brightness-0 dark:invert"
+          />
         </div>
       </Link>
 

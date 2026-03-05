@@ -4,7 +4,7 @@ import type { Database } from "@/database.types";
 
 export type CompanyRow = Database["public"]["Tables"]["companies"]["Row"];
 
-export interface CompanySummary {
+export interface CompanyColumns {
   id: string;
   name: string | null;
 }
@@ -14,7 +14,7 @@ export const companyQueryKey = (companyId?: string) =>
 
 export async function fetchCompanyById(
   companyId: string,
-): Promise<CompanySummary> {
+): Promise<CompanyColumns> {
   const { data, error } = await supabase
     .from("companies")
     .select("id, name")
@@ -25,11 +25,11 @@ export async function fetchCompanyById(
     throw new Error(error.message || "Failed to fetch company");
   }
 
-  return data as CompanySummary;
+  return data as CompanyColumns;
 }
 
 export function useFetchCompany(companyId?: string) {
-  return useQuery<CompanySummary, Error>({
+  return useQuery<CompanyColumns, Error>({
     queryKey: companyQueryKey(companyId),
     queryFn: () => {
       if (!companyId) {
