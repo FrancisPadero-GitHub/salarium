@@ -71,6 +71,35 @@ export interface TechJobDetailGroup {
   };
 }
 
+export interface ReviewTotals {
+  totalDoneJobs: number;
+  totalJobsWithReviews: number;
+  totalJobsWithoutReviews: number;
+  reviewCapturePct: number;
+  totalReviewAmount: number;
+  avgReviewAmount: number;
+  avgReviewAmountPerDoneJob: number;
+  distinctPaymentMethods: number;
+  distinctReviewTypes: number;
+}
+
+export interface ReviewBreakdownRow {
+  label: string;
+  reviews: number;
+  totalAmount: number;
+  avgAmount: number;
+  pctOfReviews: number;
+  pctOfAmount: number;
+}
+
+export interface ReviewMonthlyRow {
+  month: string;
+  reviews: number;
+  totalAmount: number;
+  avgAmount: number;
+  pctOfDoneJobs: number;
+}
+
 export interface DashboardExportReport {
   title: string;
   company: {
@@ -84,6 +113,10 @@ export interface DashboardExportReport {
   technicianRows: TechPerformanceRow[];
   monthlyRows: MonthlyComparisonRow[];
   techJobDetailGroups: TechJobDetailGroup[];
+  reviewTotals: ReviewTotals;
+  reviewTypeRows: ReviewBreakdownRow[];
+  paymentMethodRows: ReviewBreakdownRow[];
+  reviewMonthlyRows: ReviewMonthlyRow[];
 }
 
 interface BuildReportInput {
@@ -134,6 +167,12 @@ const fmtCurrency = (value: number) =>
   }).format(value);
 
 const fmtPercent = (value: number, dp = 1) => `${value.toFixed(dp)}%`;
+
+const hasText = (value: string | null | undefined): value is string =>
+  typeof value === "string" && value.trim().length > 0;
+
+const toLabel = (value: string | null | undefined, fallback: string) =>
+  hasText(value) ? value.trim() : fallback;
 
 const safeDate = (isoDate: string | null | undefined) => {
   if (!isoDate) return null;
@@ -218,6 +257,33 @@ export function buildDashboardExportReport({
       companyNet: number;
     }
   >();
+  const paymentMethodAgg = new Map<
+    string,
+    {
+      label: string;
+      reviews: number;
+      totalAmount: number;
+    }
+  >();
+  const reviewTypeAgg = new Map<
+    string,
+    {
+      label: string;
+      reviews: number;
+      totalAmount: number;
+    }
+  >();
+  const reviewMonthAgg = new Map<
+    string,
+    {
+      month: string;
+      reviews: number;
+      totalAmount: number;
+    }
+  >();
+
+  let totalReviewAmount = d(0);
+  let totalJobsWithReviews = 0;
 
   for (const job of doneJobs) {
     const subtotal = job.subtotal ?? 0;
@@ -332,6 +398,52 @@ export function buildDashboardExportReport({
         monthlyAgg.set(key, existingMonth);
       }
     }
+
+    const hasReview = Boolean(job.review_id) || job.review_amount != null;
+    if (!hasReview) {
+      continue;
+    }
+
+    const reviewAmount = job.review_amount ?? 0;
+    totalReviewAmount = totalReviewAmount.plus(d(reviewAmount));
+    totalJobsWithReviews += 1;
+
+    const reviewType = toLabel(job.review_type, "Unspecified Type");
+    const method = toLabel(job.payment_method, "Unspecified Method");
+
+    const existingType = reviewTypeAgg.get(reviewType) ?? {
+      label: reviewType,
+      reviews: 0,
+      totalAmount: 0,
+    };
+    existingType.reviews += 1;
+    existingType.totalAmount += reviewAmount;
+    reviewTypeAgg.set(reviewType, existingType);
+
+    const existingMethod = paymentMethodAgg.get(method) ?? {
+      label: method,
+      reviews: 0,
+      totalAmount: 0,
+    };
+    existingMethod.reviews += 1;
+    existingMethod.totalAmount += reviewAmount;
+    paymentMethodAgg.set(method, existingMethod);
+
+    const reviewDate = safeDate(job.review_date ?? job.work_order_date);
+    if (reviewDate) {
+      const key = `${reviewDate.getFullYear()}-${String(
+        reviewDate.getMonth() + 1,
+      ).padStart(2, "0")}`;
+      const monthLabel = `${MONTHS[reviewDate.getMonth()]} ${reviewDate.getFullYear()}`;
+      const existing = reviewMonthAgg.get(key) ?? {
+        month: monthLabel,
+        reviews: 0,
+        totalAmount: 0,
+      };
+      existing.reviews += 1;
+      existing.totalAmount += reviewAmount;
+      reviewMonthAgg.set(key, existing);
+    }
   }
 
   const gross = dToNum(grossRevenue);
@@ -364,6 +476,58 @@ export function buildDashboardExportReport({
       jobs: group.jobs.sort((a, b) => a.date.localeCompare(b.date)),
     }));
 
+  const totalReviewAmountNum = dToNum(totalReviewAmount);
+  const totalJobsWithoutReviews = Math.max(totalJobs - totalJobsWithReviews, 0);
+  const reviewCapturePct =
+    totalJobs > 0 ? (totalJobsWithReviews / totalJobs) * 100 : 0;
+
+  const toBreakdownRows = (
+    source: Map<
+      string,
+      { label: string; reviews: number; totalAmount: number }
+    >,
+  ): ReviewBreakdownRow[] =>
+    Array.from(source.values())
+      .sort((a, b) => {
+        if (b.totalAmount !== a.totalAmount) {
+          return b.totalAmount - a.totalAmount;
+        }
+        return b.reviews - a.reviews;
+      })
+      .map((row) => ({
+        label: row.label,
+        reviews: row.reviews,
+        totalAmount: row.totalAmount,
+        avgAmount: row.reviews > 0 ? row.totalAmount / row.reviews : 0,
+        pctOfReviews:
+          totalJobsWithReviews > 0
+            ? (row.reviews / totalJobsWithReviews) * 100
+            : 0,
+        pctOfAmount:
+          totalReviewAmountNum > 0
+            ? (row.totalAmount / totalReviewAmountNum) * 100
+            : 0,
+      }));
+
+  const reviewTypeRows = toBreakdownRows(reviewTypeAgg);
+  const paymentMethodRows = toBreakdownRows(paymentMethodAgg);
+
+  const reviewMonthlyRows: ReviewMonthlyRow[] = Array.from(
+    reviewMonthAgg.entries(),
+  )
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, row]) => {
+      const doneJobsInMonth = monthlyAgg.get(key)?.jobs ?? 0;
+      return {
+        month: row.month,
+        reviews: row.reviews,
+        totalAmount: row.totalAmount,
+        avgAmount: row.reviews > 0 ? row.totalAmount / row.reviews : 0,
+        pctOfDoneJobs:
+          doneJobsInMonth > 0 ? (row.reviews / doneJobsInMonth) * 100 : 0,
+      };
+    });
+
   return {
     title: `${companyName.toUpperCase()} - KLICKTIV FINANCIAL REPORT`,
     company: {
@@ -386,7 +550,387 @@ export function buildDashboardExportReport({
     technicianRows,
     monthlyRows,
     techJobDetailGroups,
+    reviewTotals: {
+      totalDoneJobs: totalJobs,
+      totalJobsWithReviews,
+      totalJobsWithoutReviews,
+      reviewCapturePct,
+      totalReviewAmount: totalReviewAmountNum,
+      avgReviewAmount:
+        totalJobsWithReviews > 0
+          ? totalReviewAmountNum / totalJobsWithReviews
+          : 0,
+      avgReviewAmountPerDoneJob:
+        totalJobs > 0 ? totalReviewAmountNum / totalJobs : 0,
+      distinctPaymentMethods: paymentMethodAgg.size,
+      distinctReviewTypes: reviewTypeAgg.size,
+    },
+    reviewTypeRows,
+    paymentMethodRows,
+    reviewMonthlyRows,
   };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function buildReviewTotalsSheet(report: DashboardExportReport, XS: any) {
+  const NAVY = "1F3764";
+  const BLUE = "2F5496";
+  const MED_BLUE = "4472C4";
+  const LT_BLUE = "D9E1F2";
+  const WHITE = "FFFFFF";
+  const BORDER = "B8CCE4";
+  const TEXT_DARK = "1A1A2E";
+
+  const bdrThin = (rgb = BORDER) => ({ style: "thin", color: { rgb } });
+  const allBdr = (rgb = BORDER) => ({
+    top: bdrThin(rgb),
+    bottom: bdrThin(rgb),
+    left: bdrThin(rgb),
+    right: bdrThin(rgb),
+  });
+
+  const ws: Record<string, unknown> = {};
+  const merges: Array<{
+    s: { r: number; c: number };
+    e: { r: number; c: number };
+  }> = [];
+  let r = 0;
+
+  const enc = (row: number, col: number) =>
+    XS.utils.encode_cell({ r: row, c: col }) as string;
+  const set = (col: number, v: string | number, s: object = {}, z?: string) => {
+    const cell: Record<string, unknown> = {
+      v,
+      t: typeof v === "number" ? "n" : "s",
+      s,
+    };
+    if (z) cell.z = z;
+    ws[enc(r, col)] = cell;
+  };
+  const span = (c1: number, c2: number, r2 = r) =>
+    merges.push({ s: { r, c: c1 }, e: { r: r2, c: c2 } });
+
+  const FMT_CURRENCY = "$#,##0.00";
+  const FMT_INT = "#,##0";
+  const FMT_PCT = "0.0%";
+
+  set(0, `REVIEW TOTALS  —  ${report.scopeLabel}`, {
+    fill: { fgColor: { rgb: NAVY } },
+    font: { bold: true, color: { rgb: WHITE }, sz: 16, name: "Calibri" },
+    alignment: { horizontal: "center", vertical: "center" },
+  });
+  span(0, 6);
+  r++;
+
+  set(
+    0,
+    `Company: ${report.company.name} (${report.company.id})   |   Reporting Period: ${report.reportingPeriod}   |   Generated: ${report.generatedAt}`,
+    {
+      fill: { fgColor: { rgb: MED_BLUE } },
+      font: { italic: true, color: { rgb: WHITE }, sz: 9, name: "Calibri" },
+      alignment: { horizontal: "center", vertical: "center" },
+    },
+  );
+  span(0, 6);
+  r++;
+  r++;
+
+  set(0, "REVIEW KPI SUMMARY", {
+    fill: { fgColor: { rgb: NAVY } },
+    font: { bold: true, color: { rgb: WHITE }, sz: 11, name: "Calibri" },
+    alignment: { horizontal: "left", vertical: "center" },
+    border: allBdr(NAVY),
+  });
+  span(0, 6);
+  r++;
+
+  const summaryRows: Array<{
+    label: string;
+    value: number;
+    fmt: string;
+  }> = [
+    {
+      label: "Done Jobs",
+      value: report.reviewTotals.totalDoneJobs,
+      fmt: FMT_INT,
+    },
+    {
+      label: "Jobs With Reviews",
+      value: report.reviewTotals.totalJobsWithReviews,
+      fmt: FMT_INT,
+    },
+    {
+      label: "Jobs Without Reviews",
+      value: report.reviewTotals.totalJobsWithoutReviews,
+      fmt: FMT_INT,
+    },
+    {
+      label: "Review Coverage",
+      value: report.reviewTotals.reviewCapturePct / 100,
+      fmt: FMT_PCT,
+    },
+    {
+      label: "Total Review Amount",
+      value: report.reviewTotals.totalReviewAmount,
+      fmt: FMT_CURRENCY,
+    },
+    {
+      label: "Avg Review Amount",
+      value: report.reviewTotals.avgReviewAmount,
+      fmt: FMT_CURRENCY,
+    },
+    {
+      label: "Avg Review per Done Job",
+      value: report.reviewTotals.avgReviewAmountPerDoneJob,
+      fmt: FMT_CURRENCY,
+    },
+    {
+      label: "Distinct Review Types",
+      value: report.reviewTotals.distinctReviewTypes,
+      fmt: FMT_INT,
+    },
+    {
+      label: "Distinct Payment Methods",
+      value: report.reviewTotals.distinctPaymentMethods,
+      fmt: FMT_INT,
+    },
+  ];
+
+  for (let i = 0; i < summaryRows.length; i++) {
+    const row = summaryRows[i];
+    const bg = i % 2 === 0 ? WHITE : LT_BLUE;
+    const base = {
+      fill: { fgColor: { rgb: bg } },
+      font: { color: { rgb: TEXT_DARK }, sz: 10, name: "Calibri" },
+      border: allBdr(),
+    };
+    set(0, row.label, {
+      ...base,
+      font: { ...base.font, bold: true },
+      alignment: { horizontal: "left", indent: 1 },
+    });
+    span(0, 3);
+    set(
+      4,
+      row.value,
+      {
+        ...base,
+        alignment: { horizontal: "right" },
+      },
+      row.fmt,
+    );
+    span(4, 6);
+    r++;
+  }
+
+  r++;
+
+  const addBreakdown = (
+    title: string,
+    rows: ReviewBreakdownRow[],
+    totalCount: number,
+    totalAmount: number,
+  ) => {
+    set(0, title, {
+      fill: { fgColor: { rgb: NAVY } },
+      font: { bold: true, color: { rgb: WHITE }, sz: 11, name: "Calibri" },
+      alignment: { horizontal: "left", vertical: "center" },
+      border: allBdr(NAVY),
+    });
+    span(0, 6);
+    r++;
+
+    const headers = [
+      "Category",
+      "Reviews",
+      "Total Amount",
+      "Avg Amount",
+      "% of Reviews",
+      "% of Amount",
+      "",
+    ];
+    for (let i = 0; i < headers.length; i++) {
+      set(i, headers[i], {
+        fill: { fgColor: { rgb: BLUE } },
+        font: { bold: true, color: { rgb: WHITE }, sz: 10, name: "Calibri" },
+        alignment: { horizontal: "center", vertical: "center" },
+        border: allBdr(NAVY),
+      });
+    }
+    r++;
+
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      const bg = i % 2 === 0 ? WHITE : LT_BLUE;
+      const base = {
+        fill: { fgColor: { rgb: bg } },
+        font: { color: { rgb: TEXT_DARK }, sz: 10, name: "Calibri" },
+        border: allBdr(),
+      };
+      set(0, row.label, {
+        ...base,
+        alignment: { horizontal: "left", indent: 1 },
+      });
+      set(
+        1,
+        row.reviews,
+        { ...base, alignment: { horizontal: "center" } },
+        FMT_INT,
+      );
+      set(
+        2,
+        row.totalAmount,
+        { ...base, alignment: { horizontal: "right" } },
+        FMT_CURRENCY,
+      );
+      set(
+        3,
+        row.avgAmount,
+        { ...base, alignment: { horizontal: "right" } },
+        FMT_CURRENCY,
+      );
+      set(
+        4,
+        row.pctOfReviews / 100,
+        { ...base, alignment: { horizontal: "right" } },
+        FMT_PCT,
+      );
+      set(
+        5,
+        row.pctOfAmount / 100,
+        { ...base, alignment: { horizontal: "right" } },
+        FMT_PCT,
+      );
+      set(6, "", base);
+      r++;
+    }
+
+    const tot = {
+      fill: { fgColor: { rgb: NAVY } },
+      font: { bold: true, color: { rgb: WHITE }, sz: 10, name: "Calibri" },
+      border: allBdr(NAVY),
+      alignment: { horizontal: "right" },
+    };
+    set(0, "TOTAL", { ...tot, alignment: { horizontal: "left" } });
+    set(
+      1,
+      totalCount,
+      { ...tot, alignment: { horizontal: "center" } },
+      FMT_INT,
+    );
+    set(2, totalAmount, { ...tot }, FMT_CURRENCY);
+    set(
+      3,
+      totalCount > 0 ? totalAmount / totalCount : 0,
+      { ...tot },
+      FMT_CURRENCY,
+    );
+    set(4, 1, { ...tot }, FMT_PCT);
+    set(5, 1, { ...tot }, FMT_PCT);
+    set(6, "", tot);
+    r++;
+    r++;
+  };
+
+  addBreakdown(
+    "REVIEW TYPE BREAKDOWN",
+    report.reviewTypeRows,
+    report.reviewTotals.totalJobsWithReviews,
+    report.reviewTotals.totalReviewAmount,
+  );
+
+  addBreakdown(
+    "PAYMENT METHOD BREAKDOWN",
+    report.paymentMethodRows,
+    report.reviewTotals.totalJobsWithReviews,
+    report.reviewTotals.totalReviewAmount,
+  );
+
+  set(0, "MONTHLY REVIEW AMOUNT", {
+    fill: { fgColor: { rgb: NAVY } },
+    font: { bold: true, color: { rgb: WHITE }, sz: 11, name: "Calibri" },
+    alignment: { horizontal: "left", vertical: "center" },
+    border: allBdr(NAVY),
+  });
+  span(0, 6);
+  r++;
+
+  const monthHeaders = [
+    "Month",
+    "Reviews",
+    "Total Amount",
+    "Avg Amount",
+    "Coverage vs Done Jobs",
+    "",
+    "",
+  ];
+  for (let i = 0; i < monthHeaders.length; i++) {
+    set(i, monthHeaders[i], {
+      fill: { fgColor: { rgb: BLUE } },
+      font: { bold: true, color: { rgb: WHITE }, sz: 10, name: "Calibri" },
+      alignment: { horizontal: "center", vertical: "center" },
+      border: allBdr(NAVY),
+    });
+  }
+  r++;
+
+  for (let i = 0; i < report.reviewMonthlyRows.length; i++) {
+    const row = report.reviewMonthlyRows[i];
+    const bg = i % 2 === 0 ? WHITE : LT_BLUE;
+    const base = {
+      fill: { fgColor: { rgb: bg } },
+      font: { color: { rgb: TEXT_DARK }, sz: 10, name: "Calibri" },
+      border: allBdr(),
+    };
+    set(0, row.month, {
+      ...base,
+      alignment: { horizontal: "left", indent: 1 },
+    });
+    set(
+      1,
+      row.reviews,
+      { ...base, alignment: { horizontal: "center" } },
+      FMT_INT,
+    );
+    set(
+      2,
+      row.totalAmount,
+      { ...base, alignment: { horizontal: "right" } },
+      FMT_CURRENCY,
+    );
+    set(
+      3,
+      row.avgAmount,
+      { ...base, alignment: { horizontal: "right" } },
+      FMT_CURRENCY,
+    );
+    set(
+      4,
+      row.pctOfDoneJobs / 100,
+      { ...base, alignment: { horizontal: "right" } },
+      FMT_PCT,
+    );
+    set(5, "", base);
+    set(6, "", base);
+    r++;
+  }
+
+  ws["!ref"] = XS.utils.encode_range({
+    s: { r: 0, c: 0 },
+    e: { r: Math.max(0, r - 1), c: 6 },
+  });
+  ws["!merges"] = merges;
+  ws["!cols"] = [
+    { wch: 34 },
+    { wch: 12 },
+    { wch: 18 },
+    { wch: 14 },
+    { wch: 20 },
+    { wch: 8 },
+    { wch: 8 },
+  ];
+  ws["!rows"] = [{ hpt: 38 }, { hpt: 20 }, { hpt: 6 }];
+  return ws;
 }
 
 export async function exportDashboardReportAsExcel(
@@ -779,6 +1323,10 @@ export async function exportDashboardReportAsExcel(
   // ── Job Detail sheet ───────────────────────────────────────────────────────
   const detailWs = buildTechJobDetailSheet(report, XS);
   XS.utils.book_append_sheet(wb, detailWs, "Job Detail");
+
+  // ── Review Totals sheet ───────────────────────────────────────────────────
+  const reviewWs = buildReviewTotalsSheet(report, XS);
+  XS.utils.book_append_sheet(wb, reviewWs, "Review Totals");
 
   const output = XS.write(wb, { bookType: "xlsx", type: "array" });
   saveAs(
@@ -1212,6 +1760,175 @@ export async function exportDashboardReportAsPdf(
       if (data.row.section === "foot" && data.column.index === 0) {
         data.cell.styles.halign = "left";
       }
+    },
+  });
+
+  // ═══════════════════════════════════════
+  //  PAGE 3  —  Review totals
+  // ═══════════════════════════════════════
+  doc.addPage("a4", "landscape");
+
+  banner(0, 32, MIDNIGHT, report.title, { size: 13, bold: true });
+  doc.setFillColor(...TEAL_DARK);
+  doc.rect(0, 32, PAGE_W, 3, "F");
+
+  banner(43, 18, TEAL_DARK, `REVIEW TOTALS  —  ${report.scopeLabel}`, {
+    size: 8.5,
+    bold: true,
+    align: "left",
+  });
+
+  const reviewKpis = [
+    ["Done Jobs", String(report.reviewTotals.totalDoneJobs)],
+    ["Jobs With Reviews", String(report.reviewTotals.totalJobsWithReviews)],
+    [
+      "Jobs Without Reviews",
+      String(report.reviewTotals.totalJobsWithoutReviews),
+    ],
+    ["Review Coverage", fmtPercent(report.reviewTotals.reviewCapturePct)],
+    ["Total Review Amount", fmtCurrency(report.reviewTotals.totalReviewAmount)],
+    ["Avg Review Amount", fmtCurrency(report.reviewTotals.avgReviewAmount)],
+    [
+      "Avg Review per Done Job",
+      fmtCurrency(report.reviewTotals.avgReviewAmountPerDoneJob),
+    ],
+    ["Distinct Review Types", String(report.reviewTotals.distinctReviewTypes)],
+    [
+      "Distinct Payment Methods",
+      String(report.reviewTotals.distinctPaymentMethods),
+    ],
+  ];
+
+  const reviewRows: string[][] = [];
+  for (let i = 0; i < reviewKpis.length; i += 3) {
+    reviewRows.push([
+      reviewKpis[i]?.[0] ?? "",
+      reviewKpis[i]?.[1] ?? "",
+      reviewKpis[i + 1]?.[0] ?? "",
+      reviewKpis[i + 1]?.[1] ?? "",
+      reviewKpis[i + 2]?.[0] ?? "",
+      reviewKpis[i + 2]?.[1] ?? "",
+    ]);
+  }
+
+  const reviewKpiColW = CWIDTH / 3;
+  tbl(doc, {
+    startY: 63,
+    margin: { left: MARGIN, right: MARGIN },
+    tableWidth: CWIDTH,
+    body: reviewRows,
+    theme: "plain",
+    styles: {
+      lineWidth: 0.4,
+      lineColor: DIVIDER,
+      cellPadding: { top: 3, bottom: 3, left: 6, right: 6 },
+    },
+    columnStyles: {
+      0: {
+        cellWidth: reviewKpiColW * 0.55,
+        fontSize: 7,
+        textColor: SLATE_TXT,
+      },
+      1: {
+        cellWidth: reviewKpiColW * 0.45,
+        fontSize: 10,
+        textColor: MIDNIGHT,
+        fontStyle: "bold",
+        halign: "right",
+      },
+      2: {
+        cellWidth: reviewKpiColW * 0.55,
+        fontSize: 7,
+        textColor: SLATE_TXT,
+      },
+      3: {
+        cellWidth: reviewKpiColW * 0.45,
+        fontSize: 10,
+        textColor: MIDNIGHT,
+        fontStyle: "bold",
+        halign: "right",
+      },
+      4: {
+        cellWidth: reviewKpiColW * 0.55,
+        fontSize: 7,
+        textColor: SLATE_TXT,
+      },
+      5: {
+        cellWidth: reviewKpiColW * 0.45,
+        fontSize: 10,
+        textColor: MIDNIGHT,
+        fontStyle: "bold",
+        halign: "right",
+      },
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    didParseCell: (data: any) => {
+      data.cell.styles.fillColor = data.row.index % 2 === 0 ? WHITE : MINT_PALE;
+    },
+  });
+
+  const reviewBreakdownStartY = (docX.lastAutoTable?.finalY ?? 140) + 12;
+  tbl(doc, {
+    startY: reviewBreakdownStartY,
+    margin: { left: MARGIN, right: MARGIN },
+    tableWidth: CWIDTH,
+    head: [["Review Type", "Reviews", "Total Amount", "Avg Amount"]],
+    body: report.reviewTypeRows
+      .slice(0, 8)
+      .map((row) => [
+        row.label,
+        String(row.reviews),
+        fmtCurrency(row.totalAmount),
+        fmtCurrency(row.avgAmount),
+      ]),
+    theme: "grid",
+    headStyles: {
+      fillColor: TEAL_COL,
+      textColor: WHITE,
+      fontStyle: "bold",
+      fontSize: 8,
+      halign: "center",
+    },
+    bodyStyles: { fontSize: 8, textColor: TEXT_DARK },
+    alternateRowStyles: { fillColor: MINT_PALE },
+    styles: { lineWidth: 0.3, lineColor: DIVIDER },
+    columnStyles: {
+      0: { halign: "left", cellWidth: 190 },
+      1: { halign: "center", cellWidth: 60 },
+      2: { halign: "right", cellWidth: 95 },
+      3: { halign: "right", cellWidth: 95 },
+    },
+  });
+
+  tbl(doc, {
+    startY: reviewBreakdownStartY,
+    margin: { left: PAGE_W / 2 + 6, right: MARGIN },
+    tableWidth: CWIDTH / 2 - 6,
+    head: [["Payment Method", "Reviews", "Total Amount", "Avg Amount"]],
+    body: report.paymentMethodRows
+      .slice(0, 8)
+      .map((row) => [
+        row.label,
+        String(row.reviews),
+        fmtCurrency(row.totalAmount),
+        fmtCurrency(row.avgAmount),
+      ]),
+    theme: "grid",
+    headStyles: {
+      fillColor: TEAL_COL,
+      textColor: WHITE,
+      fontStyle: "bold",
+      fontSize: 8,
+      halign: "center",
+    },
+    bodyStyles: { fontSize: 8, textColor: TEXT_DARK },
+    alternateRowStyles: { fillColor: MINT_PALE },
+    styles: { lineWidth: 0.3, lineColor: DIVIDER },
+    columnStyles: {
+      0: { halign: "left", cellWidth: 145 },
+      1: { halign: "center", cellWidth: 44 },
+      2: { halign: "right", cellWidth: 70 },
+      3: { halign: "right", cellWidth: 70 },
     },
   });
 
