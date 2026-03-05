@@ -80,7 +80,7 @@ export default function DashboardLayout({
         <div className="flex h-16 items-center gap-2 border-b border-zinc-200 px-6 dark:border-zinc-800">
           <WalletMinimal className="h-6 w-6 text-zinc-700 dark:text-zinc-300" />
           <span className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-            Salarium
+            Klicktiv
           </span>
         </div>
       </Link>

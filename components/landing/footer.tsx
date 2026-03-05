@@ -13,7 +13,7 @@ export default function Footer() {
             <Link href="/" className="flex items-center gap-2">
               <WalletMinimal className="h-6 w-6 text-zinc-900 dark:text-zinc-50" />
               <span className="text-lg font-bold text-zinc-900 dark:text-zinc-50">
-                Salarium
+                Klicktiv
               </span>
             </Link>
             <p className="mt-3 max-w-xs text-sm text-zinc-500 dark:text-zinc-400">
@@ -90,7 +90,7 @@ export default function Footer() {
 
         <div className="mt-12 border-t border-zinc-100 pt-6 dark:border-zinc-800">
           <p className="text-center text-xs text-zinc-400 dark:text-zinc-600">
-            &copy; {year} Salarium. All rights reserved.
+            &copy; {year} Klicktiv. All rights reserved.
           </p>
         </div>
       </div>

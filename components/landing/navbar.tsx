@@ -16,7 +16,7 @@ export default function Navbar() {
         <Link href="/" className="flex items-center gap-2">
           <WalletMinimal className="h-7 w-7 text-zinc-900 dark:text-zinc-50" />
           <span className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-            Salarium
+            Klicktiv
           </span>
         </Link>
 

@@ -49,14 +49,14 @@ export default function SignUpPage() {
           <Link href="/" className="flex items-center gap-2">
             <WalletMinimal className="h-8 w-8 text-zinc-900 dark:text-zinc-50" />
             <span className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
-              Salarium
+              Klicktiv
             </span>
           </Link>
           <h1 className="mt-2 text-xl font-semibold text-zinc-900 dark:text-zinc-50">
             Create your account
           </h1>
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            Get started with Salarium for free
+            Get started with Klicktiv for free
           </p>
         </div>
 

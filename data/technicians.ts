@@ -10,7 +10,7 @@ export const technicians: Technician[] = [
   {
     id: "tech-tamir",
     name: "Tamir",
-    email: "tamir@salarium.local",
+    email: "tamir@klicktiv.local",
     commission: 50,
     active: true,
     hiredAt: "2024-01-01",
@@ -18,7 +18,7 @@ export const technicians: Technician[] = [
   {
     id: "tech-yotam",
     name: "Yotam",
-    email: "yotam@salarium.local",
+    email: "yotam@klicktiv.local",
     commission: 50,
     active: true,
     hiredAt: "2024-01-01",
@@ -26,7 +26,7 @@ export const technicians: Technician[] = [
   {
     id: "tech-shalom",
     name: "Shalom",
-    email: "shalom@salarium.local",
+    email: "shalom@klicktiv.local",
     commission: 75,
     active: true,
     hiredAt: "2024-01-01",
@@ -34,7 +34,7 @@ export const technicians: Technician[] = [
   {
     id: "tech-aviran",
     name: "Aviran",
-    email: "aviran@salarium.local",
+    email: "aviran@klicktiv.local",
     commission: 75,
     active: true,
     hiredAt: "2024-06-01",
@@ -42,7 +42,7 @@ export const technicians: Technician[] = [
   {
     id: "tech-sub",
     name: "3 Bros (Sub)",
-    email: "sub@salarium.local",
+    email: "sub@klicktiv.local",
     commission: 75,
     active: true,
     hiredAt: "2024-01-01",

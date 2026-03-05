@@ -42,7 +42,7 @@ export default function LoginPage() {
           <Link href="/" className="flex items-center gap-2">
             <WalletMinimal className="h-8 w-8 text-zinc-900 dark:text-zinc-50" />
             <span className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
-              Salarium
+              Klicktiv
             </span>
           </Link>
           <h1 className="mt-2 text-xl font-semibold text-zinc-900 dark:text-zinc-50">

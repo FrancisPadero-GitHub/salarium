@@ -52,7 +52,7 @@ export default function SuperAdminLayout({
           <WalletMinimal className="h-6 w-6 text-zinc-700 dark:text-zinc-300" />
           <div className="flex flex-col">
             <span className="text-lg font-semibold leading-none tracking-tight text-zinc-900 dark:text-zinc-50">
-              Salarium
+              Klicktiv
             </span>
             <span className="text-[10px] font-medium uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
               Super Admin

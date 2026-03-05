@@ -35,6 +35,6 @@ Use these when you need the AI to "read" your entire project folder.
 | **GPT-5.3-Codex**     | Terminal & Agents    | Best at running commands and autonomous tasks.      |
 | **Raptor mini**       | Inline Edits         | Fast, free/unlimited, and built for VS Code.        |
 
-> **Pro-Tip for Salarium:** If you're working on the payroll formulas or technician split logic, stick with **Claude Opus 4.6**. For the dashboard UI and Tailwind styling, **Claude Sonnet 4.6** or **Gemini 3.1 Pro** will get you there faster.
+> **Pro-Tip for Klicktiv:** If you're working on the payroll formulas or technician split logic, stick with **Claude Opus 4.6**. For the dashboard UI and Tailwind styling, **Claude Sonnet 4.6** or **Gemini 3.1 Pro** will get you there faster.
 
-**Would you like me to help you write a prompt for one of these models to refactor a specific part of your Salarium dashboard?**
+**Would you like me to help you write a prompt for one of these models to refactor a specific part of your Klicktiv dashboard?**

@@ -1,8 +1,8 @@
-# Salarium: Field Service Financial Orchestration System
+# Klicktiv: Field Service Financial Orchestration System
 
 ## Project Overview
 
-Salarium is a specialized full stack financial management and operational dashboard built for a Florida-based field service business (chimney cleaning, HVAC duct cleaning, dryer vent cleaning, UV light systems, and related services). It centralizes job reporting, automates commission calculations, and provides real time business intelligence.
+Klicktiv is a specialized full stack financial management and operational dashboard built for a Florida-based field service business (chimney cleaning, HVAC duct cleaning, dryer vent cleaning, UV light systems, and related services). It centralizes job reporting, automates commission calculations, and provides real time business intelligence.
 
 The system replaces fragmented Google Sheets workflows — one spreadsheet per technician, separate daily gross/net sheets, a separate estimate log — with a secure, database driven architecture that ensures financial accuracy, protects calculation logic, and reduces administrative overhead.
 
@@ -41,9 +41,9 @@ Captures: `Date · Address · Estimate Description · Amount · Tech · Status �
 
 ---
 
-## The Salarium Solution
+## The Klicktiv Solution
 
-Salarium consolidates all of the above into a unified web application.
+Klicktiv consolidates all of the above into a unified web application.
 
 All financial calculations are executed at the database and server levels. Revenue totals, commission splits, and year-to-date metrics are automatically generated and updated when a job is recorded. This guarantees mathematical integrity and removes dependency on manual spreadsheet formulas.
 

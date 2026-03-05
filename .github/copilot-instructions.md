@@ -1,6 +1,6 @@
-# Copilot Instructions — Salarium
+# Copilot Instructions — Klicktiv
 
-Salarium is a **financial orchestration platform for field service businesses**, built with Next.js 16 App Router, React 19, TypeScript, Tailwind CSS v4, shadcn/ui, and Supabase.
+Klicktiv is a **financial orchestration platform for field service businesses**, built with Next.js 16 App Router, React 19, TypeScript, Tailwind CSS v4, shadcn/ui, and Supabase.
 
 ## Architecture
 

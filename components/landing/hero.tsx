@@ -27,7 +27,7 @@ export default function Hero() {
 
         {/* Subheadline */}
         <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-zinc-500 dark:text-zinc-400">
-          Salarium centralizes job reporting, automates commission splits, and
+          Klicktiv centralizes job reporting, automates commission splits, and
           delivers synchronous revenue dashboards, built for chimney, HVAC, and
           dryer vent service businesses tired of juggling spreadsheets.
         </p>

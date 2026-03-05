@@ -365,7 +365,7 @@ export function buildDashboardExportReport({
     }));
 
   return {
-    title: `${companyName.toUpperCase()} - SALARIUM FINANCIAL REPORT`,
+    title: `${companyName.toUpperCase()} - KLICKTIV FINANCIAL REPORT`,
     company: {
       id: company.id,
       name: companyName,
@@ -1249,7 +1249,7 @@ export async function exportDashboardReportAsPdf(
     doc.setTextColor(...SLATE_TXT);
     doc.setFontSize(7);
     doc.setFont("helvetica", "normal");
-    doc.text("SALARIUM  ·  Confidential Financial Report", MARGIN, PAGE_H - 6);
+    doc.text("KLICKTIV  ·  Confidential Financial Report", MARGIN, PAGE_H - 6);
     doc.text(`Page ${p} of ${totalPages}`, PAGE_W - MARGIN, PAGE_H - 6, {
       align: "right",
     });

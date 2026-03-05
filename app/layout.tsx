@@ -18,9 +18,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Salarium",
+  title: "Klicktiv",
   description:
-    "Salarium is a specialized financial orchestration platform designed for field service businesses.",
+    "Klicktiv is a specialized financial orchestration platform designed for field service businesses.",
 };
 
 export default function RootLayout({

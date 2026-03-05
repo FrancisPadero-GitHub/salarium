@@ -1,8 +1,8 @@
-# Salarium
+# Klicktiv
 
-![Salarium landing page](public/website_pic.png)
+![Klicktiv landing page](public/website_pic.png)
 
-Salarium centralizes job reporting, automates commission splits, and delivers synchronous revenue dashboards for field service businesses. Built for chimney, HVAC, and dryer vent service companies tired of juggling spreadsheets.
+Klicktiv centralizes job reporting, automates commission splits, and delivers synchronous revenue dashboards for field service businesses. Built for chimney, HVAC, and dryer vent service companies tired of juggling spreadsheets.
 
 **Key Features:**
 
@@ -17,11 +17,11 @@ Salarium centralizes job reporting, automates commission splits, and delivers sy
 
 ## Introduction
 
-![Salarium dashboard](public/website_pic_2.png)
+![Klicktiv dashboard](public/website_pic_2.png)
 
-Salarium solves your business problems so you don't have to:
+Klicktiv solves your business problems so you don't have to:
 
-> "Salarium centralizes job reporting, automates commission splits, and delivers synchronous revenue dashboards, built for chimney, HVAC, and dryer vent service businesses tired of juggling spreadsheets."
+> "Klicktiv centralizes job reporting, automates commission splits, and delivers synchronous revenue dashboards, built for chimney, HVAC, and dryer vent service businesses tired of juggling spreadsheets."
 
 ![Technician Splits](public/website_pic_3.png)
 
@@ -49,7 +49,7 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 ## Backend Database Schema
 
-See the backend schema and API at: [Salarium Backend Database Schema](https://github.com/FrancisPadero-GitHub/salarium-backend-latest)
+See the backend schema and API at: [Klicktiv Backend Database Schema](https://github.com/FrancisPadero-GitHub/klicktiv-backend-latest)
 
 ---
 
