@@ -31,7 +31,7 @@ export default function DashboardPage() {
 
     // Raw data
     jobs,
-    recentJobs,
+    // recentJobs,
     // techSummaries,
     technicians,
     techNameMap,
@@ -133,7 +133,7 @@ export default function DashboardPage() {
           loadingMessage="Loading recent jobs table..."
           className="min-h-80"
         >
-          <RecentJobsTable jobs={recentJobs} techNameMap={techNameMap} />
+          <RecentJobsTable />
         </QueryStatePanel>
       </div>
     </div>

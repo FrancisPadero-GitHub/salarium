@@ -1,136 +1,209 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { fmtUSD } from "@/lib/decimal";
-import type { VJobsRow } from "@/hooks/jobs/useFetchJobs";
+import { useMemo } from "react";
+import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useFetchViewJobRow } from "@/hooks/jobs/useFetchJobTable";
+import { useFetchTechSummary } from "@/hooks/technicians/useFetchTechSummary";
+import { useFetchTechnicians } from "@/hooks/technicians/useFetchTechnicians";
 
-const paymentColors: Record<string, string> = {
-  cash: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
-  check: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-  "credit card":
-    "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
-  zelle: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+// helpers
+
+const shortId = (value: string | null) => {
+  if (!value) return "";
+  return value.slice(0, 8);
 };
 
-const statusColors: Record<string, string> = {
-  done: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
-  pending:
-    "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-  cancelled: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
-};
+const fmt = (n: number) =>
+  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
+    n,
+  );
 
-interface RecentJobsTableProps {
-  jobs: VJobsRow[];
-  techNameMap: Map<string, string>;
-}
+export function RecentJobsTable() {
+  const { data: jobs = [], isLoading, isError } = useFetchViewJobRow();
+  const { data: techSummary = [] } = useFetchTechSummary();
+  const { data: techDetails = [] } = useFetchTechnicians();
 
-export function RecentJobsTable({ jobs, techNameMap }: RecentJobsTableProps) {
+  // Build tech name & commission lookup maps
+  const techNameMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const t of techSummary) {
+      if (t.technician_id && t.name) map.set(t.technician_id, t.name);
+    }
+    return map;
+  }, [techSummary]);
+
+  const techCommissionMap = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const t of techDetails) {
+      if (t.id) map.set(t.id, t.commission);
+    }
+    return map;
+  }, [techDetails]);
+
+  // Sort by created_at descending and take 15 most recent
+  const recentJobs = useMemo(() => {
+    return [...jobs]
+      .sort((a, b) => {
+        const av = a.created_at as string | number;
+        const bv = b.created_at as string | number;
+        let cmp = 0;
+        if (typeof av === "number" && typeof bv === "number") {
+          cmp = av - bv;
+        } else {
+          cmp = String(av).localeCompare(String(bv));
+        }
+        return -cmp; // desc
+      })
+      .slice(0, 15);
+  }, [jobs]);
+
   return (
     <div className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-      <div className="border-b border-zinc-200 px-6 py-4 dark:border-zinc-800">
-        <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
-          Recent Jobs
-        </h3>
-        <p className="text-xs text-zinc-500 dark:text-zinc-400">
-          Last {jobs.length} jobs in selected period
-        </p>
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-zinc-200 p-4 dark:border-zinc-800">
+        <div>
+          <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
+            Recent Jobs
+          </h3>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            Showing {recentJobs.length} most recent
+          </p>
+        </div>
+        <div>
+          <Link
+            href="/dashboard/jobs"
+            className="group flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-600 shadow-sm transition-all hover:border-zinc-300 hover:bg-zinc-50 hover:text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:border-zinc-600 dark:hover:bg-zinc-700 dark:hover:text-zinc-100"
+          >
+            View all
+            <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+          </Link>
+        </div>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-zinc-100 dark:border-zinc-800">
-              {[
-                "Date",
-                "Address",
-                "Technician",
-                "Gross",
-                "Company Net",
-                "Payment",
-                "Status",
-              ].map((h) => (
-                <th
-                  key={h}
-                  className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-500"
-                >
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {jobs.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={7}
-                  className="px-6 py-8 text-center text-zinc-400 dark:text-zinc-500"
-                >
-                  No jobs found for this period
-                </td>
-              </tr>
-            ) : (
-              jobs.map((job, i) => (
-                <tr
-                  key={job.work_order_id}
-                  className={cn(
-                    "transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50",
-                    i !== jobs.length - 1 &&
-                      "border-b border-zinc-100 dark:border-zinc-800",
-                  )}
-                >
-                  <td className="px-6 py-3 text-zinc-500 dark:text-zinc-400">
-                    {job.work_order_date
-                      ? new Date(
-                          job.work_order_date + "T00:00:00",
-                        ).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                        })
-                      : "—"}
-                  </td>
-                  <td className="px-6 py-3 font-medium text-zinc-800 dark:text-zinc-200">
-                    {job.address || "—"}
-                  </td>
-                  <td className="px-6 py-3 text-zinc-600 dark:text-zinc-300">
-                    {job.technician_id
-                      ? (techNameMap.get(job.technician_id) ?? "—")
-                      : "—"}
-                  </td>
-                  <td className="px-6 py-3 tabular-nums text-zinc-800 dark:text-zinc-200">
-                    {fmtUSD(job.subtotal ?? 0)}
-                  </td>
-                  <td className="px-6 py-3 tabular-nums text-emerald-600 dark:text-emerald-400">
-                    {fmtUSD(job.total_company_net ?? 0)}
-                  </td>
-                  <td className="px-6 py-3">
-                    <span
-                      className={cn(
-                        "inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
-                        paymentColors[
-                          (job.payment_method ?? "").toLowerCase()
-                        ] ||
-                          "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300",
-                      )}
+
+      {/* Table */}
+      {isLoading ? (
+        <div className="flex items-center justify-center py-10">
+          <Spinner />
+        </div>
+      ) : isError ? (
+        <div className="rounded-b-xl bg-red-50 p-6 text-center text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">
+          Failed to load jobs.
+        </div>
+      ) : (
+        <div className="max-h-120 overflow-y-auto overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow className="border-b border-zinc-200 dark:border-zinc-800">
+                {[
+                  "ID",
+                  "Job Name",
+                  "Date",
+                  "Address",
+                  "Technician",
+                  "Gross",
+                  "Parts Cost",
+                ].map((label) => (
+                  <TableHead
+                    key={label}
+                    className="sticky top-0 z-20 bg-white text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400"
+                  >
+                    {label}
+                  </TableHead>
+                ))}
+              </TableRow>
+            </TableHeader>
+            <TableBody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+              {recentJobs.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={7}
+                    className="px-4 py-8 text-center text-sm text-zinc-400 dark:text-zinc-600"
+                  >
+                    No jobs found.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                recentJobs.map((job) => {
+                  const techName = job.technician_id
+                    ? (techNameMap.get(job.technician_id) ?? "—")
+                    : "—";
+                  const commRate = job.technician_id
+                    ? techCommissionMap.get(job.technician_id)
+                    : null;
+
+                  return (
+                    <TableRow
+                      key={job.work_order_id}
+                      className="cursor-pointer transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
                     >
-                      {job.payment_method || "—"}
-                    </span>
-                  </td>
-                  <td className="px-6 py-3">
-                    <span
-                      className={cn(
-                        "inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
-                        statusColors[(job.status ?? "").toLowerCase()] ||
-                          "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300",
-                      )}
-                    >
-                      {job.status || "—"}
-                    </span>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+                      {/* ID */}
+                      <TableCell className="whitespace-nowrap text-zinc-500 dark:text-zinc-400">
+                        {shortId(job.work_order_id ?? "—")}
+                      </TableCell>
+                      {/* Job Name */}
+                      <TableCell className="font-medium text-zinc-800 dark:text-zinc-200">
+                        {job.work_title ?? "—"}
+                      </TableCell>
+                      {/* Date */}
+                      <TableCell className="whitespace-nowrap text-zinc-500 dark:text-zinc-400">
+                        {job.work_order_date
+                          ? new Date(job.work_order_date).toLocaleDateString()
+                          : "—"}
+                      </TableCell>
+                      {/* Address */}
+                      <TableCell className="font-medium text-zinc-800 dark:text-zinc-200">
+                        {job.address ?? "—"}
+                        {job.region && (
+                          <span className="ml-1.5 text-xs text-zinc-400 dark:text-zinc-500">
+                            {job.region}
+                          </span>
+                        )}
+                      </TableCell>
+                      {/* Technician */}
+                      <TableCell className="whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xs font-semibold text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+                            {(techName === "—" ? "?" : techName)
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")}
+                          </div>
+                          <span className="text-zinc-700 dark:text-zinc-300">
+                            {techName}
+                          </span>
+                          {commRate != null && (
+                            <span className="text-xs text-zinc-400">
+                              ({commRate}%)
+                            </span>
+                          )}
+                        </div>
+                      </TableCell>
+                      {/* Gross */}
+                      <TableCell className="tabular-nums font-medium text-zinc-900 dark:text-zinc-100">
+                        {fmt(job.subtotal ?? 0)}
+                      </TableCell>
+                      {/* Parts Cost */}
+                      <TableCell className="tabular-nums text-orange-600 dark:text-orange-400">
+                        {fmt(job.parts_total_cost ?? 0)}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      )}
     </div>
   );
 }

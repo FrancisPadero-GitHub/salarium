@@ -350,13 +350,13 @@ export function useDashboardData() {
     ];
   }, [jobs, techCommissionMap]);
 
-  // Recent jobs (sorted by date, top 10)
+  // Recent jobs (sorted by creation date, top 10)
   const recentJobs = useMemo(() => {
     return [...jobs]
       .sort(
         (a, b) =>
-          new Date(b.work_order_date ?? "").getTime() -
-          new Date(a.work_order_date ?? "").getTime(),
+          new Date(b.created_at ?? "").getTime() -
+          new Date(a.created_at ?? "").getTime(),
       )
       .slice(0, 10);
   }, [jobs]);
