@@ -27,13 +27,13 @@ const stats = [
 
 export default function Stats() {
   return (
-    <section id="stats" className="bg-zinc-900 py-24 dark:bg-zinc-900">
+    <section id="stats" className="bg-foreground py-24">
       <div className="mx-auto max-w-7xl px-6">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-zinc-400">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             Why Choose Us
           </p>
-          <h2 className="text-3xl font-bold tracking-tight text-zinc-50 sm:text-4xl">
+          <h2 className="text-3xl font-bold tracking-tight text-background sm:text-4xl">
             Your business deserves more than generic software
           </h2>
         </div>
@@ -42,15 +42,15 @@ export default function Stats() {
           {stats.map(({ value, label, description }) => (
             <div
               key={label}
-              className="rounded-2xl border border-zinc-700 bg-zinc-800/50 p-6 text-center"
+              className="rounded-2xl border border-border/30 bg-card/10 p-6 text-center"
             >
-              <div className="mb-1 text-4xl font-extrabold tracking-tight text-zinc-50">
+              <div className="mb-1 text-4xl font-extrabold tracking-tight text-background">
                 {value}
               </div>
-              <div className="mb-2 text-sm font-semibold text-zinc-300">
+              <div className="mb-2 text-sm font-semibold text-background/80">
                 {label}
               </div>
-              <p className="text-xs leading-relaxed text-zinc-500">
+              <p className="text-xs leading-relaxed text-muted-foreground">
                 {description}
               </p>
             </div>

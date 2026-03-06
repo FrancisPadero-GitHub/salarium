@@ -11,7 +11,7 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 border-b border-zinc-200/80 bg-white/90 backdrop-blur-md dark:border-zinc-800/80 dark:bg-zinc-950/90">
+    <header className="fixed top-0 left-0 right-0 z-50 border-b border-border/80 bg-background/90 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-6">
         {/* Logo */}
         <Link href="/" className="flex shrink-0 items-center">
@@ -30,19 +30,19 @@ export default function Navbar() {
         <nav className="hidden items-center gap-8 md:flex">
           <Link
             href="#features"
-            className="text-sm font-medium text-zinc-600 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
+            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             Features
           </Link>
           <Link
             href="#how-it-works"
-            className="text-sm font-medium text-zinc-600 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
+            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             How It Works
           </Link>
           <Link
             href="#stats"
-            className="text-sm font-medium text-zinc-600 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
+            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             Why Us
           </Link>
@@ -54,14 +54,14 @@ export default function Navbar() {
           <div className="hidden items-center gap-2 md:flex">
             <Link
               href="/auth/login"
-              className="rounded-lg px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              className="rounded-lg px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
             >
               Log In
             </Link>
             <Link
               href="/dashboard"
               title="Temporary, will remove it till auth is ready"
-              className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+              className="rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background transition-colors hover:opacity-90"
             >
               Go to Dashboard
             </Link>
@@ -72,7 +72,7 @@ export default function Navbar() {
           {/* Mobile hamburger */}
           <button
             onClick={() => setOpen(!open)}
-            className="rounded-md p-2 text-zinc-600 transition-colors hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800 md:hidden"
+            className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-secondary md:hidden"
             aria-label="Toggle menu"
           >
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -83,7 +83,7 @@ export default function Navbar() {
       {/* Mobile menu */}
       <div
         className={cn(
-          "border-t border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950 md:hidden",
+          "border-t border-border bg-background md:hidden",
           open ? "block" : "hidden",
         )}
       >
@@ -91,29 +91,29 @@ export default function Navbar() {
           <Link
             href="#features"
             onClick={() => setOpen(false)}
-            className="rounded-md px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary"
           >
             Features
           </Link>
           <Link
             href="#how-it-works"
             onClick={() => setOpen(false)}
-            className="rounded-md px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary"
           >
             How It Works
           </Link>
           <Link
             href="#stats"
             onClick={() => setOpen(false)}
-            className="rounded-md px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary"
           >
             Why Us
           </Link>
-          <div className="mt-3 flex flex-col gap-2 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+          <div className="mt-3 flex flex-col gap-2 border-t border-border pt-3">
             <Link
               href="/auth/login"
               onClick={() => setOpen(false)}
-              className="rounded-lg px-4 py-2 text-center text-sm font-medium text-zinc-700 ring-1 ring-zinc-200 hover:bg-zinc-50 dark:text-zinc-300 dark:ring-zinc-700 dark:hover:bg-zinc-800"
+              className="rounded-lg px-4 py-2 text-center text-sm font-medium text-foreground ring-1 ring-border hover:bg-muted"
             >
               Log In
             </Link>
@@ -121,7 +121,7 @@ export default function Navbar() {
               href="/dashboard"
               title="Temporary"
               onClick={() => setOpen(false)}
-              className="rounded-lg bg-zinc-900 px-4 py-2 text-center text-sm font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+              className="rounded-lg bg-foreground px-4 py-2 text-center text-sm font-medium text-background transition-colors hover:opacity-90"
             >
               Go to Dashboard
             </Link>

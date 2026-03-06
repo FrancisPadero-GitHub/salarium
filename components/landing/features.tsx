@@ -48,17 +48,17 @@ const features = [
 
 export default function Features() {
   return (
-    <section id="features" className="bg-zinc-50 py-24 dark:bg-zinc-900">
+    <section id="features" className="bg-muted py-24">
       <div className="mx-auto max-w-7xl px-6">
         {/* Header */}
         <div className="mx-auto max-w-2xl text-center">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             What We Build For You
           </p>
-          <h2 className="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
+          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             Solutions that fit your business, not the other way around
           </h2>
-          <p className="mt-4 text-zinc-500 dark:text-zinc-400">
+          <p className="mt-4 text-muted-foreground">
             We handle the technical complexity so you can focus on operations.
             Every feature is built around your real-world needs and can be
             customized at any time.
@@ -70,15 +70,15 @@ export default function Features() {
           {features.map(({ icon: Icon, title, description }) => (
             <div
               key={title}
-              className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:border-zinc-800 dark:bg-zinc-950"
+              className="rounded-2xl border border-border bg-card p-6 shadow-sm transition-shadow hover:shadow-md"
             >
-              <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-800">
-                <Icon className="h-5 w-5 text-zinc-700 dark:text-zinc-300" />
+              <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-secondary">
+                <Icon className="h-5 w-5 text-foreground" />
               </div>
-              <h3 className="mb-2 text-base font-semibold text-zinc-900 dark:text-zinc-50">
+              <h3 className="mb-2 text-base font-semibold text-foreground">
                 {title}
               </h3>
-              <p className="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+              <p className="text-sm leading-relaxed text-muted-foreground">
                 {description}
               </p>
             </div>

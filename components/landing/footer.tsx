@@ -5,18 +5,18 @@ export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="border-t border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
+    <footer className="border-t border-border bg-background">
       <div className="mx-auto max-w-7xl px-6 py-12">
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {/* Brand */}
           <div className="col-span-2 lg:col-span-1">
             <Link href="/" className="flex items-center gap-2">
-              <WalletMinimal className="h-6 w-6 text-zinc-900 dark:text-zinc-50" />
-              <span className="text-lg font-bold text-zinc-900 dark:text-zinc-50">
+              <WalletMinimal className="h-6 w-6 text-foreground" />
+              <span className="text-lg font-bold text-foreground">
                 Klicktiv
               </span>
             </Link>
-            <p className="mt-3 max-w-xs text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="mt-3 max-w-xs text-sm text-muted-foreground">
               Your tool to replace traditional spreadsheets. We build custom
               solutions so you can focus on what matters most.
             </p>
@@ -24,7 +24,7 @@ export default function Footer() {
 
           {/* Product */}
           <div>
-            <h4 className="mb-3 text-xs font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
+            <h4 className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               Services
             </h4>
             <ul className="space-y-2">
@@ -36,7 +36,7 @@ export default function Footer() {
                 <li key={label}>
                   <Link
                     href={href}
-                    className="text-sm text-zinc-500 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
+                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                   >
                     {label}
                   </Link>
@@ -47,7 +47,7 @@ export default function Footer() {
 
           {/* Account */}
           <div>
-            <h4 className="mb-3 text-xs font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
+            <h4 className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               Account
             </h4>
             <ul className="space-y-2">
@@ -59,7 +59,7 @@ export default function Footer() {
                 <li key={label}>
                   <Link
                     href={href}
-                    className="text-sm text-zinc-500 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
+                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                   >
                     {label}
                   </Link>
@@ -70,7 +70,7 @@ export default function Footer() {
 
           {/* Legal */}
           <div>
-            <h4 className="mb-3 text-xs font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
+            <h4 className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               Legal
             </h4>
             <ul className="space-y-2">
@@ -78,7 +78,7 @@ export default function Footer() {
                 <li key={item}>
                   <Link
                     href="#"
-                    className="text-sm text-zinc-500 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
+                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                   >
                     {item}
                   </Link>
@@ -88,8 +88,8 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 border-t border-zinc-100 pt-6 dark:border-zinc-800">
-          <p className="text-center text-xs text-zinc-400 dark:text-zinc-600">
+        <div className="mt-12 border-t border-border pt-6">
+          <p className="text-center text-xs text-muted-foreground">
             &copy; {year} Klicktiv. All rights reserved.
           </p>
         </div>

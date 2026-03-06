@@ -36,8 +36,8 @@ export default function RootLayout({
         <QueryProvider>
           <ThemeProvider
             attribute="class"
-            defaultTheme="system"
-            enableSystem
+            defaultTheme="light"
+            themes={["light", "dark", "bubblegum", "caffeine"]}
             disableTransitionOnChange
           >
             <AuthProvider>{children}</AuthProvider>

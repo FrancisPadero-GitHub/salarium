@@ -1,24 +1,59 @@
 "use client";
 
-import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
+import { Sun, Moon, Sparkles, Coffee, ChevronDown } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+const THEMES = [
+  { value: "light", label: "Light", icon: Sun },
+  { value: "dark", label: "Dark", icon: Moon },
+  { value: "bubblegum", label: "Bubblegum", icon: Sparkles },
+  { value: "caffeine", label: "Caffeine", icon: Coffee },
+] as const;
+
+// type ThemeValue = (typeof THEMES)[number]["value"];
 
 export function ModeToggle({ className }: { className?: string }) {
   const { theme, setTheme } = useTheme();
 
+  const current = THEMES.find((t) => t.value === theme) ?? THEMES[0];
+  const CurrentIcon = current.icon;
+
   return (
-    <button
-      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-      className={cn(
-        "inline-flex h-9 w-9 items-center justify-center rounded-md border border-zinc-200 bg-white text-zinc-700 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50",
-        className,
-      )}
-      aria-label="Toggle theme"
-    >
-      <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-      <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-      <span className="sr-only">Toggle theme</span>
-    </button>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          className={cn(
+            "inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-background px-2.5 text-foreground transition-colors hover:bg-secondary",
+            className,
+          )}
+          aria-label="Select theme"
+        >
+          <CurrentIcon className="h-4 w-4" />
+          <ChevronDown className="h-3 w-3 opacity-50" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        {THEMES.map(({ value, label, icon: Icon }) => (
+          <DropdownMenuItem
+            key={value}
+            onClick={() => setTheme(value)}
+            className={cn(
+              "flex cursor-pointer items-center gap-2",
+              theme === value && "font-semibold",
+            )}
+          >
+            <Icon className="h-4 w-4" />
+            {label}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

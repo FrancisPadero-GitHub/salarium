@@ -27,17 +27,17 @@ const steps = [
 
 export default function HowItWorks() {
   return (
-    <section id="how-it-works" className="bg-white py-24 dark:bg-zinc-950">
+    <section id="how-it-works" className="bg-background py-24">
       <div className="mx-auto max-w-7xl px-6">
         {/* Header */}
         <div className="mx-auto max-w-2xl text-center">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             How It Works
           </p>
-          <h2 className="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
+          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             From problem to solution in four steps
           </h2>
-          <p className="mt-4 text-zinc-500 dark:text-zinc-400">
+          <p className="mt-4 text-muted-foreground">
             We handle the heavy lifting so you can focus on running your
             business. No technical knowledge required on your end.
           </p>
@@ -49,16 +49,16 @@ export default function HowItWorks() {
             <div key={number} className="relative flex flex-col">
               {/* Connector line (desktop only) */}
               {index < steps.length - 1 && (
-                <div className="absolute top-5 left-full hidden h-px w-8 bg-zinc-200 dark:bg-zinc-800 lg:block" />
+                <div className="absolute top-5 left-full hidden h-px w-8 bg-border lg:block" />
               )}
 
-              <div className="mb-4 text-4xl font-black tracking-tighter text-zinc-100 dark:text-zinc-800">
+              <div className="mb-4 text-4xl font-black tracking-tighter text-secondary">
                 {number}
               </div>
-              <h3 className="mb-2 text-base font-semibold text-zinc-900 dark:text-zinc-50">
+              <h3 className="mb-2 text-base font-semibold text-foreground">
                 {title}
               </h3>
-              <p className="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+              <p className="text-sm leading-relaxed text-muted-foreground">
                 {description}
               </p>
             </div>
