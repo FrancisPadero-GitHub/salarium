@@ -9,13 +9,14 @@ export type SortKey =
   | "gross_revenue"
   | "total_company_net"
   | "total_commission_earned"
-  | "hired_date";
+  | "hired_date"
+  | null;
 export type SortDir = "asc" | "desc";
 
 interface FilterState {
   search: string;
   commissionFilter: CommissionFilter;
-  sortKey: SortKey;
+  sortKey: SortKey; // null = preserve source order (created_at desc from the hook)
   sortDir: SortDir;
   showRemoved: boolean;
 
@@ -30,7 +31,7 @@ interface FilterState {
 const initialState = {
   search: "",
   commissionFilter: "all" as CommissionFilter,
-  sortKey: "name" as SortKey,
+  sortKey: null as SortKey,
   sortDir: "asc" as SortDir,
   showRemoved: false,
 };

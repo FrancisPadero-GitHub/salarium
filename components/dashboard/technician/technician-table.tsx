@@ -182,6 +182,9 @@ export function TechnicianTable() {
         return matchesSearch && matchesCommission && matchesRemoved;
       })
       .sort((a, b) => {
+        // null sortKey means "preserve source order" (created_at desc from the hook)
+        if (!sortKey) return 0;
+
         let av = a[sortKey] ?? "";
         let bv = b[sortKey] ?? "";
 

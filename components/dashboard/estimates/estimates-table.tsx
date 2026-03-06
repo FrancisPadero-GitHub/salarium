@@ -73,6 +73,7 @@ const statusLabels: Record<EstimateStatus, string> = {
 };
 
 type SortKey =
+  | "created_at"
   | "work_order_date"
   | "work_title"
   | "address"
@@ -114,7 +115,7 @@ export function EstimatesTable({
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [showFilters, setShowFilters] = useState(true);
-  const [sortKey, setSortKey] = useState<SortKey>("work_order_date");
+  const [sortKey, setSortKey] = useState<SortKey>("created_at");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
   const activeFilterCount = [

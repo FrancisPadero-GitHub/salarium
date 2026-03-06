@@ -63,6 +63,7 @@ const formatDate = (dateStr: string | null) => {
 };
 
 type SortKey =
+  | "created_at"
   | "review_date"
   | "review_amount"
   | "technician_id"
@@ -92,7 +93,7 @@ export function ReviewsTable({ onEdit, highlightReviewId }: ReviewsTableProps) {
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
 
   const [search, setSearch] = useState("");
-  const [sortKey, setSortKey] = useState<SortKey>("review_date");
+  const [sortKey, setSortKey] = useState<SortKey>("created_at");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
