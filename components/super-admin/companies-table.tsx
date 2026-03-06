@@ -131,7 +131,7 @@ export function CompaniesTable({ companies }: CompaniesTableProps) {
                         {isActive && (
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <button className="flex h-7 w-7 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200">
+                              <button className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200">
                                 <MoreHorizontal className="h-4 w-4" />
                                 <span className="sr-only">Actions</span>
                               </button>

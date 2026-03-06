@@ -458,16 +458,16 @@ export function ReviewsTable({ onEdit, highlightReviewId }: ReviewsTableProps) {
                   Date
                   {renderSortIcon("review_date")}
                 </TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                <TableHead className="select-none text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                   Finished Job
                 </TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                <TableHead className="select-none text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                   Job Name
                 </TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                <TableHead className="select-none text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                   Review Type
                 </TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                <TableHead className="select-none text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                   Payment
                 </TableHead>
                 <TableHead
@@ -477,7 +477,7 @@ export function ReviewsTable({ onEdit, highlightReviewId }: ReviewsTableProps) {
                   Amount
                   {renderSortIcon("review_amount")}
                 </TableHead>
-                <TableHead className="text-center text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                <TableHead className="select-none text-center text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                   Actions
                 </TableHead>
               </TableRow>
