@@ -2,7 +2,13 @@
 
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
-import { Sun, Moon, Coffee, ChevronDown } from "lucide-react";
+import {
+  Sun,
+  Moon,
+  // Coffee,
+  ChevronDown,
+} from "lucide-react";
+
 import {
   DropdownMenu,
   DropdownMenuContent,

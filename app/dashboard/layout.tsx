@@ -25,6 +25,7 @@ import { useAuth } from "@/components/auth-provider";
 // hooks
 import { useFetchCompany } from "@/hooks/company/useFetchCompany";
 import { useLogout } from "@/hooks/auth/useLogout";
+import FeedbackPage from "@/components/dashboard/submit-feedback/feedback-page";
 
 const navItems = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
@@ -109,6 +110,15 @@ function SidebarContent({
           );
         })}
       </nav>
+
+      <div className="px-3 pb-2">
+        <FeedbackPage>
+          <button className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50">
+            <MessageSquareText className="h-4 w-4 shrink-0" />
+            Submit Feedback
+          </button>
+        </FeedbackPage>
+      </div>
 
       {/* User & Logout */}
       <div className="border-t border-zinc-200 p-4 dark:border-zinc-800 space-y-3">
