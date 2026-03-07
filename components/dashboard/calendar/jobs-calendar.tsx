@@ -4,23 +4,36 @@ import { useMemo, useState } from "react";
 import { useFetchViewJobRow } from "@/hooks/jobs/useFetchJobTable";
 import { useFetchTechnicians } from "@/hooks/technicians/useFetchTechnicians";
 import { useJobStore } from "@/features/store/jobs/useFormJobStore";
+import { useCalendarFilterStore } from "@/features/store/calendar/useCalendarFilterStore";
 import { JobViewDialog } from "@/components/dashboard/jobs/job-view-dialog";
 import type { ViewJobsRow } from "@/hooks/jobs/useFetchJobTable";
 import {
   format,
-  addMonths,
-  subMonths,
   startOfMonth,
   endOfMonth,
   eachDayOfInterval,
   startOfWeek,
   endOfWeek,
   isSameMonth,
-  // isSameDay,
   isToday,
 } from "date-fns";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { Spinner } from "@/components/ui/spinner";
 
@@ -29,8 +42,37 @@ import { LogJobDialog } from "@/components/dashboard/jobs/log-job-dialog";
 import { JobDeleteAlert } from "@/components/dashboard/jobs/job-delete-alert";
 import { useDelJob } from "@/hooks/jobs/useDelJob";
 
+const MONTHS = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
+const YEARS = Array.from(
+  { length: 11 },
+  (_, i) => new Date().getFullYear() - 5 + i,
+);
+
 export function JobsCalendar() {
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const {
+    year,
+    month,
+    selectedTechnicians,
+    setYear,
+    setMonth,
+    toggleTechnician,
+  } = useCalendarFilterStore();
+
+  const currentDate = useMemo(() => new Date(year, month, 1), [year, month]);
 
   // Job View Dialog State
   const [viewOpen, setViewOpen] = useState(false);
@@ -49,9 +91,27 @@ export function JobsCalendar() {
   const { openEdit } = useJobStore();
   const { mutate: deleteJob } = useDelJob();
 
-  const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
-  const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
-  const today = () => setCurrentDate(new Date());
+  const nextMonth = () => {
+    if (month === 11) {
+      setMonth(0);
+      setYear(year + 1);
+    } else {
+      setMonth(month + 1);
+    }
+  };
+  const prevMonth = () => {
+    if (month === 0) {
+      setMonth(11);
+      setYear(year - 1);
+    } else {
+      setMonth(month - 1);
+    }
+  };
+  const today = () => {
+    const d = new Date();
+    setMonth(d.getMonth());
+    setYear(d.getFullYear());
+  };
 
   const techMap = useMemo(() => {
     const map = new Map<string, (typeof technicians)[0]>();
@@ -61,13 +121,21 @@ export function JobsCalendar() {
     return map;
   }, [technicians]);
 
-  // Filter jobs by "done" or "pending" and group them by date string "YYYY-MM-DD"
+  // Filter jobs by "done" or "pending", grouped by date string "YYYY-MM-DD"
+  // Apply technician filter as well.
   const jobsByDate = useMemo(() => {
     const map = new Map<string, ViewJobsRow[]>();
 
-    const validJobs = jobs.filter(
-      (j) => j.status === "done" || j.status === "pending",
-    );
+    const validJobs = jobs.filter((j) => {
+      if (j.status !== "done" && j.status !== "pending") return false;
+      if (
+        selectedTechnicians.length > 0 &&
+        !selectedTechnicians.includes(j.technician_id || "")
+      ) {
+        return false;
+      }
+      return true;
+    });
 
     for (const job of validJobs) {
       if (job.work_order_date) {
@@ -80,7 +148,7 @@ export function JobsCalendar() {
     }
 
     return map;
-  }, [jobs]);
+  }, [jobs, selectedTechnicians]);
 
   // Calendar dates math
   const days = useMemo(() => {
@@ -110,23 +178,89 @@ export function JobsCalendar() {
   return (
     <div className="flex h-full flex-col">
       {/* Calendar Toolbar */}
-      <div className="flex items-center justify-between pb-4">
-        <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-          {format(currentDate, "MMMM yyyy")}
-        </h2>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pb-4">
+        <div className="flex items-center rounded-lg border border-border bg-background shadow-xs">
+          {/* month selector */}
+          <Select
+            value={month.toString()}
+            onValueChange={(val) => setMonth(parseInt(val, 10))}
+          >
+            <SelectTrigger className="w-32 h-9 text-base font-semibold border-none shadow-none focus:ring-0 pl-3 pr-1 rounded-r-none">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {MONTHS.map((m, i) => (
+                <SelectItem key={i} value={i.toString()}>
+                  {m}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <div className="h-5 w-px bg-border" />
+          {/* year selector */}
+          <Select
+            value={year.toString()}
+            onValueChange={(val) => setYear(parseInt(val, 10))}
+          >
+            <SelectTrigger className="w-20 h-9 text-base font-semibold border-none shadow-none focus:ring-0 pl-3 pr-2 rounded-l-none">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {YEARS.map((y) => (
+                <SelectItem key={y} value={y.toString()}>
+                  {y}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
         <div className="flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="h-8 gap-1.5">
+                <Filter className="h-4 w-4" />
+                Technicians
+                {selectedTechnicians.length > 0 && (
+                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground">
+                    {selectedTechnicians.length}
+                  </span>
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuLabel>Filter by Technician</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {technicians.length === 0 && (
+                <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                  No technicians found.
+                </div>
+              )}
+              {technicians.map((t) => (
+                <DropdownMenuCheckboxItem
+                  key={t.id}
+                  checked={selectedTechnicians.includes(t.id || "")}
+                  onCheckedChange={() => toggleTechnician(t.id || "")}
+                  onSelect={(e) => e.preventDefault()}
+                >
+                  {t.name}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <Button
             variant="outline"
             size="sm"
             onClick={today}
-            className="hidden sm:inline-flex"
+            className="hidden sm:inline-flex h-8"
           >
             Today
           </Button>
           <Button
             variant="outline"
             size="icon"
-            className="h-8 w-8"
+            className="h-8 w-8 shrink-0"
             onClick={prevMonth}
           >
             <ChevronLeft className="h-4 w-4" />
@@ -134,7 +268,7 @@ export function JobsCalendar() {
           <Button
             variant="outline"
             size="icon"
-            className="h-8 w-8"
+            className="h-8 w-8 shrink-0"
             onClick={nextMonth}
           >
             <ChevronRight className="h-4 w-4" />
@@ -144,27 +278,28 @@ export function JobsCalendar() {
 
       {/* Loading & Error States */}
       {isLoading ? (
-        <div className="flex flex-1 items-center justify-center">
+        <div className="flex flex-1 min-h-75 items-center justify-center rounded-lg border border-border">
           <Spinner />
         </div>
       ) : isError ? (
-        <div className="flex flex-1 items-center justify-center text-red-600">
+        <div className="flex flex-1 min-h-75 items-center justify-center rounded-lg border border-border text-sm text-destructive">
           Failed to load calendar jobs.
         </div>
       ) : (
-        <>
-          {/* Calendar Grid */}
-          <div className="grid grid-cols-7 border-y border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/50">
+        <div className="flex-1 min-h-0 flex flex-col overflow-hidden rounded-lg border border-border">
+          {/* Week day headers */}
+          <div className="grid grid-cols-7 border-b border-border bg-muted">
             {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
               <div
                 key={d}
-                className="py-2 text-center text-xs font-semibold text-zinc-500 dark:text-zinc-400"
+                className="py-2.5 text-center text-xs font-semibold tracking-wide text-muted-foreground uppercase"
               >
                 {d}
               </div>
             ))}
           </div>
-          <div className="flex-1 overflow-y-auto min-h-0 bg-zinc-200 dark:bg-zinc-800 grid grid-cols-7 gap-px border-b border-zinc-200 dark:border-zinc-800">
+          {/* Calendar Grid */}
+          <div className="flex-1 overflow-y-auto min-h-0 bg-border grid grid-cols-7 gap-px">
             {days.map((day, idx) => {
               const strDate = format(day, "yyyy-MM-dd");
               const dayJobs = jobsByDate.get(strDate) || [];
@@ -177,11 +312,10 @@ export function JobsCalendar() {
                   key={day.toISOString() + idx}
                   onClick={() => isClickable && handleDayClick(day, dayJobs)}
                   className={cn(
-                    "flex min-h-[100px] flex-col bg-white p-1 transition-colors dark:bg-zinc-900 sm:p-2",
-                    !isCurrentMonth &&
-                      "bg-zinc-50/50 dark:bg-zinc-900/30 text-zinc-400 dark:text-zinc-600",
+                    "flex min-h-22.5 flex-col bg-card p-1.5 transition-colors sm:p-2",
+                    !isCurrentMonth && "bg-muted/50",
                     isClickable
-                      ? "cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                      ? "cursor-pointer hover:bg-accent/50"
                       : "cursor-default",
                   )}
                 >
@@ -190,14 +324,16 @@ export function JobsCalendar() {
                       className={cn(
                         "flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium sm:text-sm",
                         isCurrentDay
-                          ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                          : "text-zinc-700 dark:text-zinc-300",
+                          ? "bg-primary text-primary-foreground"
+                          : isCurrentMonth
+                            ? "text-foreground"
+                            : "text-muted-foreground",
                       )}
                     >
                       {format(day, "d")}
                     </span>
                     {dayJobs.length > 0 && (
-                      <span className="text-[10px] font-medium text-zinc-500 sm:hidden">
+                      <span className="text-[10px] font-medium text-muted-foreground sm:hidden">
                         {dayJobs.length}
                       </span>
                     )}
@@ -218,7 +354,9 @@ export function JobsCalendar() {
                           )}
                         >
                           <span className="line-clamp-1 font-semibold">
-                            <span className="opacity-70 font-normal mr-1">#{job.work_order_id?.slice(0, 4)}</span>
+                            <span className="opacity-70 font-normal mr-1">
+                              #{job.work_order_id?.slice(0, 4)}
+                            </span>
                             {job.work_title || "Unnamed Job"}
                           </span>
                           <span className="line-clamp-1 opacity-80">
@@ -231,7 +369,7 @@ export function JobsCalendar() {
                       );
                     })}
                     {dayJobs.length > 3 && (
-                      <div className="px-1.5 py-0.5 text-[10px] text-zinc-500 font-medium">
+                      <div className="px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
                         +{dayJobs.length - 3} more
                       </div>
                     )}
@@ -240,7 +378,7 @@ export function JobsCalendar() {
               );
             })}
           </div>
-        </>
+        </div>
       )}
 
       {/* Day Jobs List Dialog */}

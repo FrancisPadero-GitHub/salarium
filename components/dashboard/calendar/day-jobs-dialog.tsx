@@ -1,4 +1,5 @@
 import { format } from "date-fns";
+import { User, MapPin } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -29,16 +30,14 @@ export function DayJobsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md bg-white dark:bg-zinc-950">
+      <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-            Jobs on {format(date, "MMMM d, yyyy")}
-          </DialogTitle>
+          <DialogTitle>Jobs on {format(date, "MMMM d, yyyy")}</DialogTitle>
         </DialogHeader>
 
-        <div className="mt-4 flex max-h-[60vh] flex-col gap-2 overflow-y-auto pr-2 custom-scrollbar">
+        <div className="mt-2 flex max-h-[60vh] flex-col gap-2 overflow-y-auto pr-1 custom-scrollbar">
           {jobs.length === 0 ? (
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="text-sm text-muted-foreground">
               No jobs scheduled for this date.
             </p>
           ) : (
@@ -53,39 +52,41 @@ export function DayJobsDialog({
                   key={job.work_order_id}
                   onClick={() => onJobClick(job)}
                   className={cn(
-                    "flex flex-col items-start gap-1 rounded-lg border p-3 text-left transition-colors hover:bg-zinc-50 focus:outline-none dark:hover:bg-zinc-900",
+                    "flex flex-col items-start gap-1.5 rounded-lg border p-3 text-left transition-all hover:-translate-y-0.5 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
                     isDone
-                      ? "border-emerald-200 bg-emerald-50/50 dark:border-emerald-900/50 dark:bg-emerald-950/20"
-                      : "border-amber-200 bg-amber-50/50 dark:border-amber-900/50 dark:bg-amber-950/20"
+                      ? "border-emerald-200 bg-emerald-50 dark:border-emerald-800/60 dark:bg-emerald-950/30"
+                      : "border-amber-200 bg-amber-50 dark:border-amber-800/60 dark:bg-amber-950/30",
                   )}
                 >
                   <div className="flex w-full items-start justify-between gap-2">
                     <div className="flex flex-col">
-                      <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
+                      <span className="text-[10px] font-medium text-muted-foreground">
                         #{job.work_order_id?.slice(0, 8)}
                       </span>
-                      <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                      <span className="font-semibold text-foreground">
                         {job.work_title || "Unnamed Job"}
                       </span>
                     </div>
                     <span
                       className={cn(
-                        "rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider",
+                        "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider",
                         isDone
-                          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400"
-                          : "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400"
+                          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400"
+                          : "bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400",
                       )}
                     >
                       {job.status}
                     </span>
                   </div>
-                  <div className="mt-1 flex flex-col gap-0.5 text-xs text-zinc-600 dark:text-zinc-400">
+                  <div className="flex flex-col gap-0.5 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1.5">
-                      <span className="font-medium">Technician:</span> {techName}
+                      <User className="h-3 w-3 shrink-0" />
+                      {techName}
                     </span>
                     {job.address && (
                       <span className="flex items-center gap-1.5 line-clamp-1">
-                        <span className="font-medium">Address:</span> {job.address}
+                        <MapPin className="h-3 w-3 shrink-0" />
+                        {job.address}
                       </span>
                     )}
                   </div>
