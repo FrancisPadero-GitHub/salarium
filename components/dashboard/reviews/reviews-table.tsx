@@ -272,11 +272,11 @@ export function ReviewsTable({ onEdit, highlightReviewId }: ReviewsTableProps) {
 
   function renderSortIcon(col: SortKey) {
     if (sortKey !== col)
-      return <ChevronsUpDown className="ml-1 inline h-3 w-3 text-zinc-400" />;
+      return <ChevronsUpDown className="ml-1 inline h-3 w-3 text-muted-foreground" />;
     return sortDir === "asc" ? (
-      <ChevronUp className="ml-1 inline h-3 w-3 text-zinc-600 dark:text-zinc-300" />
+      <ChevronUp className="ml-1 inline h-3 w-3 text-foreground" />
     ) : (
-      <ChevronDown className="ml-1 inline h-3 w-3 text-zinc-600 dark:text-zinc-300" />
+      <ChevronDown className="ml-1 inline h-3 w-3 text-foreground" />
     );
   }
 
@@ -288,14 +288,14 @@ export function ReviewsTable({ onEdit, highlightReviewId }: ReviewsTableProps) {
       loadingMessage="Loading reviews table..."
       className="min-h-80"
     >
-      <div className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="rounded-xl border border-border bg-card">
         {/* Toolbar */}
-        <div className="flex flex-col gap-3 border-b border-zinc-200 p-4 dark:border-zinc-800 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
+        <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
           <div>
-            <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
+            <h3 className="text-base font-semibold text-foreground">
               Reviews
             </h3>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="text-xs text-muted-foreground">
               {filtered.length} of {records.length} records
             </p>
           </div>
@@ -310,7 +310,7 @@ export function ReviewsTable({ onEdit, highlightReviewId }: ReviewsTableProps) {
               <SlidersHorizontal className="h-3.5 w-3.5" />
               {showFilters ? "Hide Filters" : "Show Filters"}
               {!showFilters && activeFilterCount > 0 && (
-                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-zinc-800 text-[10px] font-semibold text-white dark:bg-zinc-200 dark:text-zinc-900">
+                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-foreground text-[10px] font-semibold text-background">
                   {activeFilterCount}
                 </span>
               )}
@@ -321,7 +321,7 @@ export function ReviewsTable({ onEdit, highlightReviewId }: ReviewsTableProps) {
                 variant="ghost"
                 size="sm"
                 onClick={clearFilters}
-                className="h-8 gap-1.5 text-xs text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+                className="h-8 gap-1.5 text-xs text-muted-foreground hover:text-foreground"
               >
                 <X className="h-3.5 w-3.5" />
                 Clear filters
@@ -332,7 +332,7 @@ export function ReviewsTable({ onEdit, highlightReviewId }: ReviewsTableProps) {
 
         {/* Filters */}
         {showFilters && (
-          <div className="flex flex-wrap gap-2 border-b border-zinc-200 p-4 dark:border-zinc-800">
+          <div className="flex flex-wrap gap-2 border-b border-border p-4">
             <Input
               placeholder="Search work title, review type, technician, payment..."
               value={search}
@@ -409,8 +409,8 @@ export function ReviewsTable({ onEdit, highlightReviewId }: ReviewsTableProps) {
 
         {/* Table */}
         {selectedIds.size > 0 && (
-          <div className="flex items-center gap-3 border-b border-zinc-200 bg-zinc-50 px-4 py-2.5 dark:border-zinc-800 dark:bg-zinc-800/50">
-            <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          <div className="flex items-center gap-3 border-b border-border bg-muted/50 px-4 py-2.5">
+            <span className="text-sm font-medium text-foreground">
               {selectedIds.size} selected
             </span>
             <Button
@@ -436,7 +436,7 @@ export function ReviewsTable({ onEdit, highlightReviewId }: ReviewsTableProps) {
         <div className="min-h-96 max-h-150 overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="sticky top-0 border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 hover:bg-white dark:hover:bg-zinc-900">
+              <TableRow className="sticky top-0 border-b border-border bg-card hover:bg-card">
                 <TableHead
                   className="w-10 px-3"
                   onClick={(e) => e.stopPropagation()}
@@ -454,41 +454,41 @@ export function ReviewsTable({ onEdit, highlightReviewId }: ReviewsTableProps) {
                 </TableHead>
                 <TableHead
                   onClick={() => handleSort("review_date")}
-                  className="cursor-pointer select-none text-xs font-semibold uppercase tracking-wide text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+                  className="cursor-pointer select-none text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground"
                 >
                   Date
                   {renderSortIcon("review_date")}
                 </TableHead>
-                <TableHead className="select-none text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                <TableHead className="select-none text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Finished Job
                 </TableHead>
-                <TableHead className="select-none text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                <TableHead className="select-none text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Job Name
                 </TableHead>
-                <TableHead className="select-none text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                <TableHead className="select-none text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Review Type
                 </TableHead>
-                <TableHead className="select-none text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                <TableHead className="select-none text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Payment
                 </TableHead>
                 <TableHead
                   onClick={() => handleSort("review_amount")}
-                  className="cursor-pointer select-none text-right text-xs font-semibold uppercase tracking-wide text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+                  className="cursor-pointer select-none text-right text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground"
                 >
                   Amount
                   {renderSortIcon("review_amount")}
                 </TableHead>
-                <TableHead className="select-none text-center text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                <TableHead className="select-none text-center text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Actions
                 </TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+            <TableBody className="divide-y divide-border">
               {filtered.length === 0 ? (
                 <TableRow>
                   <TableCell
                     colSpan={8}
-                    className="px-4 py-8 text-center text-sm text-zinc-400 dark:text-zinc-600"
+                    className="px-4 py-8 text-center text-sm text-muted-foreground"
                   >
                     No reviews match your filters.
                   </TableCell>
@@ -507,13 +507,13 @@ export function ReviewsTable({ onEdit, highlightReviewId }: ReviewsTableProps) {
                       setViewOpen(true);
                     }}
                     className={cn(
-                      "cursor-pointer transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50",
+                      "cursor-pointer transition-colors hover:bg-muted/50",
                       activeHighlightId &&
                         record.review_id === activeHighlightId &&
-                        "bg-amber-50 ring-1 ring-inset ring-amber-300 dark:bg-amber-950/30 dark:ring-amber-700",
+                        "bg-primary/10 ring-1 ring-inset ring-primary/20",
                       record.review_id &&
                         selectedIds.has(record.review_id) &&
-                        "bg-blue-50 dark:bg-blue-950/20",
+                        "bg-accent",
                     )}
                   >
                     <TableCell
@@ -533,16 +533,16 @@ export function ReviewsTable({ onEdit, highlightReviewId }: ReviewsTableProps) {
                     </TableCell>
 
                     {/* Date */}
-                    <TableCell className="whitespace-nowrap text-sm text-zinc-500 dark:text-zinc-400">
+                    <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
                       {formatDate(record.review_date)}
                     </TableCell>
 
                     {/* Finished Job */}
-                    <TableCell className="font-mono text-xs text-zinc-600 dark:text-zinc-400">
+                    <TableCell className="font-mono text-xs text-muted-foreground">
                       {record.work_order_id ? (
                         <Link
                           href={`/dashboard/jobs?highlight=${record.work_order_id}`}
-                          className="text-blue-600 underline-offset-2 hover:underline dark:text-blue-400"
+                          className="text-primary underline-offset-2 hover:underline"
                           onClick={(e) => e.stopPropagation()}
                         >
                           {record.work_order_id}
@@ -553,24 +553,24 @@ export function ReviewsTable({ onEdit, highlightReviewId }: ReviewsTableProps) {
                     </TableCell>
 
                     {/* Job Name */}
-                    <TableCell className="whitespace-nowrap font-medium text-zinc-800 dark:text-zinc-200">
+                    <TableCell className="whitespace-nowrap font-medium text-foreground">
                       {record.work_title || "-"}
                     </TableCell>
 
                     {/* Review Type */}
                     <TableCell>
-                      <span className="inline-flex rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+                      <span className="inline-flex rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-foreground">
                         {record.review_type || "-"}
                       </span>
                     </TableCell>
 
                     {/* Payment */}
-                    <TableCell className="whitespace-nowrap text-sm text-zinc-600 dark:text-zinc-400">
+                    <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
                       {record.payment_method || "-"}
                     </TableCell>
 
                     {/* Amount */}
-                    <TableCell className="text-right font-semibold text-zinc-900 dark:text-zinc-50">
+                    <TableCell className="text-right font-semibold text-foreground">
                       {fmt(record.review_amount ?? 0)}
                     </TableCell>
 
@@ -584,7 +584,7 @@ export function ReviewsTable({ onEdit, highlightReviewId }: ReviewsTableProps) {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-7 w-7 p-0 text-zinc-400 hover:text-zinc-700 dark:text-zinc-500 dark:hover:text-zinc-200"
+                            className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
                           >
                             <MoreHorizontal className="h-4 w-4" />
                             <span className="sr-only">Open menu</span>
@@ -604,7 +604,7 @@ export function ReviewsTable({ onEdit, highlightReviewId }: ReviewsTableProps) {
                               if (record.review_id)
                                 setConfirmDeleteId(record.review_id);
                             }}
-                            className="cursor-pointer gap-2 text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
+                            className="cursor-pointer gap-2 text-destructive focus:text-destructive"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                             Delete

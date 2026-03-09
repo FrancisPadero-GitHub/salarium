@@ -274,10 +274,10 @@ export function AddEditReviewDialog({
         }}
       >
         <DialogHeader>
-          <DialogTitle className="text-lg font-semibold">
+          <DialogTitle className="text-lg font-semibold text-foreground">
             {mode === "add" ? "New Review Record" : "Edit Review Record"}
           </DialogTitle>
-          <DialogDescription className="text-xs text-zinc-500 dark:text-zinc-400">
+          <DialogDescription className="text-xs text-muted-foreground">
             {mode === "add"
               ? "Link a completed job to a review and record the payment."
               : "Update the review record details."}
@@ -294,9 +294,9 @@ export function AddEditReviewDialog({
           <div className="space-y-1.5">
             <Label
               htmlFor="job_id"
-              className="text-xs font-medium text-zinc-700 dark:text-zinc-300"
+              className="text-xs font-medium text-foreground"
             >
-              Job <span className="text-red-500">*</span>
+              Job <span className="text-destructive">*</span>
             </Label>
             <Select
               value={job_id || ""}
@@ -320,7 +320,7 @@ export function AddEditReviewDialog({
               </SelectTrigger>
               <SelectContent className="max-h-64 overflow-y-auto">
                 {jobOptions.length === 0 ? (
-                  <div className="px-3 py-5 text-center text-xs text-zinc-400">
+                  <div className="px-3 py-5 text-center text-xs text-muted-foreground">
                     {mode === "add"
                       ? "No unreviewed jobs available"
                       : "No jobs available"}
@@ -335,18 +335,18 @@ export function AddEditReviewDialog({
                       }
                     >
                       <div className="flex min-w-0 items-center gap-2 py-0.5">
-                        <span className="font-mono text-[10px] text-zinc-400 shrink-0">
+                        <span className="font-mono text-[10px] text-muted-foreground shrink-0">
                           #{shortId(job.work_order_id)}
                         </span>
-                        <span className="truncate text-xs font-medium text-zinc-700 dark:text-zinc-200">
+                        <span className="truncate text-xs font-medium text-foreground">
                           {job.work_title || "Untitled"}
                         </span>
                         {job.category && (
-                          <span className="shrink-0 rounded-full bg-zinc-100 px-1.5 py-0.5 text-[10px] text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+                          <span className="shrink-0 rounded-full bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
                             {job.category}
                           </span>
                         )}
-                        <span className="ml-auto shrink-0 whitespace-nowrap text-[11px] text-zinc-400">
+                        <span className="ml-auto shrink-0 whitespace-nowrap text-[11px] text-muted-foreground">
                           {job.region ? `${job.region} · ` : ""}
                           {job.subtotal != null
                             ? fmt(job.subtotal)
@@ -369,56 +369,56 @@ export function AddEditReviewDialog({
               })}
             />
             {errors.job_id && (
-              <p className="text-[11px] text-red-500">
+              <p className="text-[11px] text-destructive">
                 {errors.job_id.message}
               </p>
             )}
 
             {/* Job detail preview card */}
             {selectedJob && (
-              <div className="mt-2 overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-700">
+              <div className="mt-2 overflow-hidden rounded-lg border border-border">
                 {/* Header */}
-                <div className="flex items-start gap-2.5 border-b border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-700 dark:bg-zinc-800/50">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-zinc-200 dark:bg-zinc-700">
-                    <Briefcase className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
+                <div className="flex items-start gap-2.5 border-b border-border bg-muted/50 p-3">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-muted">
+                    <Briefcase className="h-3.5 w-3.5 text-muted-foreground" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-xs font-semibold text-zinc-700 dark:text-zinc-200">
+                    <p className="truncate text-xs font-semibold text-foreground">
                       {selectedJob.work_title}
                     </p>
-                    <p className="font-mono text-[11px] text-zinc-400">
+                    <p className="font-mono text-[11px] text-muted-foreground">
                       #{selectedJob.work_order_id?.slice(0, 12) ?? "-"}
                     </p>
                   </div>
                   {selectedJob.category && (
-                    <span className="ml-auto shrink-0 rounded-full bg-zinc-200 px-2 py-0.5 text-[10px] font-medium text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
+                    <span className="ml-auto shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-foreground">
                       {selectedJob.category}
                     </span>
                   )}
                 </div>
 
                 {/* Details grid */}
-                <div className="grid grid-cols-2 gap-x-4 gap-y-2 bg-zinc-50 p-3 dark:bg-zinc-800/30">
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2 bg-muted/30 p-3">
                   {selectedJob.work_order_date && (
-                    <div className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                       <CalendarDays className="h-3 w-3 shrink-0" />
                       {fmtDate(selectedJob.work_order_date)}
                     </div>
                   )}
                   {selectedJob.region && (
-                    <div className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                       <Globe className="h-3 w-3 shrink-0" />
                       <span className="truncate">{selectedJob.region}</span>
                     </div>
                   )}
                   {selectedJob.address && (
-                    <div className="col-span-2 flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
+                    <div className="col-span-2 flex items-center gap-1.5 text-xs text-muted-foreground">
                       <MapPin className="h-3 w-3 shrink-0" />
                       <span className="truncate">{selectedJob.address}</span>
                     </div>
                   )}
                   {selectedJob.description && (
-                    <div className="col-span-2 flex items-start gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
+                    <div className="col-span-2 flex items-start gap-1.5 text-xs text-muted-foreground">
                       <FileText className="mt-0.5 h-3 w-3 shrink-0" />
                       <span className="line-clamp-2">
                         {selectedJob.description}
@@ -445,7 +445,7 @@ export function AddEditReviewDialog({
                     Icon: Package,
                   },
                 ].some((item) => item.value != null) && (
-                  <div className="flex divide-x divide-zinc-200 border-t border-zinc-200 bg-zinc-100/60 dark:divide-zinc-700 dark:border-zinc-700 dark:bg-zinc-900/40">
+                  <div className="flex divide-x divide-border border-t border-border bg-muted/40">
                     {[
                       {
                         label: "Subtotal",
@@ -469,11 +469,11 @@ export function AddEditReviewDialog({
                           key={label}
                           className="flex flex-1 flex-col items-center gap-0.5 py-2"
                         >
-                          <div className="flex items-center gap-1 text-[10px] text-zinc-400">
+                          <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
                             <Icon className="h-2.5 w-2.5" />
                             {label}
                           </div>
-                          <p className="text-xs font-semibold text-zinc-700 dark:text-zinc-200">
+                          <p className="text-xs font-semibold text-foreground">
                             {fmt(value ?? 0)}
                           </p>
                         </div>
@@ -489,9 +489,9 @@ export function AddEditReviewDialog({
             <div className="space-y-1.5">
               <Label
                 htmlFor="review_type_id"
-                className="text-xs font-medium text-zinc-700 dark:text-zinc-300"
+                className="text-xs font-medium text-foreground"
               >
-                Review Type <span className="text-red-500">*</span>
+                Review Type <span className="text-destructive">*</span>
               </Label>
               <Select
                 value={review_type_id || ""}
@@ -538,7 +538,7 @@ export function AddEditReviewDialog({
                 })}
               />
               {errors.review_type_id && (
-                <p className="text-[11px] text-red-500">
+                <p className="text-[11px] text-destructive">
                   {errors.review_type_id.message}
                 </p>
               )}
@@ -547,9 +547,9 @@ export function AddEditReviewDialog({
             <div className="space-y-1.5">
               <Label
                 htmlFor="review_date"
-                className="text-xs font-medium text-zinc-700 dark:text-zinc-300"
+                className="text-xs font-medium text-foreground"
               >
-                Review Date <span className="text-red-500">*</span>
+                Review Date <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="review_date"
@@ -565,12 +565,12 @@ export function AddEditReviewDialog({
             <div className="space-y-1.5">
               <Label
                 htmlFor="amount"
-                className="text-xs font-medium text-zinc-700 dark:text-zinc-300"
+                className="text-xs font-medium text-foreground"
               >
-                Amount <span className="text-red-500">*</span>
+                Amount <span className="text-destructive">*</span>
               </Label>
               <div className="relative">
-                <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-xs text-zinc-400">
+                <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-xs text-muted-foreground">
                   $
                 </span>
                 <Input
@@ -591,12 +591,12 @@ export function AddEditReviewDialog({
                 />
               </div>
               {errors.amount && (
-                <p className="text-[11px] text-red-500">
+                <p className="text-[11px] text-destructive">
                   {errors.amount.message}
                 </p>
               )}
               {review_type_id && (
-                <p className="text-[11px] text-zinc-400 dark:text-zinc-500">
+                <p className="text-[11px] text-muted-foreground">
                   Prefilled from review type · editable
                 </p>
               )}
@@ -605,7 +605,7 @@ export function AddEditReviewDialog({
             <div className="space-y-1.5">
               <Label
                 htmlFor="payment_method_id"
-                className="text-xs font-medium text-zinc-700 dark:text-zinc-300"
+                className="text-xs font-medium text-foreground"
               >
                 Payment Method
               </Label>
@@ -634,7 +634,7 @@ export function AddEditReviewDialog({
           <div className="space-y-1.5">
             <Label
               htmlFor="notes"
-              className="text-xs font-medium text-zinc-700 dark:text-zinc-300"
+              className="text-xs font-medium text-foreground"
             >
               Notes
             </Label>
@@ -648,7 +648,7 @@ export function AddEditReviewDialog({
 
           {/* ── Error banner ─────────────────────────────── */}
           {currentError && (
-            <div className="rounded-md border border-red-200 bg-red-50 p-3 text-xs text-red-700 dark:border-red-900/40 dark:bg-red-950/20 dark:text-red-400">
+            <div className="rounded-md border border-destructive/20 bg-destructive/10 p-3 text-xs text-destructive">
               {currentError.message}
             </div>
           )}

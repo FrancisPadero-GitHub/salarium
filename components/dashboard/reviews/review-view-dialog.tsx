@@ -58,14 +58,14 @@ function InfoRow({
 }) {
   return (
     <div className="flex items-start gap-3">
-      <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-zinc-100 dark:bg-zinc-800">
-        <Icon className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
+      <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-muted">
+        <Icon className="h-3.5 w-3.5 text-muted-foreground" />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-500">
+        <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
           {label}
         </p>
-        <div className="mt-0.5 text-sm text-zinc-800 dark:text-zinc-200">
+        <div className="mt-0.5 text-sm text-foreground">
           {children}
         </div>
       </div>
@@ -85,11 +85,11 @@ function StatCard({
   return (
     <div
       className={cn(
-        "flex min-h-20 flex-col justify-between rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-zinc-700 dark:bg-zinc-800/50",
+        "flex min-h-20 flex-col justify-between rounded-lg border border-border bg-muted/50 px-4 py-3",
         className,
       )}
     >
-      <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-500">
+      <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
         {label}
       </p>
       <p className="text-base font-semibold tabular-nums">{value}</p>
@@ -112,17 +112,17 @@ export function ReviewViewDialog({
         <DialogHeader>
           <div className="flex items-start justify-between gap-3 pr-6">
             <div className="min-w-0">
-              <DialogTitle className="truncate text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+              <DialogTitle className="truncate text-lg font-semibold text-foreground">
                 {record.work_title ?? "Review Details"}
               </DialogTitle>
               {record.review_date && (
-                <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
+                <p className="mt-0.5 text-sm text-muted-foreground">
                   {formatDate(record.review_date)}
                 </p>
               )}
             </div>
             {record.review_type && (
-              <span className="mt-0.5 inline-flex shrink-0 rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+              <span className="mt-0.5 inline-flex shrink-0 rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-foreground">
                 {record.review_type}
               </span>
             )}
@@ -140,7 +140,7 @@ export function ReviewViewDialog({
             <StatCard
               label="Job Subtotal"
               value={fmt(record.subtotal ?? 0)}
-              className="text-zinc-900 dark:text-zinc-100"
+              className="text-foreground"
             />
             <StatCard
               label="Parts Cost"
@@ -167,7 +167,7 @@ export function ReviewViewDialog({
                 <InfoRow icon={ExternalLink} label="Linked Job">
                   <Link
                     href={`/dashboard/jobs?highlight=${record.work_order_id}`}
-                    className="font-mono text-xs text-blue-600 underline-offset-2 hover:underline dark:text-blue-400"
+                    className="font-mono text-xs text-primary underline-offset-2 hover:underline"
                     onClick={() => onOpenChange(false)}
                   >
                     {record.work_order_id}
@@ -202,21 +202,21 @@ export function ReviewViewDialog({
 
           {/* Notes */}
           {record.review_notes && (
-            <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/50">
+            <div className="rounded-lg border border-border bg-muted/50 p-4">
               <div className="mb-1.5 flex items-center gap-2">
-                <StickyNote className="h-3.5 w-3.5 text-zinc-400" />
-                <span className="text-[11px] font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-500">
+                <StickyNote className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
                   Notes
                 </span>
               </div>
-              <p className="whitespace-pre-wrap text-sm text-zinc-700 dark:text-zinc-300">
+              <p className="whitespace-pre-wrap text-sm text-foreground">
                 {record.review_notes}
               </p>
             </div>
           )}
         </div>
 
-        <DialogFooter className="border-t border-zinc-200 pt-4 dark:border-zinc-700 sm:justify-between">
+        <DialogFooter className="border-t border-border pt-4 sm:justify-between">
           <DialogClose asChild>
             <Button variant="outline" size="sm">
               Close

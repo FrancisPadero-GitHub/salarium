@@ -33,58 +33,29 @@ export function ReviewSummaryCards() {
         title: "Total Review Amount",
         value: fmt(summaryData?.total_review_amount ?? 0),
         icon: WalletCards,
-        color: "text-emerald-600 dark:text-emerald-400",
-        bg: "bg-emerald-50 dark:bg-emerald-900/20",
+        color: "text-success",
+        bg: "bg-success/10",
       },
       {
         title: "Avg Review Amount",
         value: fmt(summaryData?.avg_review_amount ?? 0),
         icon: BadgeDollarSign,
-        color: "text-blue-600 dark:text-blue-400",
-        bg: "bg-blue-50 dark:bg-blue-900/20",
+        color: "text-primary",
+        bg: "bg-primary/10",
       },
-      // FOR SOME REASON THIS WAS REMOVED IN THE LATEST SCHEMA UPDATE, CAN ADD BACK IF NEEDED
-      // {
-      //   title: "Avg / Reviewed Job",
-      //   value: fmt(summaryData?.avg_amount_per_reviewed_job ?? 0),
-      //   icon: CircleDollarSign,
-      //   color: "text-violet-600 dark:text-violet-400",
-      //   bg: "bg-violet-50 dark:bg-violet-900/20",
-      // },
-      // {
-      //   title: "Min Review Amount",
-      //   value: fmt(summaryData?.min_review_amount ?? 0),
-      //   icon: TrendingDown,
-      //   color: "text-amber-600 dark:text-amber-400",
-      //   bg: "bg-amber-50 dark:bg-amber-900/20",
-      // },
-      // {
-      //   title: "Coverage Ratio",
-      //   value: pct(summaryData?.review_coverage_ratio ?? 0),
-      //   icon: ClipboardCheck,
-      //   color: "text-cyan-600 dark:text-cyan-400",
-      //   bg: "bg-cyan-50 dark:bg-cyan-900/20",
-      // },
-      // {
-      //   title: "Total Done Jobs",
-      //   value: num(summaryData?.total_done_jobs ?? 0),
-      //   icon: BriefcaseBusiness,
-      //   color: "text-zinc-900 dark:text-zinc-50",
-      //   bg: "bg-zinc-100 dark:bg-zinc-800",
-      // },
       {
         title: "Jobs With Reviews",
         value: num(summaryData?.total_jobs_with_reviews ?? 0),
         icon: ClipboardList,
-        color: "text-indigo-600 dark:text-indigo-400",
-        bg: "bg-indigo-50 dark:bg-indigo-900/20",
+        color: "text-chart-1",
+        bg: "bg-chart-1/10",
       },
       {
         title: "Jobs Without Reviews",
         value: num(summaryData?.total_jobs_without_reviews ?? 0),
         icon: ListChecks,
-        color: "text-orange-600 dark:text-orange-400",
-        bg: "bg-orange-50 dark:bg-orange-900/20",
+        color: "text-orange-500",
+        bg: "bg-orange-500/10",
       },
     ],
     [summaryData],
@@ -101,10 +72,10 @@ export function ReviewSummaryCards() {
         {cards.map(({ title, value, icon: Icon, color, bg }) => (
           <div
             key={title}
-            className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900"
+            className="rounded-xl border border-border bg-card p-4"
           >
             <div className="flex items-start justify-between">
-              <p className="text-xs font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-500">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {title}
               </p>
               <div className={cn("rounded-md p-1.5", bg)}>
