@@ -25,11 +25,11 @@ export function QueryStatePanel({
     return (
       <div
         className={cn(
-          "flex min-h-40 items-center justify-center rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900",
+          "flex min-h-40 items-center justify-center rounded-xl border border-border bg-card p-4",
           className,
         )}
       >
-        <div className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Spinner />
           <span>{loadingMessage}</span>
         </div>
@@ -41,11 +41,11 @@ export function QueryStatePanel({
     return (
       <div
         className={cn(
-          "flex min-h-40 items-center justify-center rounded-xl border border-red-200 bg-white p-4 dark:border-red-900/40 dark:bg-zinc-900",
+          "flex min-h-40 items-center justify-center rounded-xl border border-destructive/20 bg-card p-4",
           className,
         )}
       >
-        <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
+        <div className="flex items-center gap-2 text-sm text-destructive">
           <AlertCircle className="size-4 shrink-0" />
           <span>{errorMessage ?? "Failed to load data."}</span>
         </div>

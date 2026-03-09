@@ -380,7 +380,7 @@ export function NewEstimateDialog({
               {/* Work Title */}
               <div className="grid gap-2">
                 <Label htmlFor="work_title">
-                  Work Title <span className="text-red-500">*</span>
+                  Work Title <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="work_title"
@@ -390,7 +390,7 @@ export function NewEstimateDialog({
                   })}
                 />
                 {errors.work_title ? (
-                  <p className="text-xs text-red-600 dark:text-red-400">
+                  <p className="text-xs text-destructive">
                     {errors.work_title.message}
                   </p>
                 ) : null}
@@ -400,7 +400,7 @@ export function NewEstimateDialog({
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="grid gap-2">
                   <Label htmlFor="work_order_date">
-                    Work Order Date <span className="text-red-500">*</span>
+                    Work Order Date <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="work_order_date"
@@ -410,7 +410,7 @@ export function NewEstimateDialog({
                     })}
                   />
                   {errors.work_order_date ? (
-                    <p className="text-xs text-red-600 dark:text-red-400">
+                    <p className="text-xs text-destructive">
                       {errors.work_order_date.message}
                     </p>
                   ) : null}
@@ -418,7 +418,7 @@ export function NewEstimateDialog({
 
                 <div className="grid gap-2">
                   <Label htmlFor="estimated_amount">
-                    Estimated Amount <span className="text-red-500">*</span>
+                    Estimated Amount <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="estimated_amount"
@@ -433,7 +433,7 @@ export function NewEstimateDialog({
                     })}
                   />
                   {errors.estimated_amount ? (
-                    <p className="text-xs text-red-600 dark:text-red-400">
+                    <p className="text-xs text-destructive">
                       {errors.estimated_amount.message}
                     </p>
                   ) : null}
@@ -444,7 +444,7 @@ export function NewEstimateDialog({
               <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
                 <div className="grid gap-2">
                   <Label htmlFor="technician_id">
-                    Technician <span className="text-red-500">*</span>
+                    Technician <span className="text-destructive">*</span>
                   </Label>
                   <Controller
                     name="technician_id"
@@ -485,7 +485,7 @@ export function NewEstimateDialog({
                     )}
                   />
                   {errors.technician_id ? (
-                    <p className="text-xs text-red-600 dark:text-red-400">
+                    <p className="text-xs text-destructive">
                       {errors.technician_id.message}
                     </p>
                   ) : null}
@@ -493,7 +493,7 @@ export function NewEstimateDialog({
 
                 <div className="grid gap-2">
                   <Label htmlFor="status">
-                    Status <span className="text-red-500">*</span>
+                    Status <span className="text-destructive">*</span>
                   </Label>
                   <Controller
                     name="status"
@@ -524,7 +524,7 @@ export function NewEstimateDialog({
                     )}
                   />
                   {isAlreadyPromoted ? (
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    <p className="text-xs text-muted-foreground">
                       This estimate is already promoted to a job.
                     </p>
                   ) : null}

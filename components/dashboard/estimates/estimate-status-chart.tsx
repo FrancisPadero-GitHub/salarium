@@ -13,15 +13,15 @@ import {
 import type { EstimatesRow } from "@/hooks/estimates/useFetchEstimates";
 
 const chartConfig = {
-  follow_up: { label: "Follow Up", color: "oklch(0.795 0.184 86.047)" },
-  approved: { label: "Approved", color: "oklch(0.765 0.177 163.223)" },
-  denied: { label: "Denied", color: "oklch(0.637 0.237 25.331)" },
+  follow_up: { label: "Follow Up", color: "var(--primary)" },
+  approved: { label: "Approved", color: "var(--success)" },
+  denied: { label: "Denied", color: "var(--destructive)" },
 } satisfies ChartConfig;
 
 const COLORS = [
-  "var(--color-follow_up)",
-  "var(--color-approved)",
-  "var(--color-denied)",
+  "var(--primary)",
+  "var(--success)",
+  "var(--destructive)",
 ];
 
 interface EstimateStatusChartProps {
@@ -49,12 +49,12 @@ export function EstimateStatusChart({ estimates }: EstimateStatusChartProps) {
   );
 
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="rounded-xl border border-border bg-card p-6">
       <div className="mb-4">
-        <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
+        <h3 className="text-base font-semibold text-foreground">
           Estimate Pipeline
         </h3>
-        <p className="text-xs text-zinc-500 dark:text-zinc-400">
+        <p className="text-xs text-muted-foreground">
           Status distribution by count
         </p>
       </div>

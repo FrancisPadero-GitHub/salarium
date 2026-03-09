@@ -33,11 +33,9 @@ const fmt = (n: number) =>
   );
 
 const statusStyles: Record<EstimateStatus, string> = {
-  follow_up:
-    "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-  approved:
-    "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
-  denied: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+  follow_up: "bg-primary/10 text-primary",
+  approved: "bg-success/10 text-success",
+  denied: "bg-destructive/10 text-destructive",
 };
 
 const statusLabels: Record<EstimateStatus, string> = {
@@ -176,10 +174,10 @@ export default function EstimatesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-            Estimates / Qoutation
+          <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+            Estimates / Quotation
           </h2>
-          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="mt-1 text-sm text-muted-foreground">
             {isEstimatesLoading
               ? "Loading estimates..."
               : `${mergedEstimates.length} estimates logged`}
@@ -213,7 +211,7 @@ export default function EstimatesPage() {
               return (
                 <div
                   key={status}
-                  className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900"
+                  className="rounded-xl border border-border bg-card p-4"
                 >
                   <span
                     className={cn(
@@ -223,7 +221,7 @@ export default function EstimatesPage() {
                   >
                     {statusLabels[status]}
                   </span>
-                  <p className="mt-3 text-2xl font-bold tabular-nums text-zinc-900 dark:text-zinc-50">
+                  <p className="mt-3 text-2xl font-bold tabular-nums text-foreground">
                     {counts[status] || 0}
                   </p>
                 </div>
@@ -240,11 +238,11 @@ export default function EstimatesPage() {
         errorMessage={pipelineState.errorMessage}
         loadingMessage="Loading pipeline value..."
       >
-        <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-          <p className="text-xs font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-500">
+        <div className="rounded-xl border border-border bg-card p-4">
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             Total Pipeline Value
           </p>
-          <p className="mt-1 text-2xl font-bold tabular-nums text-zinc-900 dark:text-zinc-50">
+          <p className="mt-1 text-2xl font-bold tabular-nums text-foreground">
             {fmt(totalValue)}
           </p>
         </div>

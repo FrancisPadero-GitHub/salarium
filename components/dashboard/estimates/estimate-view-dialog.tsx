@@ -46,11 +46,9 @@ const fmtDateTime = (value: string | null | undefined) => {
 };
 
 const statusStyles: Record<EstimateStatus, string> = {
-  follow_up:
-    "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-  approved:
-    "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
-  denied: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+  follow_up: "bg-primary/10 text-primary",
+  approved: "bg-success/10 text-success",
+  denied: "bg-destructive/10 text-destructive",
 };
 
 const statusLabels: Record<EstimateStatus, string> = {
@@ -81,14 +79,14 @@ function InfoRow({
 }) {
   return (
     <div className="flex items-start gap-3">
-      <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-zinc-100 dark:bg-zinc-800">
-        <Icon className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
+      <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-muted">
+        <Icon className="h-3.5 w-3.5 text-muted-foreground" />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-500">
+        <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
           {label}
         </p>
-        <div className="mt-0.5 text-sm text-zinc-800 dark:text-zinc-200">
+        <div className="mt-0.5 text-sm text-foreground">
           {children}
         </div>
       </div>
@@ -112,7 +110,7 @@ export function EstimateViewDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex max-h-[90vh] w-full sm:max-w-3xl flex-col overflow-hidden">
         <DialogHeader>
-          <DialogTitle className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
+          <DialogTitle className="text-base font-semibold text-foreground">
             {estimate.work_title ?? "Estimate Details"}
           </DialogTitle>
         </DialogHeader>
@@ -133,7 +131,7 @@ export function EstimateViewDialog({
               <InfoRow icon={MapPin} label="Address">
                 {estimate.address ?? "-"}
                 {estimate.region && (
-                  <span className="ml-1.5 text-xs text-zinc-400 dark:text-zinc-500">
+                  <span className="ml-1.5 text-xs text-muted-foreground">
                     {estimate.region}
                   </span>
                 )}
@@ -174,7 +172,7 @@ export function EstimateViewDialog({
             <div className="space-y-4">
               {/* Estimated Amount */}
               <InfoRow icon={DollarSign} label="Estimated Amount">
-                <span className="font-semibold text-blue-600 dark:text-blue-400">
+                <span className="font-semibold text-chart-3">
                   {fmt(Number(estimate.estimated_amount ?? 0))}
                 </span>
               </InfoRow>
@@ -214,21 +212,21 @@ export function EstimateViewDialog({
 
           {/* Notes */}
           {estimate.notes && (
-            <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/50">
+            <div className="rounded-lg border border-border bg-muted/50 p-4">
               <div className="mb-1.5 flex items-center gap-2">
-                <StickyNote className="h-3.5 w-3.5 text-zinc-400" />
-                <span className="text-[11px] font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-500">
+                <StickyNote className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
                   Notes
                 </span>
               </div>
-              <p className="whitespace-pre-wrap text-sm text-zinc-700 dark:text-zinc-300">
+              <p className="whitespace-pre-wrap text-sm text-foreground">
                 {estimate.notes}
               </p>
             </div>
           )}
         </div>
 
-        <DialogFooter className="border-t border-zinc-200 pt-4 dark:border-zinc-700 sm:justify-between">
+        <DialogFooter className="border-t border-border pt-4 sm:justify-between">
           <DialogClose asChild>
             <Button variant="outline" size="sm">
               Close

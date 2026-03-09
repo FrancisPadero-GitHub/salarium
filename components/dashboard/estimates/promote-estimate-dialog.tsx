@@ -136,7 +136,7 @@ export function PromoteEstimateDialog({
           </DialogHeader>
 
           {errorMessage ? (
-            <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-900/20 dark:text-red-300">
+            <div className="rounded-md border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive">
               {errorMessage}
             </div>
           ) : null}
@@ -160,7 +160,7 @@ export function PromoteEstimateDialog({
                   })}
                 />
                 {errors.subtotal ? (
-                  <p className="text-xs text-red-600 dark:text-red-400">
+                  <p className="text-xs text-destructive">
                     {errors.subtotal.message}
                   </p>
                 ) : null}
@@ -182,7 +182,7 @@ export function PromoteEstimateDialog({
                   })}
                 />
                 {errors.parts_total_cost ? (
-                  <p className="text-xs text-red-600 dark:text-red-400">
+                  <p className="text-xs text-destructive">
                     {errors.parts_total_cost.message}
                   </p>
                 ) : null}
@@ -203,7 +203,7 @@ export function PromoteEstimateDialog({
                   })}
                 />
                 {errors.tip_amount ? (
-                  <p className="text-xs text-red-600 dark:text-red-400">
+                  <p className="text-xs text-destructive">
                     {errors.tip_amount.message}
                   </p>
                 ) : null}

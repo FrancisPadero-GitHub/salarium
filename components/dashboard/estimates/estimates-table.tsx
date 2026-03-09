@@ -59,11 +59,9 @@ const fmt = (n: number) =>
   );
 
 const statusStyles: Record<EstimateStatus, string> = {
-  follow_up:
-    "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-  approved:
-    "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
-  denied: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+  follow_up: "bg-primary/10 text-primary",
+  approved: "bg-success/10 text-success",
+  denied: "bg-destructive/10 text-destructive",
 };
 
 const statusLabels: Record<EstimateStatus, string> = {
@@ -291,24 +289,26 @@ export function EstimatesTable({
 
   function SortIcon({ col }: { col: SortKey }) {
     if (sortKey !== col) {
-      return <ChevronsUpDown className="ml-1 inline h-3 w-3 text-zinc-400" />;
+      return (
+        <ChevronsUpDown className="ml-1 inline h-3 w-3 text-muted-foreground" />
+      );
     }
 
     return sortDir === "asc" ? (
-      <ChevronUp className="ml-1 inline h-3 w-3 text-zinc-600 dark:text-zinc-300" />
+      <ChevronUp className="ml-1 inline h-3 w-3 text-foreground" />
     ) : (
-      <ChevronDown className="ml-1 inline h-3 w-3 text-zinc-600 dark:text-zinc-300" />
+      <ChevronDown className="ml-1 inline h-3 w-3 text-foreground" />
     );
   }
 
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-      <div className="flex flex-col gap-3 border-b border-zinc-200 p-4 dark:border-zinc-800 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
+    <div className="rounded-xl border border-border bg-card">
+      <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
         <div>
-          <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
+          <h3 className="text-base font-semibold text-foreground">
             Estimates
           </h3>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+          <p className="text-xs text-muted-foreground">
             {filtered.length} of {estimates.length} estimates
           </p>
         </div>
@@ -323,7 +323,7 @@ export function EstimatesTable({
             <SlidersHorizontal className="h-3.5 w-3.5" />
             {showFilters ? "Hide Filters" : "Show Filters"}
             {!showFilters && activeFilterCount > 0 && (
-              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-zinc-800 text-[10px] font-semibold text-white dark:bg-zinc-200 dark:text-zinc-900">
+              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-foreground text-[10px] font-semibold text-background">
                 {activeFilterCount}
               </span>
             )}
@@ -334,7 +334,7 @@ export function EstimatesTable({
               variant="ghost"
               size="sm"
               onClick={clearFilters}
-              className="h-8 gap-1.5 text-xs text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+              className="h-8 gap-1.5 text-xs text-muted-foreground hover:text-foreground"
             >
               <X className="h-3.5 w-3.5" />
               Clear filters
@@ -344,7 +344,7 @@ export function EstimatesTable({
       </div>
 
       {showFilters && (
-        <div className="flex flex-wrap gap-2 border-b border-zinc-200 p-4 dark:border-zinc-800">
+        <div className="flex flex-wrap gap-2 border-b border-border p-4">
           <Input
             placeholder="Search title, technician, status, address..."
             value={search}
@@ -403,8 +403,8 @@ export function EstimatesTable({
       )}
 
       {selectedIds.size > 0 && (
-        <div className="flex items-center gap-3 border-b border-zinc-200 bg-zinc-50 px-4 py-2.5 dark:border-zinc-800 dark:bg-zinc-800/50">
-          <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+        <div className="flex items-center gap-3 border-b border-border bg-muted/50 px-4 py-2.5">
+          <span className="text-sm font-medium text-foreground">
             {selectedIds.size} selected
           </span>
           <Button
@@ -431,7 +431,7 @@ export function EstimatesTable({
       <div className="min-h-96 max-h-150 overflow-x-auto">
         <Table>
           <TableHeader>
-            <TableRow className="sticky top-0 border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 hover:bg-white dark:hover:bg-zinc-900">
+            <TableRow className="sticky top-0 border-b border-border bg-card hover:bg-card">
               <TableHead
                 className="w-10 px-3"
                 onClick={(e) => e.stopPropagation()}
@@ -464,23 +464,23 @@ export function EstimatesTable({
                 <TableHead
                   key={key}
                   onClick={() => handleSort(key)}
-                  className="cursor-pointer select-none text-xs font-semibold uppercase tracking-wide text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+                  className="cursor-pointer select-none text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground"
                 >
                   {label}
                   <SortIcon col={key} />
                 </TableHead>
               ))}
-              <TableHead className="text-center text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+              <TableHead className="text-center text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 Actions
               </TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+          <TableBody className="divide-y divide-border">
             {filtered.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={11}
-                  className="px-4 py-8 text-center text-sm text-zinc-400 dark:text-zinc-600"
+                  className="px-4 py-8 text-center text-sm text-muted-foreground"
                 >
                   No estimates match your filters.
                 </TableCell>
@@ -503,10 +503,10 @@ export function EstimatesTable({
                       setViewOpen(true);
                     }}
                     className={cn(
-                      "cursor-pointer transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50",
+                      "cursor-pointer transition-colors hover:bg-muted/50",
                       estimate.work_order_id &&
                         selectedIds.has(estimate.work_order_id) &&
-                        "bg-blue-50 dark:bg-blue-950/20",
+                        "bg-accent",
                     )}
                   >
                     <TableCell
@@ -525,11 +525,11 @@ export function EstimatesTable({
                         aria-label={`Select ${estimate.work_title ?? "estimate"}`}
                       />
                     </TableCell>
-                    <TableCell className="whitespace-nowrap  text-zinc-500 dark:text-zinc-400">
+                    <TableCell className="whitespace-nowrap text-muted-foreground">
                       {shortId(estimate.work_order_id ?? "-")}
                     </TableCell>
                     {/* Date */}
-                    <TableCell className="whitespace-nowrap text-zinc-500 dark:text-zinc-400">
+                    <TableCell className="whitespace-nowrap text-muted-foreground">
                       {estimate.work_order_date
                         ? new Date(
                             estimate.work_order_date,
@@ -537,20 +537,20 @@ export function EstimatesTable({
                         : "-"}
                     </TableCell>
                     {/* Work Title */}
-                    <TableCell className="truncate max-w-xs font-medium text-zinc-800 dark:text-zinc-200">
+                    <TableCell className="truncate max-w-xs font-medium text-foreground">
                       {estimate.work_title ?? "-"}
                     </TableCell>
                     {/* Address */}
-                    <TableCell className="truncate max-w-xs font-medium text-zinc-800 dark:text-zinc-200">
+                    <TableCell className="truncate max-w-xs font-medium text-foreground">
                       {estimate.address ?? "-"}
                       {estimate.region && (
-                        <span className="ml-1.5 text-xs text-zinc-400 dark:text-zinc-500">
+                        <span className="ml-1.5 text-xs text-muted-foreground">
                           {estimate.region}
                         </span>
                       )}
                     </TableCell>
                     {/* Technician */}
-                    <TableCell className="whitespace-nowrap text-zinc-600 dark:text-zinc-300">
+                    <TableCell className="whitespace-nowrap text-foreground">
                       {techName}
                     </TableCell>
                     {/* Description */}
@@ -558,7 +558,7 @@ export function EstimatesTable({
                       {estimate.description ?? "-"}
                     </TableCell> */}
                     {/* Amount - blue */}
-                    <TableCell className="whitespace-nowrap tabular-nums font-medium text-blue-600 dark:text-blue-400">
+                    <TableCell className="whitespace-nowrap tabular-nums font-medium text-chart-3">
                       {fmt(Number(estimate.estimated_amount ?? 0))}
                     </TableCell>
                     {/* Status */}
@@ -579,7 +579,7 @@ export function EstimatesTable({
                       )}
                     </TableCell>
                     {/* Handled By */}
-                    <TableCell className="text-xs text-zinc-500 dark:text-zinc-400">
+                    <TableCell className="text-xs text-muted-foreground">
                       {estimate.handled_by ?? "-"}
                     </TableCell>
                     {/* Actions */}
@@ -592,7 +592,7 @@ export function EstimatesTable({
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7 p-0 text-zinc-400 hover:text-zinc-700 dark:text-zinc-500 dark:hover:text-zinc-200"
+                            className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
                             onClick={(e) => e.stopPropagation()}
                           >
                             <MoreHorizontal className="h-4 w-4" />
@@ -613,7 +613,7 @@ export function EstimatesTable({
                               estimate.work_order_id &&
                               setConfirmDeleteId(estimate.work_order_id)
                             }
-                            className="gap-2 text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
+                            className="gap-2 text-destructive focus:text-destructive"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                             Delete
