@@ -706,7 +706,7 @@ export function JobsTable() {
                         </TableCell>
 
                         {/* Commission */}
-                        <TableCell className="tabular-nums text-chart-4">
+                        <TableCell className="tabular-nums text-amber-600">
                           {fmt(job.total_commission ?? 0)}
                         </TableCell>
                         {/* Company Net */}
