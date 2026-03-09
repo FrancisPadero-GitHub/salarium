@@ -141,7 +141,7 @@ export const fetchJobSummary = async (
   let query = supabase
     .from("v_jobs")
     .select(
-      "work_order_id, work_order_date, subtotal, parts_total_cost, tip_amount, total_company_net",
+      "work_order_id, work_order_date, subtotal, parts_total_cost, tip_amount, total_company_net, total_commission",
     )
     .eq("company_id", companyId)
     .eq("status", "done");
@@ -162,6 +162,7 @@ export const fetchJobSummary = async (
     | "subtotal"
     | "parts_total_cost"
     | "tip_amount"
+    | "total_commission"
     | "total_company_net"
   >[];
 
@@ -176,6 +177,7 @@ export const fetchJobSummary = async (
       acc.gross_revenue += subtotal;
       acc.net_revenue += subtotal - partsCost;
       acc.total_company_net_earned += row.total_company_net ?? 0;
+      acc.total_commission += row.total_commission ?? 0;
 
       return acc;
     },
@@ -186,6 +188,7 @@ export const fetchJobSummary = async (
       gross_revenue: 0,
       net_revenue: 0,
       total_company_net_earned: 0,
+      total_commission: 0,
     },
   );
 

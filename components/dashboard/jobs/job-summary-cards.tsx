@@ -80,6 +80,7 @@ export function JobSummaryCards({
   const partsCost = summary?.parts_total_cost ?? 0;
   const netRevenue = summary?.net_revenue ?? 0;
   const techTips = summary?.technician_total_tips ?? 0;
+  const totalTechCommission = summary?.total_commission ?? 0;
   const companyNet = summary?.total_company_net_earned ?? 0;
 
   const summaryCards = [
@@ -87,43 +88,57 @@ export function JobSummaryCards({
       label: "Total Jobs Done",
       value: totalJobs.toLocaleString(),
       Icon: ClipboardList,
-      color: "text-zinc-900 dark:text-zinc-50",
-      bg: "bg-zinc-100 dark:bg-zinc-800",
+      color: "text-secondary-foreground",
+      valueColor: "text-foreground",
+      bg: "bg-accent",
     },
     {
       label: "Gross Revenue",
       value: fmt(grossRevenue),
       Icon: DollarSign,
-      color: "text-zinc-900 dark:text-zinc-50",
-      bg: "bg-zinc-100 dark:bg-zinc-800",
+      color: "text-secondary-foreground",
+      valueColor: "text-foreground",
+      bg: "bg-accent",
     },
     {
       label: "Parts Cost",
       value: fmt(partsCost),
       Icon: Wrench,
-      color: "text-orange-600 dark:text-orange-400",
-      bg: "bg-orange-50 dark:bg-orange-900/20",
+      color: "text-secondary-foreground",
+      valueColor: "text-primary",
+      bg: "bg-accent",
     },
     {
       label: "Net Revenue",
       value: fmt(netRevenue),
       Icon: TrendingUp,
-      color: "text-sky-600 dark:text-sky-400",
-      bg: "bg-sky-50 dark:bg-sky-900/20",
+      color: "text-secondary-foreground",
+      valueColor: "text-chart-3",
+      bg: "bg-accent",
     },
     {
       label: "Technician Tips",
       value: fmt(techTips),
       Icon: Coins,
-      color: "text-lime-600 dark:text-lime-400",
-      bg: "bg-lime-50 dark:bg-lime-900/20",
+      color: "text-secondary-foreground",
+      valueColor: "text-yellow-500 dark:text-yellow-400",
+      bg: "bg-accent",
+    },
+    {
+      label: "Total Commission",
+      value: fmt(totalTechCommission),
+      Icon: Briefcase,
+      color: "text-secondary-foreground",
+      valueColor: "text-amber-600",
+      bg: "bg-accent",
     },
     {
       label: "Company Net",
       value: fmt(companyNet),
       Icon: Briefcase,
-      color: "text-emerald-600 dark:text-emerald-400",
-      bg: "bg-emerald-50 dark:bg-emerald-900/20",
+      color: "text-secondary-foreground",
+      valueColor: "text-success",
+      bg: "bg-accent",
     },
   ];
 
@@ -147,10 +162,10 @@ export function JobSummaryCards({
   return (
     <div className="space-y-4">
       {/* Filter bar */}
-      <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="rounded-xl border border-border bg-card p-4">
         <div className="flex items-center gap-2 mb-3">
-          <CalendarDays className="h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500" />
-          <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+          <CalendarDays className="h-3.5 w-3.5 text-muted-foreground" />
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Time Period
           </p>
         </div>
@@ -169,8 +184,8 @@ export function JobSummaryCards({
               className={cn(
                 "rounded-full px-3.5 py-1.5 text-xs font-medium transition-all",
                 mode === value
-                  ? "bg-zinc-900 text-white shadow-sm dark:bg-zinc-50 dark:text-zinc-900"
-                  : "bg-zinc-100 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-200",
+                  ? "bg-foreground text-background shadow-sm"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground",
               )}
             >
               {label}
@@ -180,10 +195,10 @@ export function JobSummaryCards({
 
         {/* Contextual pickers */}
         {hasContextualPicker && (
-          <div className="mt-3 flex flex-wrap items-end gap-3 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+          <div className="mt-3 flex flex-wrap items-end gap-3 border-t border-border pt-3">
             {(mode === "year" || mode === "month") && (
               <div className="flex flex-col gap-1">
-                <label className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                   Year
                 </label>
                 <Select
@@ -208,7 +223,7 @@ export function JobSummaryCards({
 
             {mode === "month" && (
               <div className="flex flex-col gap-1">
-                <label className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                   Month
                 </label>
                 <Select
@@ -233,7 +248,7 @@ export function JobSummaryCards({
 
             {mode === "week" && (
               <div className="flex flex-col gap-1">
-                <label className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                   Week
                 </label>
                 <Input
@@ -250,7 +265,7 @@ export function JobSummaryCards({
 
             {mode === "day" && (
               <div className="flex flex-col gap-1">
-                <label className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                   Date
                 </label>
                 <Input
@@ -265,7 +280,7 @@ export function JobSummaryCards({
             {mode === "range" && (
               <>
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                  <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                     From
                   </label>
                   <Input
@@ -277,11 +292,9 @@ export function JobSummaryCards({
                     className="h-8 w-40 text-sm"
                   />
                 </div>
-                <span className="pb-1.5 text-sm text-zinc-400 dark:text-zinc-500">
-                  →
-                </span>
+                <span className="pb-1.5 text-sm text-muted-foreground">→</span>
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                  <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                     To
                   </label>
                   <Input
@@ -307,20 +320,25 @@ export function JobSummaryCards({
         loadingMessage="Loading summary cards..."
       >
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {summaryCards.map(({ label, value, Icon, color, bg }) => (
+          {summaryCards.map(({ label, value, Icon, color, bg, valueColor }) => (
             <div
               key={label}
-              className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900"
+              className="rounded-xl border border-border bg-card p-4"
             >
               <div className="flex items-start justify-between">
-                <p className="text-xs font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-500">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   {label}
                 </p>
                 <div className={cn("rounded-md p-1.5", bg)}>
                   <Icon className={cn("h-3.5 w-3.5", color)} />
                 </div>
               </div>
-              <p className={cn("mt-2 text-2xl font-bold tabular-nums", color)}>
+              <p
+                className={cn(
+                  "mt-2 text-2xl font-bold tabular-nums",
+                  valueColor,
+                )}
+              >
                 {value}
               </p>
             </div>
