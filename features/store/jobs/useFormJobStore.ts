@@ -56,10 +56,15 @@ interface JobStore {
   };
 }
 
+const getLocalISOTime = () => {
+  const d = new Date();
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+};
+
 export const defaultJobForm: JobFormValues = {
   work_order_id: undefined,
   work_title: "",
-  work_order_date: new Date().toISOString().slice(0, 10),
+  work_order_date: getLocalISOTime(),
   technician_id: "",
   address: "",
   category: "",
@@ -95,21 +100,37 @@ export const useJobStore = create<JobStore>((set, get) => ({
       isSubmitting: false,
     }),
 
-  openAddWithPrefill: (data) =>
+  openAddWithPrefill: (data) => {
+    let localDate = data.work_order_date;
+    if (localDate) {
+      const d = new Date(localDate);
+      if (!isNaN(d.getTime())) {
+        localDate = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+      }
+    }
     set({
-      form: { ...defaultJobForm, ...data, work_order_id: undefined },
+      form: { ...defaultJobForm, ...data, ...(localDate ? { work_order_date: localDate } : {}), work_order_id: undefined },
       mode: "add",
       isDialogOpen: true,
       isSubmitting: false,
-    }),
+    });
+  },
 
-  openEdit: (data) =>
+  openEdit: (data) => {
+    let localDate = data.work_order_date;
+    if (localDate) {
+      const d = new Date(localDate);
+      if (!isNaN(d.getTime())) {
+        localDate = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+      }
+    }
     set({
-      form: { ...defaultJobForm, ...data },
+      form: { ...defaultJobForm, ...data, work_order_date: localDate },
       mode: "edit",
       isDialogOpen: true,
       isSubmitting: false,
-    }),
+    });
+  },
 
   closeDialog: () =>
     set({
@@ -129,7 +150,7 @@ export const useJobStore = create<JobStore>((set, get) => ({
     const f = get().form;
     const workOrder: WorkOrderInsert = {
       work_title: f.work_title,
-      work_order_date: f.work_order_date,
+      work_order_date: new Date(f.work_order_date).toISOString(),
       technician_id: f.technician_id,
       address: f.address || null,
       category: f.category || null,

@@ -359,7 +359,7 @@ export function JobsCalendar() {
                             </span>
                             {job.work_title || "Unnamed Job"}
                           </span>
-                          <div className="flex items-center justify-between gap-1 w-full">
+                          <div className="flex items-center justify-between gap-2 w-full">
                             <span className="line-clamp-1 opacity-80 font-semibold text-foreground">
                               {job.technician_id
                                 ? techMap.get(job.technician_id)?.name ||

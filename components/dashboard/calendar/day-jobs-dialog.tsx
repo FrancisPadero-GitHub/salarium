@@ -79,13 +79,13 @@ export function DayJobsDialog({
                     </span>
                   </div>
                   <div className="flex flex-col gap-0.5 text-xs text-muted-foreground">
-                    <div className="flex w-full items-center justify-between">
+                    <div className="flex w-full items-center justify-between gap-2">
                       <span className="flex items-center gap-1.5">
                         <User className="h-3 w-3 shrink-0" />
                         {techName}
                       </span>
                       {job.work_order_date && (
-                        <span className="text-[10px] font-medium opacity-60">
+                        <span className="text-xs font-medium opacity-60">
                           {format(new Date(job.work_order_date), "h:mm a")}
                         </span>
                       )}

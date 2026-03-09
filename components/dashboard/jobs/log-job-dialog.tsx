@@ -120,7 +120,7 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
 
     const workOrder = {
       work_title: data.work_title,
-      work_order_date: data.work_order_date,
+      work_order_date: new Date(data.work_order_date).toISOString(),
       technician_id: data.technician_id,
       address: data.address || null,
       category: data.category || null,
@@ -268,14 +268,14 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="job-date">
-                    Work Order Date <span className="text-red-500">*</span>
+                    Work Order Date & Time <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="job-date"
-                    type="date"
+                    type="datetime-local"
                     disabled={isPending}
                     {...register("work_order_date", {
-                      required: "Date is required",
+                      required: "Date and time are required",
                     })}
                   />
                   {errors.work_order_date && (

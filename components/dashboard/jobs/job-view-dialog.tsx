@@ -156,11 +156,13 @@ export function JobViewDialog({
               </DialogTitle>
               {job.work_order_date && (
                 <p className="mt-0.5 text-sm text-muted-foreground">
-                  {new Date(job.work_order_date).toLocaleDateString("en-US", {
+                  {new Date(job.work_order_date).toLocaleString("en-US", {
                     weekday: "long",
                     year: "numeric",
                     month: "long",
                     day: "numeric",
+                    hour: "numeric",
+                    minute: "2-digit",
                   })}
                 </p>
               )}
