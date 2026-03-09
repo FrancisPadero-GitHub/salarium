@@ -7,7 +7,7 @@ export default function Hero() {
       {/* Subtle grid pattern */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-10 opacity-[0.08]"
+        className="pointer-events-none absolute inset-0 opacity-[0.08] dark:opacity-[0.05]"
         style={{
           backgroundImage:
             "linear-gradient(var(--foreground) 1px, transparent 1px), linear-gradient(90deg, var(--foreground) 1px, transparent 1px)",
@@ -15,11 +15,8 @@ export default function Hero() {
         }}
       />
       {/* Radial glow */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-10"
-      >
-        <div className="absolute left-1/2 top-0 h-[600px] w-[900px] -translate-x-1/2 rounded-full bg-primary/10 opacity-40 blur-3xl" />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+        <div className="absolute left-1/2 top-1/2 h-[800px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/10 opacity-50 blur-[100px]" />
       </div>
 
       <div className="mx-auto max-w-4xl px-6 text-center">
@@ -59,7 +56,7 @@ export default function Hero() {
           </Link>
           <Link
             href="#features"
-            className="inline-flex items-center gap-2 rounded-lg border-[1.5px] border-border bg-transparent px-8 py-[15px] text-[0.95rem] font-semibold text-foreground transition-all hover:border-foreground hover:bg-foreground/[0.04]"
+            className="inline-flex items-center gap-2 rounded-lg border-[1.5px] border-border bg-transparent px-8 py-[15px] text-[0.95rem] font-semibold text-foreground transition-all hover:border-accent-foreground/80 hover:bg-foreground/[0.04]"
           >
             See What We Build <ArrowRight className="h-4 w-4" />
           </Link>

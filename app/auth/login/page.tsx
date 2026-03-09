@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { WalletMinimal, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2, Check } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useLogin } from "@/hooks/auth/useLogin";
@@ -35,165 +36,241 @@ export default function LoginPage() {
     : null;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 px-4 py-12 dark:bg-zinc-950">
-      <div className="w-full max-w-sm">
-        {/* Logo */}
-        <div className="mb-8 flex flex-col items-center gap-2">
-          <Link href="/" className="flex items-center gap-2">
-            <WalletMinimal className="h-8 w-8 text-zinc-900 dark:text-zinc-50" />
-            <span className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
-              Klicktiv
-            </span>
-          </Link>
-          <h1 className="mt-2 text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-            Welcome back
-          </h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            Log in to your account
-          </p>
+    <div className="flex min-h-screen bg-background">
+      {/* Left Content Section - Always dark theme */}
+      <div className="relative hidden w-1/2 flex-col justify-center overflow-hidden border-l border-zinc-800 bg-zinc-950 lg:flex lg:px-12 xl:px-24">
+        {/* Subtle grid pattern */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 opacity-[0.05]"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)",
+            backgroundSize: "64px 64px",
+          }}
+        />
+        {/* Radial glow */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+        >
+          <div className="absolute left-1/2 top-1/2 h-[800px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/10 opacity-50 blur-[100px]" />
         </div>
 
-        {/* Card */}
-        <div className="rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-          {justRegistered && (
-            <div className="mb-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-600 dark:border-green-800 dark:bg-green-950/50 dark:text-green-400">
-              Account created! Please log in.
-            </div>
-          )}
+        <div className="relative z-10 flex flex-col items-start gap-8">
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 backdrop-blur-md">
+            <span className="h-2 w-2 shrink-0 rounded-full bg-primary animate-pulse" />
+            <span className="text-xs font-semibold uppercase tracking-[0.04em] text-zinc-300">
+              Built for service businesses
+            </span>
+          </div>
 
-          {serverError && (
-            <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-800 dark:bg-red-950/50 dark:text-red-400">
-              {serverError}
-            </div>
-          )}
+          <h2 className="text-[clamp(2.5rem,4vw,3.5rem)] font-extrabold leading-[1.08] tracking-[-0.04em] text-white">
+            Stop guessing.
+            <br />
+            <em className="not-italic text-primary">Start knowing</em>
+            <br />
+            your numbers.
+          </h2>
 
-          <form
-            onSubmit={(e) => void handleSubmit(onSubmit)(e)}
-            noValidate
-            className="space-y-5"
-          >
-            {/* Email */}
-            <div className="space-y-1.5">
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
+          <p className="max-w-[500px] text-lg font-light leading-[1.7] text-zinc-400">
+            Klicktiv replaces your spreadsheet chaos with a live financial
+            command center. Commissions, revenue, job costs, and team
+            performance - all in one place.
+          </p>
+
+          <div className="mt-4 flex flex-col gap-4">
+            {[
+              "Automated commission splits",
+              "Live revenue dashboards",
+              "Job and cost tracking",
+              "Custom-built for your workflow",
+            ].map((feature) => (
+              <div
+                key={feature}
+                className="flex items-center gap-3 text-zinc-300"
               >
-                Email address
-              </label>
-              <input
-                id="email"
-                type="email"
-                autoComplete="email"
-                placeholder="you@example.com"
-                className={cn(
-                  "w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 outline-none transition-all",
-                  "focus:ring-2 focus:ring-zinc-900 focus:ring-offset-1",
-                  "dark:bg-zinc-800 dark:text-zinc-50 dark:placeholder-zinc-500 dark:focus:ring-zinc-400",
-                  errors.email
-                    ? "border-red-400 dark:border-red-600"
-                    : "border-zinc-200 dark:border-zinc-700",
-                )}
-                {...register("email", {
-                  required: "Email is required",
-                  pattern: {
-                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                    message: "Enter a valid email address",
-                  },
-                })}
-              />
-              {errors.email && (
-                <p className="text-xs text-red-500">{errors.email.message}</p>
-              )}
-            </div>
-
-            {/* Password */}
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
-                >
-                  Password
-                </label>
-                <Link
-                  href="#"
-                  className="text-xs text-zinc-500 underline-offset-2 hover:underline dark:text-zinc-400"
-                >
-                  Forgot password?
-                </Link>
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary">
+                  <Check className="h-3.5 w-3.5" />
+                </div>
+                <span className="text-[1rem] font-medium">{feature}</span>
               </div>
-              <div className="relative">
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Right Form Section */}
+      <div className="flex w-full flex-col justify-center px-4 py-12 sm:px-6 lg:w-1/2 lg:px-8 lg:py-24">
+        <div className="mx-auto w-full max-w-sm">
+          {/* Logo */}
+          <div className="mb-10 flex flex-col items-center text-center">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 transition-transform hover:scale-[1.02]"
+            >
+              <Image
+                src="/kt_logo_name.png"
+                title="Go to landing page"
+                alt="Klicktiv Logo"
+                width={160}
+                height={48}
+                className="h-12 w-auto dark:brightness-0 dark:invert teal-dark:brightness-0 teal-dark:invert"
+                priority
+              />
+            </Link>
+            <h1 className="mt-8 text-2xl font-bold tracking-tight text-foreground">
+              Welcome back
+            </h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Log in to your account to continue
+            </p>
+          </div>
+
+          {/* Form Card */}
+          <div className="rounded-2xl border border-border bg-card p-8 shadow-sm transition-all hover:shadow-md">
+            {justRegistered && (
+              <div className="mb-6 rounded-lg border border-primary/20 bg-primary/10 px-4 py-3 text-sm text-primary">
+                Account created! Please log in.
+              </div>
+            )}
+
+            {serverError && (
+              <div className="mb-6 rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                {serverError}
+              </div>
+            )}
+
+            <form
+              onSubmit={(e) => void handleSubmit(onSubmit)(e)}
+              noValidate
+              className="space-y-5"
+            >
+              {/* Email */}
+              <div className="space-y-2">
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-foreground"
+                >
+                  Email address
+                </label>
                 <input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  autoComplete="current-password"
-                  placeholder="••••••••"
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="you@example.com"
                   className={cn(
-                    "w-full rounded-lg border bg-white px-3 py-2.5 pr-10 text-sm text-zinc-900 placeholder-zinc-400 outline-none transition-all",
-                    "focus:ring-2 focus:ring-zinc-900 focus:ring-offset-1",
-                    "dark:bg-zinc-800 dark:text-zinc-50 dark:placeholder-zinc-500 dark:focus:ring-zinc-400",
-                    errors.password
-                      ? "border-red-400 dark:border-red-600"
-                      : "border-zinc-200 dark:border-zinc-700",
+                    "w-full rounded-xl border bg-background px-4 py-3 text-sm text-foreground placeholder-muted-foreground outline-none transition-all",
+                    "focus:ring-2 focus:ring-primary/20 focus:border-primary",
+                    errors.email
+                      ? "border-destructive/50 focus:border-destructive focus:ring-destructive/20"
+                      : "border-input",
                   )}
-                  {...register("password", {
-                    required: "Password is required",
-                    minLength: {
-                      value: 8,
-                      message: "Password must be at least 8 characters",
+                  {...register("email", {
+                    required: "Email is required",
+                    pattern: {
+                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                      message: "Enter a valid email address",
                     },
                   })}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
+                {errors.email && (
+                  <p className="text-xs font-medium text-destructive">
+                    {errors.email.message}
+                  </p>
+                )}
               </div>
-              {errors.password && (
-                <p className="text-xs text-red-500">
-                  {errors.password.message}
-                </p>
-              )}
-            </div>
 
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={loginMutation.isPending}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+              {/* Password */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label
+                    htmlFor="password"
+                    className="block text-sm font-medium text-foreground"
+                  >
+                    Password
+                  </label>
+                  <Link
+                    href="#"
+                    className="text-xs font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
+                <div className="relative">
+                  <input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="current-password"
+                    placeholder="••••••••"
+                    className={cn(
+                      "w-full rounded-xl border bg-background px-4 py-3 pr-10 text-sm text-foreground placeholder-muted-foreground outline-none transition-all",
+                      "focus:ring-2 focus:ring-primary/20 focus:border-primary",
+                      errors.password
+                        ? "border-destructive/50 focus:border-destructive focus:ring-destructive/20"
+                        : "border-input",
+                    )}
+                    {...register("password", {
+                      required: "Password is required",
+                      minLength: {
+                        value: 8,
+                        message: "Password must be at least 8 characters",
+                      },
+                    })}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+                {errors.password && (
+                  <p className="text-xs font-medium text-destructive">
+                    {errors.password.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Submit */}
+              <button
+                type="submit"
+                disabled={loginMutation.isPending}
+                className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(var(--primary),0.3)] disabled:pointer-events-none disabled:opacity-50"
+              >
+                {loginMutation.isPending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Logging in...
+                  </>
+                ) : (
+                  "Log in to Dashboard"
+                )}
+              </button>
+            </form>
+          </div>
+
+          {/* Footer link */}
+          <p className="mt-8 text-center text-sm text-muted-foreground">
+            Don&apos;t have an account?{" "}
+            <Link
+              href="https://advancedvirtualstaff.com/booking"
+              className="font-semibold text-foreground underline-offset-4 hover:underline"
+              target="_blank"
+              rel="noopener noreferrer"
             >
-              {loginMutation.isPending ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Logging in...
-                </>
-              ) : (
-                "Log in"
-              )}
-            </button>
-          </form>
+              Contact us
+            </Link>
+          </p>
         </div>
-
-        {/* Footer link */}
-        <p className="mt-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
-          Don&apos;t have an account?{" "}
-          <Link
-            href="https://advancedvirtualstaff.com/booking"
-            className="font-medium text-zinc-900 underline-offset-2 hover:underline dark:text-zinc-50"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Contact us
-          </Link>
-        </p>
       </div>
     </div>
   );

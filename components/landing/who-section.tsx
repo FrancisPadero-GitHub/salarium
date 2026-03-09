@@ -32,8 +32,13 @@ const dashboardPreview = [
 
 export default function WhoSection() {
   return (
-    <section id="who" className="bg-background py-24">
-      <div className="mx-auto max-w-7xl px-6">
+    <section id="who" className="relative overflow-hidden bg-background py-24">
+      {/* Radial glow */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+        <div className="absolute left-1/2 top-0 h-[600px] w-[800px] -translate-x-1/2 -translate-y-1/3 rounded-full bg-primary/10 opacity-30 blur-3xl" />
+      </div>
+
+      <div className="relative z-10 mx-auto max-w-7xl px-6">
         <div className="animate-fade-up mb-12">
           <p className="mb-4 text-xs font-bold uppercase tracking-widest text-primary">
             Who It&apos;s For

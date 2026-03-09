@@ -29,8 +29,16 @@ const painPoints = [
 
 export default function PainSection() {
   return (
-    <section id="pain" className="bg-foreground py-24">
-      <div className="mx-auto max-w-7xl px-6">
+    <section id="pain" className="relative overflow-hidden bg-foreground py-24">
+      {/* Radial glow */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
+      >
+        <div className="absolute right-0 top-1/2 h-[600px] w-[600px] -translate-y-1/2 translate-x-1/4 rounded-full bg-primary/10 opacity-20 blur-3xl" />
+      </div>
+
+      <div className="relative z-10 mx-auto max-w-7xl px-6">
         <div className="animate-fade-up mb-14">
           <p className="mb-4 text-xs font-bold uppercase tracking-widest text-primary">
             Sound familiar?

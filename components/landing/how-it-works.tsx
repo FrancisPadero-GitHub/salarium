@@ -27,8 +27,16 @@ const steps = [
 
 export default function HowItWorks() {
   return (
-    <section id="how" className="bg-foreground py-24">
-      <div className="mx-auto max-w-7xl px-6">
+    <section id="how" className="relative overflow-hidden bg-foreground py-24">
+      {/* Radial glow */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
+      >
+        <div className="absolute left-0 top-1/2 h-[500px] w-[500px] -translate-y-1/2 -translate-x-1/3 rounded-full bg-primary/10 opacity-20 blur-3xl" />
+      </div>
+
+      <div className="relative z-10 mx-auto max-w-7xl px-6">
         {/* Header */}
         <div className="animate-fade-up mb-16">
           <p className="mb-4 text-xs font-bold uppercase tracking-[0.1em] text-primary">

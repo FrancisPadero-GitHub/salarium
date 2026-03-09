@@ -3,8 +3,16 @@ import { ArrowRight } from "lucide-react";
 
 export default function CTASection() {
   return (
-    <section id="cta" className="bg-foreground py-[120px] text-center">
-      <div className="mx-auto max-w-7xl px-6">
+    <section id="cta" className="relative overflow-hidden bg-foreground py-[120px] text-center">
+      {/* Radial glow */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
+      >
+        <div className="absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/10 opacity-20 blur-3xl" />
+      </div>
+
+      <div className="relative z-10 mx-auto max-w-7xl px-6">
         <h2 className="animate-fade-up mx-auto max-w-[700px] text-[clamp(2rem,4vw,3rem)] font-extrabold leading-[1.15] tracking-[-0.03em] text-background">
           Ready to see exactly
           <br />
