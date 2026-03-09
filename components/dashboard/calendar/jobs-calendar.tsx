@@ -349,8 +349,8 @@ export function JobsCalendar() {
                           className={cn(
                             "flex flex-col items-start gap-0.5 rounded px-1.5 py-1 text-left text-[10px] transition-colors sm:text-xs",
                             isDone
-                              ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300"
-                              : "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300",
+                              ? "bg-success/15 text-success dark:bg-success/20"
+                              : "bg-primary/15 text-primary dark:bg-primary/20",
                           )}
                         >
                           <span className="line-clamp-1 font-semibold">
@@ -359,12 +359,22 @@ export function JobsCalendar() {
                             </span>
                             {job.work_title || "Unnamed Job"}
                           </span>
-                          <span className="line-clamp-1 opacity-80">
-                            {job.technician_id
-                              ? techMap.get(job.technician_id)?.name ||
-                                "Unknown Tech"
-                              : "No Tech"}
-                          </span>
+                          <div className="flex items-center justify-between gap-1 w-full">
+                            <span className="line-clamp-1 opacity-80 font-semibold text-foreground">
+                              {job.technician_id
+                                ? techMap.get(job.technician_id)?.name ||
+                                  "Unknown Tech"
+                                : "No Tech"}
+                            </span>
+                            {job.work_order_date && (
+                              <span className="shrink-0 text-[9px] font-medium opacity-60">
+                                {format(
+                                  new Date(job.work_order_date),
+                                  "h:mm a",
+                                )}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       );
                     })}

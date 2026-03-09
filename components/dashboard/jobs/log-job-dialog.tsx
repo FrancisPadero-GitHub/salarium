@@ -240,7 +240,7 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
           <div className="overflow-y-auto flex-1 grid gap-6 py-2 pl-2 pr-1">
             {/* ── Work Order Section ─────────────────────────── */}
             <div className="grid gap-4">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Work Order
               </h3>
 
@@ -338,7 +338,9 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
                 <div className="space-y-2">
                   <Label htmlFor="job-category">
                     Category{" "}
-                    <span className="text-zinc-400 text-xs">(optional)</span>
+                    <span className="text-muted-foreground text-xs">
+                      (optional)
+                    </span>
                   </Label>
                   <Input
                     id="job-category"
@@ -351,7 +353,9 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
                 <div className="space-y-2">
                   <Label htmlFor="job-region">
                     Region{" "}
-                    <span className="text-zinc-400 text-xs">(optional)</span>
+                    <span className="text-muted-foreground text-xs">
+                      (optional)
+                    </span>
                   </Label>
                   <Input
                     id="job-region"
@@ -366,7 +370,9 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
               <div className="space-y-2">
                 <Label htmlFor="job-address">
                   Address{" "}
-                  <span className="text-zinc-400 text-xs">(optional)</span>
+                  <span className="text-muted-foreground text-xs">
+                    (optional)
+                  </span>
                 </Label>
                 <Input
                   id="job-address"
@@ -381,7 +387,9 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
                 <div className="space-y-2">
                   <Label htmlFor="job-contact-no">
                     Contact Number{" "}
-                    <span className="text-zinc-400 text-xs">(optional)</span>
+                    <span className="text-muted-foreground text-xs">
+                      (optional)
+                    </span>
                   </Label>
                   <Input
                     id="job-contact-no"
@@ -394,7 +402,9 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
                 <div className="space-y-2">
                   <Label htmlFor="job-contact-email">
                     Contact Email{" "}
-                    <span className="text-zinc-400 text-xs">(optional)</span>
+                    <span className="text-muted-foreground text-xs">
+                      (optional)
+                    </span>
                   </Label>
                   <Input
                     id="job-contact-email"
@@ -410,7 +420,9 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
               <div className="space-y-2">
                 <Label htmlFor="job-description">
                   Description{" "}
-                  <span className="text-zinc-400 text-xs">(optional)</span>
+                  <span className="text-muted-foreground text-xs">
+                    (optional)
+                  </span>
                 </Label>
                 <Textarea
                   id="job-description"
@@ -424,7 +436,9 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
               <div className="space-y-2">
                 <Label htmlFor="job-notes">
                   Notes{" "}
-                  <span className="text-zinc-400 text-xs">(optional)</span>
+                  <span className="text-muted-foreground text-xs">
+                    (optional)
+                  </span>
                 </Label>
                 <Textarea
                   id="job-notes"
@@ -437,7 +451,7 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
 
             {/* ── Job Financials Section ─────────────────────── */}
             <div className="grid gap-4">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Job Financials
               </h3>
 
@@ -475,7 +489,9 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
                 <div className="space-y-2">
                   <Label htmlFor="job-parts-cost">
                     Parts Cost ($){" "}
-                    <span className="text-zinc-400 text-xs">(optional)</span>
+                    <span className="text-muted-foreground text-xs">
+                      (optional)
+                    </span>
                   </Label>
                   <Input
                     id="job-parts-cost"
@@ -512,7 +528,9 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
                 <div className="space-y-2">
                   <Label htmlFor="job-tip">
                     Tip ($){" "}
-                    <span className="text-zinc-400 text-xs">(optional)</span>
+                    <span className="text-muted-foreground text-xs">
+                      (optional)
+                    </span>
                   </Label>
                   <Input
                     id="job-tip"
@@ -537,7 +555,9 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
                 <div className="space-y-2">
                   <Label htmlFor="job-payment-method">
                     Payment Method{" "}
-                    <span className="text-zinc-400 text-xs">(optional)</span>
+                    <span className="text-muted-foreground text-xs">
+                      (optional)
+                    </span>
                   </Label>
                   <Select
                     disabled={isPending}

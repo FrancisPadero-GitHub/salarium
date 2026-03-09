@@ -80,8 +80,8 @@ type StatusFilter = "all" | "done" | "pending" | "cancelled";
 type DynamicFilter = "all" | (string & {});
 
 const statusColors: Record<string, string> = {
-  done: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
-  cancelled: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+  done: "bg-success/10 text-success",
+  cancelled: "bg-destructive/10 text-destructive",
   pending:
     "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
 };
@@ -341,23 +341,23 @@ export function JobsTable() {
 
   function SortIcon({ col }: { col: SortKey }) {
     if (sortKey !== col)
-      return <ChevronsUpDown className="ml-1 inline h-3 w-3 text-zinc-400" />;
+      return (
+        <ChevronsUpDown className="ml-1 inline h-3 w-3 text-muted-foreground" />
+      );
     return sortDir === "asc" ? (
-      <ChevronUp className="ml-1 inline h-3 w-3 text-zinc-600 dark:text-zinc-300" />
+      <ChevronUp className="ml-1 inline h-3 w-3 text-foreground" />
     ) : (
-      <ChevronDown className="ml-1 inline h-3 w-3 text-zinc-600 dark:text-zinc-300" />
+      <ChevronDown className="ml-1 inline h-3 w-3 text-foreground" />
     );
   }
 
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="rounded-xl border border-border bg-card">
       {/* Toolbar */}
-      <div className="flex flex-col gap-3 border-b border-zinc-200 p-4 dark:border-zinc-800 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
+      <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
         <div>
-          <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
-            Jobs
-          </h3>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+          <h3 className="text-base font-semibold text-foreground">Jobs</h3>
+          <p className="text-xs text-muted-foreground">
             {filtered.length} of {jobs.length} jobs
           </p>
         </div>
@@ -372,7 +372,7 @@ export function JobsTable() {
             <SlidersHorizontal className="h-3.5 w-3.5" />
             {showFilters ? "Hide Filters" : "Show Filters"}
             {!showFilters && activeFilterCount > 0 && (
-              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-zinc-800 text-[10px] font-semibold text-white dark:bg-zinc-200 dark:text-zinc-900">
+              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-foreground text-[10px] font-semibold text-background">
                 {activeFilterCount}
               </span>
             )}
@@ -383,7 +383,7 @@ export function JobsTable() {
               variant="ghost"
               size="sm"
               onClick={clearFilters}
-              className="h-8 gap-1.5 text-xs text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+              className="h-8 gap-1.5 text-xs text-muted-foreground hover:text-foreground"
             >
               <X className="h-3.5 w-3.5" />
               Clear filters
@@ -394,7 +394,7 @@ export function JobsTable() {
 
       {/* Filters */}
       {showFilters && (
-        <div className="flex flex-wrap gap-2 border-b border-zinc-200 p-4 dark:border-zinc-800">
+        <div className="flex flex-wrap gap-2 border-b border-border p-4">
           <Input
             placeholder="Search job, category, technician, address…"
             value={search}
@@ -496,15 +496,15 @@ export function JobsTable() {
           <Spinner />
         </div>
       ) : isError ? (
-        <div className="rounded-b-xl bg-red-50 p-6 text-center text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">
+        <div className="rounded-b-xl bg-destructive/10 p-6 text-center text-sm text-destructive">
           Failed to load jobs.
         </div>
       ) : (
         <>
           {/* Bulk action bar */}
           {selectedIds.size > 0 && (
-            <div className="flex items-center gap-3 border-b border-zinc-200 bg-zinc-50 px-4 py-2.5 dark:border-zinc-800 dark:bg-zinc-800/50">
-              <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            <div className="flex items-center gap-3 border-b border-border bg-muted/50 px-4 py-2.5">
+              <span className="text-sm font-medium text-foreground">
                 {selectedIds.size} selected
               </span>
               <Button
@@ -531,7 +531,7 @@ export function JobsTable() {
           <div className="min-h-96 max-h-150 overflow-x-auto overflow-y-auto">
             <Table>
               <TableHeader>
-                <TableRow className=" border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 hover:bg-white dark:hover:bg-zinc-900">
+                <TableRow className=" border-b border-border bg-card hover:bg-card">
                   <TableHead
                     className="sticky top-0 z-10 w-10 px-3"
                     onClick={(e) => e.stopPropagation()}
@@ -566,23 +566,23 @@ export function JobsTable() {
                     <TableHead
                       key={key}
                       onClick={() => handleSort(key)}
-                      className="cursor-pointer select-none  text-xs font-semibold uppercase tracking-wide text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+                      className="cursor-pointer select-none  text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground"
                     >
                       {label}
                       <SortIcon col={key} />
                     </TableHead>
                   ))}
-                  <TableHead className="text-center text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                  <TableHead className="text-center text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                     Actions
                   </TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+              <TableBody className="divide-y divide-border">
                 {filtered.length === 0 ? (
                   <TableRow>
                     <TableCell
                       colSpan={13}
-                      className="px-4 py-8 text-center text-sm text-zinc-400 dark:text-zinc-600"
+                      className="px-4 py-8 text-center text-sm text-muted-foreground"
                     >
                       No jobs match your filters.
                     </TableCell>
@@ -631,12 +631,12 @@ export function JobsTable() {
                           setViewOpen(true);
                         }}
                         className={cn(
-                          "cursor-pointer transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50",
+                          "cursor-pointer transition-colors hover:bg-muted/50",
                           isHighlighted &&
                             "bg-amber-50 ring-1 ring-inset ring-amber-300 dark:bg-amber-950/30 dark:ring-amber-700",
                           job.work_order_id &&
                             selectedIds.has(job.work_order_id) &&
-                            "bg-blue-50 dark:bg-blue-950/20",
+                            "bg-accent",
                         )}
                       >
                         <TableCell
@@ -654,24 +654,24 @@ export function JobsTable() {
                             aria-label={`Select ${job.work_title ?? "job"}`}
                           />
                         </TableCell>
-                        <TableCell className="whitespace-nowrap text-zinc-500 dark:text-zinc-400">
+                        <TableCell className="whitespace-nowrap text-muted-foreground">
                           {shortId(job.work_order_id ?? "-")}
                         </TableCell>
                         {/* Job Name */}
-                        <TableCell className="truncate max-w-xs font-medium text-zinc-800 dark:text-zinc-200">
+                        <TableCell className="truncate max-w-xs font-medium text-foreground">
                           {job.work_title ?? "-"}
                         </TableCell>
                         {/* Date */}
-                        <TableCell className="whitespace-nowrap text-zinc-500 dark:text-zinc-400">
+                        <TableCell className="whitespace-nowrap text-muted-foreground">
                           {job.work_order_date
                             ? new Date(job.work_order_date).toLocaleDateString()
                             : "-"}
                         </TableCell>
                         {/* Address */}
-                        <TableCell className="truncate max-w-sm font-medium text-zinc-800 dark:text-zinc-200">
+                        <TableCell className="truncate max-w-sm font-medium text-foreground">
                           {job.address ?? "-"}
                           {job.region && (
-                            <span className="ml-1.5 text-xs text-zinc-400 dark:text-zinc-500">
+                            <span className="ml-1.5 text-xs text-muted-foreground">
                               {job.region}
                             </span>
                           )}
@@ -679,32 +679,30 @@ export function JobsTable() {
                         {/* Technician */}
                         <TableCell className="whitespace-nowrap">
                           <div className="flex items-center gap-2">
-                            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xs font-semibold text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+                            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-foreground">
                               {(techName === "-" ? "?" : techName)
                                 .split(" ")
                                 .map((n) => n[0])
                                 .join("")}
                             </div>
-                            <span className="text-zinc-700 dark:text-zinc-300">
-                              {techName}
-                            </span>
+                            <span className="text-foreground">{techName}</span>
                             {commRate != null && (
-                              <span className="text-xs text-zinc-400">
+                              <span className="text-xs text-muted-foreground">
                                 ({commRate}%)
                               </span>
                             )}
                           </div>
                         </TableCell>
                         {/* Gross */}
-                        <TableCell className="tabular-nums font-medium text-zinc-900 dark:text-zinc-100">
+                        <TableCell className="tabular-nums font-medium text-foreground">
                           {fmt(job.subtotal ?? 0)}
                         </TableCell>
                         {/* Parts Cost */}
-                        <TableCell className="tabular-nums text-orange-600 dark:text-orange-400">
+                        <TableCell className="tabular-nums text-primary">
                           {fmt(job.parts_total_cost ?? 0)}
                         </TableCell>
                         {/* Net Revenue */}
-                        <TableCell className="tabular-nums font-medium text-sky-600 dark:text-sky-400">
+                        <TableCell className="tabular-nums font-medium text-chart-3">
                           {fmt(job.net_revenue ?? 0)}
                         </TableCell>
 
@@ -713,7 +711,7 @@ export function JobsTable() {
                           {fmt(job.total_commission ?? 0)}
                         </TableCell>
                         {/* Company Net */}
-                        <TableCell className="tabular-nums font-medium text-emerald-600 dark:text-emerald-400">
+                        <TableCell className="tabular-nums font-medium text-success">
                           {fmt(job.total_company_net ?? 0)}
                         </TableCell>
                         {/* Status */}
@@ -722,7 +720,7 @@ export function JobsTable() {
                             className={cn(
                               "inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
                               statusColors[statusKey] ??
-                                "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
+                                "bg-muted text-muted-foreground",
                             )}
                           >
                             {job.status ?? "-"}
@@ -738,7 +736,7 @@ export function JobsTable() {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-7 w-7 p-0 text-zinc-400 hover:text-zinc-700 dark:text-zinc-500 dark:hover:text-zinc-200"
+                                className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
                                 onClick={(e) => e.stopPropagation()}
                               >
                                 <MoreHorizontal className="h-4 w-4" />
@@ -759,7 +757,7 @@ export function JobsTable() {
                                   job.work_order_id &&
                                   setConfirmDeleteId(job.work_order_id)
                                 }
-                                className="gap-2 text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
+                                className="gap-2 text-destructive focus:text-destructive"
                               >
                                 <Trash2 className="h-3.5 w-3.5" />
                                 Delete

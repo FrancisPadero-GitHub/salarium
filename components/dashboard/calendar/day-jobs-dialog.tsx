@@ -54,8 +54,8 @@ export function DayJobsDialog({
                   className={cn(
                     "flex flex-col items-start gap-1.5 rounded-lg border p-3 text-left transition-all hover:-translate-y-0.5 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
                     isDone
-                      ? "border-emerald-200 bg-emerald-50 dark:border-emerald-800/60 dark:bg-emerald-950/30"
-                      : "border-amber-200 bg-amber-50 dark:border-amber-800/60 dark:bg-amber-950/30",
+                      ? "border-success/20 bg-success/5 dark:border-success/30 dark:bg-success/10"
+                      : "border-primary/20 bg-primary/5 dark:border-primary/30 dark:bg-primary/10",
                   )}
                 >
                   <div className="flex w-full items-start justify-between gap-2">
@@ -71,18 +71,25 @@ export function DayJobsDialog({
                       className={cn(
                         "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider",
                         isDone
-                          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400"
-                          : "bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400",
+                          ? "bg-success/15 text-success"
+                          : "bg-primary/15 text-primary",
                       )}
                     >
                       {job.status}
                     </span>
                   </div>
                   <div className="flex flex-col gap-0.5 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1.5">
-                      <User className="h-3 w-3 shrink-0" />
-                      {techName}
-                    </span>
+                    <div className="flex w-full items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <User className="h-3 w-3 shrink-0" />
+                        {techName}
+                      </span>
+                      {job.work_order_date && (
+                        <span className="text-[10px] font-medium opacity-60">
+                          {format(new Date(job.work_order_date), "h:mm a")}
+                        </span>
+                      )}
+                    </div>
                     {job.address && (
                       <span className="flex items-center gap-1.5 line-clamp-1">
                         <MapPin className="h-3 w-3 shrink-0" />

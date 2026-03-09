@@ -178,9 +178,7 @@ export function RecentJobsTable() {
                               .map((n) => n[0])
                               .join("")}
                           </div>
-                          <span className="text-foreground">
-                            {techName}
-                          </span>
+                          <span className="text-foreground">{techName}</span>
                           {commRate != null && (
                             <span className="text-xs text-muted-foreground">
                               ({commRate}%)
@@ -193,7 +191,7 @@ export function RecentJobsTable() {
                         {fmt(job.subtotal ?? 0)}
                       </TableCell>
                       {/* Parts Cost */}
-                      <TableCell className="tabular-nums text-orange-600 dark:text-orange-400">
+                      <TableCell className="tabular-nums text-primary">
                         {fmt(job.parts_total_cost ?? 0)}
                       </TableCell>
                     </TableRow>

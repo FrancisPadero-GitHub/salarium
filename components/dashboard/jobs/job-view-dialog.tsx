@@ -47,7 +47,7 @@ const fmtDateTime = (value: string | null | undefined) => {
 };
 
 const paymentColors: Record<string, string> = {
-  cash: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+  cash: "bg-success/10 text-success",
   check: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
   "credit card":
     "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
@@ -55,8 +55,8 @@ const paymentColors: Record<string, string> = {
 };
 
 const statusColors: Record<string, string> = {
-  done: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
-  cancelled: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+  done: "bg-success/10 text-success",
+  cancelled: "bg-destructive/10 text-destructive",
   pending:
     "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
 };
@@ -82,16 +82,14 @@ function InfoRow({
 }) {
   return (
     <div className="flex items-start gap-3">
-      <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-zinc-100 dark:bg-zinc-800">
-        <Icon className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
+      <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-muted">
+        <Icon className="h-3.5 w-3.5 text-muted-foreground" />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-500">
+        <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
           {label}
         </p>
-        <div className="mt-0.5 text-sm text-zinc-800 dark:text-zinc-200">
-          {children}
-        </div>
+        <div className="mt-0.5 text-sm text-foreground">{children}</div>
       </div>
     </div>
   );
@@ -111,11 +109,11 @@ function StatCard({
       className={cn(
         // 1. Added 'flex flex-col justify-between'
         // 2. Added a minimum height (e.g., h-24 or min-h-[100px])
-        "flex flex-col justify-between min-h-25 rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-zinc-700 dark:bg-zinc-800/50",
+        "flex flex-col justify-between min-h-25 rounded-lg border border-border bg-muted/50 px-4 py-3",
         className,
       )}
     >
-      <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-500">
+      <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
         {label}
       </p>
       <p className="text-base font-semibold tabular-nums">{value}</p>
@@ -153,11 +151,11 @@ export function JobViewDialog({
         <DialogHeader>
           <div className="flex items-start justify-between gap-3 pr-6">
             <div className="min-w-0">
-              <DialogTitle className="truncate text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+              <DialogTitle className="truncate text-lg font-semibold text-foreground">
                 {job.work_title ?? "Untitled Job"}
               </DialogTitle>
               {job.work_order_date && (
-                <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
+                <p className="mt-0.5 text-sm text-muted-foreground">
                   {new Date(job.work_order_date).toLocaleDateString("en-US", {
                     weekday: "long",
                     year: "numeric",
@@ -170,8 +168,7 @@ export function JobViewDialog({
             <span
               className={cn(
                 "mt-0.5 inline-flex shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
-                statusColors[statusKey] ??
-                  "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
+                statusColors[statusKey] ?? "bg-muted text-muted-foreground",
               )}
             >
               {job.status ?? "pending"}
@@ -184,17 +181,17 @@ export function JobViewDialog({
             <StatCard
               label="Gross"
               value={fmt(job.subtotal ?? 0)}
-              className="text-zinc-900 dark:text-zinc-100"
+              className="text-foreground"
             />
             <StatCard
               label="Parts Cost"
               value={fmt(job.parts_total_cost ?? 0)}
-              className="text-orange-500 dark:text-orange-400"
+              className="text-primary"
             />
             <StatCard
               label="Net Revenue"
               value={fmt(job.net_revenue ?? 0)}
-              className="text-sky-600 dark:text-sky-400"
+              className="text-chart-3"
             />
             <StatCard
               label="Commission"
@@ -204,7 +201,7 @@ export function JobViewDialog({
             <StatCard
               label="Company Net"
               value={fmt(job.total_company_net ?? 0)}
-              className="text-emerald-600 dark:text-emerald-400"
+              className="text-success"
             />
           </div>
 
@@ -216,12 +213,14 @@ export function JobViewDialog({
               {/* Technician */}
               <InfoRow icon={User} label="Technician">
                 <div className="flex items-center gap-2">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-xs font-semibold text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-foreground">
                     {initials}
                   </div>
                   <span>{techName ?? "-"}</span>
                   {commRate != null && (
-                    <span className="text-xs text-zinc-400">({commRate}%)</span>
+                    <span className="text-xs text-muted-foreground">
+                      ({commRate}%)
+                    </span>
                   )}
                 </div>
               </InfoRow>
@@ -230,7 +229,7 @@ export function JobViewDialog({
               <InfoRow icon={MapPin} label="Address">
                 <span>{job.address ?? "-"}</span>
                 {job.region && (
-                  <span className="ml-1.5 text-xs text-zinc-400 dark:text-zinc-500">
+                  <span className="ml-1.5 text-xs text-muted-foreground">
                     {job.region}
                   </span>
                 )}
@@ -260,7 +259,7 @@ export function JobViewDialog({
                   className={cn(
                     "inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
                     paymentColors[paymentKey] ??
-                      "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
+                      "bg-muted text-muted-foreground",
                   )}
                 >
                   {job.payment_method ?? "-"}
@@ -297,20 +296,20 @@ export function JobViewDialog({
             {job.description ? (
               <p className="whitespace-pre-wrap">{job.description}</p>
             ) : (
-              <span className="text-zinc-400 dark:text-zinc-500">-</span>
+              <span className="text-muted-foreground">-</span>
             )}
           </InfoRow>
 
           {/* Notes */}
           {job.notes && (
-            <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/50">
+            <div className="rounded-lg border border-border bg-muted/50 p-4">
               <div className="mb-1.5 flex items-center gap-2">
-                <StickyNote className="h-3.5 w-3.5 text-zinc-400" />
-                <span className="text-[11px] font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-500">
+                <StickyNote className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
                   Notes
                 </span>
               </div>
-              <p className="whitespace-pre-wrap text-sm text-zinc-700 dark:text-zinc-300">
+              <p className="whitespace-pre-wrap text-sm text-foreground">
                 {job.notes}
               </p>
             </div>
@@ -325,12 +324,12 @@ export function JobViewDialog({
                   Review
                 </span>
                 {job.review_date && (
-                  <span className="ml-auto text-xs text-zinc-400">
+                  <span className="ml-auto text-xs text-muted-foreground">
                     {new Date(job.review_date).toLocaleDateString()}
                   </span>
                 )}
               </div>
-              <div className="grid gap-1 text-sm text-zinc-700 dark:text-zinc-300">
+              <div className="grid gap-1 text-sm text-foreground">
                 {job.review_type && (
                   <p>
                     <span className="font-medium">Type:</span> {job.review_type}
@@ -351,7 +350,7 @@ export function JobViewDialog({
         </div>
 
         {/* Footer actions */}
-        <DialogFooter className="border-t border-zinc-200 pt-4 dark:border-zinc-700 sm:justify-between">
+        <DialogFooter className="border-t border-border pt-4 sm:justify-between">
           <DialogClose asChild>
             <Button variant="outline" size="sm">
               Close
