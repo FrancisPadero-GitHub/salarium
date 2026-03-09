@@ -193,6 +193,7 @@ export function EstimatesTable({
           : "";
         const matchSearch =
           !q ||
+          (estimate.work_order_id ?? "").toLowerCase().includes(q) ||
           (estimate.work_title ?? "").toLowerCase().includes(q) ||
           (estimate.address ?? "").toLowerCase().includes(q) ||
           (estimate.description ?? "").toLowerCase().includes(q) ||
@@ -305,9 +306,7 @@ export function EstimatesTable({
     <div className="rounded-xl border border-border bg-card">
       <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
         <div>
-          <h3 className="text-base font-semibold text-foreground">
-            Estimates
-          </h3>
+          <h3 className="text-base font-semibold text-foreground">Estimates</h3>
           <p className="text-xs text-muted-foreground">
             {filtered.length} of {estimates.length} estimates
           </p>

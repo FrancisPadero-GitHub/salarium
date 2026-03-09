@@ -253,6 +253,7 @@ export function JobsTable() {
           : "";
         const matchSearch =
           !q ||
+          (j.work_order_id ?? "").toLowerCase().includes(q) ||
           (j.address ?? "").toLowerCase().includes(q) ||
           techName.toLowerCase().includes(q) ||
           (j.region ?? "").toLowerCase().includes(q) ||
