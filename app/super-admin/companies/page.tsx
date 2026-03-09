@@ -13,10 +13,10 @@ export default function CompaniesPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+          <h2 className="text-2xl font-semibold tracking-tight text-foreground">
             Companies
           </h2>
-          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="mt-1 text-sm text-muted-foreground">
             Manage tenant companies registered on the platform
           </p>
         </div>
@@ -26,10 +26,10 @@ export default function CompaniesPage() {
       {/* Content */}
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="h-6 w-6 animate-spin text-zinc-400" />
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       ) : isError ? (
-        <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-600 dark:border-red-800/50 dark:bg-red-900/20 dark:text-red-400">
+        <div className="flex items-center gap-2 rounded-xl border border-destructive/20 bg-destructive/10 px-5 py-4 text-sm text-destructive">
           <AlertCircle className="h-4 w-4 shrink-0" />
           {(error as Error).message || "Failed to load companies."}
         </div>

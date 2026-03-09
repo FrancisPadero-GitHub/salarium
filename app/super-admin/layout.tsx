@@ -41,8 +41,8 @@ function SidebarContent({
     <>
       {/* Logo */}
       <Link href="/" onClick={() => setSidebarOpen(false)}>
-        <div className="flex flex-col items-center justify-center border-b border-zinc-200 px-6 pt-2 pb-2 dark:border-zinc-800">
-          <span className="absolute top-4 left-28 z-99 text-[9px] font-bold uppercase tracking-widest text-zinc-00 dark:text-zinc-500">
+        <div className="flex flex-col items-center justify-center border-b border-border px-6 pt-2 pb-2">
+          <span className="absolute top-4 left-28 z-99 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
             Super Admin
           </span>
           <Image
@@ -72,8 +72,8 @@ function SidebarContent({
               className={cn(
                 "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
                 active
-                  ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-50"
-                  : "text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50",
+                  ? "bg-muted text-foreground"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
               )}
             >
               <Icon className="h-4 w-4 shrink-0" />
@@ -84,16 +84,16 @@ function SidebarContent({
       </nav>
 
       {/* User & Logout */}
-      <div className="border-t border-zinc-200 p-4 dark:border-zinc-800">
+      <div className="border-t border-border p-4">
         {user && (
-          <p className="mb-2 truncate text-xs font-medium text-zinc-600 dark:text-zinc-400">
+          <p className="mb-2 truncate text-xs font-medium text-muted-foreground">
             {user.user_metadata.full_name ?? user.email}
           </p>
         )}
         <button
           onClick={() => logoutMutation.mutate()}
           disabled={logoutMutation.isPending}
-          className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 disabled:opacity-60 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50"
+          className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-60"
         >
           {logoutMutation.isPending ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -129,13 +129,13 @@ export default function SuperAdminLayout({
   return (
     <ProtectedRoute>
       {isRoleLoading ? (
-        <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-950">
-          <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+        <div className="flex min-h-screen items-center justify-center bg-background">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       ) : !isSuperAdmin ? null : (
-        <div className="flex h-screen overflow-hidden bg-zinc-50 dark:bg-zinc-950">
+        <div className="flex h-screen overflow-hidden bg-background">
           {/* Desktop Sidebar */}
-          <aside className="hidden w-60 flex-col border-r border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 lg:flex">
+          <aside className="hidden w-60 flex-col border-r border-border bg-card lg:flex">
             <SidebarContent
               pathname={pathname}
               setSidebarOpen={setSidebarOpen}
@@ -155,13 +155,13 @@ export default function SuperAdminLayout({
           {/* Mobile Sidebar Drawer */}
           <aside
             className={cn(
-              "fixed inset-y-0 left-0 z-50 flex w-60 flex-col border-r border-zinc-200 bg-white transition-transform duration-300 dark:border-zinc-800 dark:bg-zinc-900 lg:hidden",
+              "fixed inset-y-0 left-0 z-50 flex w-60 flex-col border-r border-border bg-card transition-transform duration-300 lg:hidden",
               sidebarOpen ? "translate-x-0" : "-translate-x-full",
             )}
           >
             <button
               onClick={() => setSidebarOpen(false)}
-              className="absolute right-3 top-4 rounded-md p-1 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
+              className="absolute right-3 top-4 rounded-md p-1 text-muted-foreground hover:text-foreground"
               aria-label="Close sidebar"
             >
               <X className="h-5 w-5" />
@@ -177,8 +177,8 @@ export default function SuperAdminLayout({
           {/* Main */}
           <div className="flex flex-1 min-w-0 flex-col overflow-hidden">
             {/* Top bar */}
-            <header className="flex h-16 items-center justify-between border-b border-zinc-200 bg-white px-6 dark:border-zinc-800 dark:bg-zinc-900">
-              <h1 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+            <header className="flex h-16 items-center justify-between border-b border-border bg-card px-6">
+              <h1 className="text-sm font-medium text-muted-foreground">
                 {navItems.find((n) =>
                   n.href === "/super-admin"
                     ? pathname === "/super-admin"
@@ -194,7 +194,7 @@ export default function SuperAdminLayout({
           {/* Floating toggle button, mobile only */}
           <button
             onClick={() => setSidebarOpen((prev) => !prev)}
-            className="fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-zinc-900 text-white shadow-lg transition-colors hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300 lg:hidden"
+            className="fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-foreground text-background shadow-lg transition-colors hover:bg-foreground/90 lg:hidden"
             aria-label="Toggle sidebar"
           >
             {sidebarOpen ? (

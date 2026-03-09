@@ -50,24 +50,20 @@ function isSafeUrl(url: string): boolean {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  open: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-  in_progress:
-    "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-  resolved:
-    "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
-  closed: "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400",
+  open: "bg-primary/10 text-primary",
+  in_progress: "bg-secondary text-secondary-foreground",
+  resolved: "bg-success/10 text-success",
+  closed: "bg-muted text-muted-foreground",
 };
 
 const PRIORITY_COLORS: Record<string, string> = {
-  critical: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
-  high: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
-  medium:
-    "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-  low: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+  critical: "bg-destructive/10 text-destructive",
+  high: "bg-primary/10 text-primary",
+  medium: "bg-primary/10 text-primary",
+  low: "bg-success/10 text-success",
 };
 
-const DEFAULT_BG =
-  "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400";
+const DEFAULT_BG = "bg-muted text-muted-foreground";
 
 export function FeedbacksDialog({
   feedback,
@@ -108,16 +104,16 @@ export function FeedbacksDialog({
           <div className="overflow-y-auto flex-1 grid gap-6 py-2 pl-2 pr-1">
             {/* ── Feedback Details Section ─────────────────────────── */}
             <div className="grid gap-4">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Feedback Details
               </h3>
 
               {/* Title */}
               <div className="grid gap-1.5">
-                <Label className="text-xs font-medium uppercase tracking-wide text-zinc-400">
+                <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   Title
                 </Label>
-                <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+                <p className="text-sm font-semibold text-foreground">
                   {feedback.title}
                 </p>
               </div>
@@ -127,7 +123,7 @@ export function FeedbacksDialog({
                 <Label className="text-xs font-medium uppercase tracking-wide text-zinc-400">
                   Description
                 </Label>
-                <div className="max-h-40 overflow-y-auto whitespace-pre-wrap break-words rounded-md bg-zinc-50 p-3 text-sm text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 min-h-20">
+                <div className="max-h-40 overflow-y-auto whitespace-pre-wrap break-words rounded-md bg-muted p-3 text-sm text-foreground min-h-20">
                   {feedback.description}
                 </div>
               </div>
@@ -138,7 +134,7 @@ export function FeedbacksDialog({
                   <Label className="text-xs font-medium uppercase tracking-wide text-zinc-400">
                     Type
                   </Label>
-                  <p className="text-sm capitalize text-zinc-700 dark:text-zinc-300">
+                  <p className="text-sm capitalize text-foreground">
                     {feedback.type.replace(/_/g, " ")}
                   </p>
                 </div>
@@ -146,7 +142,7 @@ export function FeedbacksDialog({
                   <Label className="text-xs font-medium uppercase tracking-wide text-zinc-400">
                     Submitted
                   </Label>
-                  <p className="text-sm text-zinc-700 dark:text-zinc-300">
+                  <p className="text-sm text-foreground">
                     {formatDate(feedback.created_at)}
                   </p>
                 </div>
@@ -162,7 +158,7 @@ export function FeedbacksDialog({
                     href={feedback.page_url}
                     target="_blank"
                     rel="noreferrer noopener"
-                    className="inline-flex items-center gap-1 truncate text-sm text-blue-600 hover:underline dark:text-blue-400"
+                    className="inline-flex items-center gap-1 truncate text-sm text-primary hover:underline"
                   >
                     <ExternalLink className="h-3 w-3 shrink-0" />
                     {feedback.page_url}
@@ -181,13 +177,13 @@ export function FeedbacksDialog({
                       href={feedback.screenshot_url}
                       target="_blank"
                       rel="noreferrer noopener"
-                      className="inline-flex items-center gap-1 text-sm text-blue-600 hover:underline dark:text-blue-400"
+                      className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
                     >
                       <ExternalLink className="h-3 w-3 shrink-0" />
                       View Screenshot
                     </a>
                   ) : (
-                    <div className="relative overflow-hidden rounded-md border border-zinc-200 bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800">
+                    <div className="relative overflow-hidden rounded-md border border-border bg-muted">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={feedback.screenshot_url}
@@ -211,8 +207,8 @@ export function FeedbacksDialog({
             </div>
 
             {/* ── Resolution Section ─────────────────────────────── */}
-            <div className="grid gap-4 border-t border-zinc-100 pt-5 dark:border-zinc-800 mt-2">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+            <div className="grid gap-4 border-t border-border pt-5 mt-2">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Resolution Management
               </h3>
 
@@ -271,10 +267,10 @@ export function FeedbacksDialog({
               {/* Resolved at */}
               {feedback.resolved_at && (
                 <div className="grid gap-1.5 mt-2">
-                  <Label className="text-xs font-medium uppercase tracking-wide text-zinc-400">
+                  <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                     Resolved At
                   </Label>
-                  <p className="text-sm text-zinc-700 dark:text-zinc-300">
+                  <p className="text-sm text-foreground">
                     {formatDate(feedback.resolved_at)}
                   </p>
                 </div>

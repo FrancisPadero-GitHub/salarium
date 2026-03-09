@@ -64,12 +64,12 @@ export function CompaniesTable({ companies }: CompaniesTableProps) {
 
   return (
     <>
-      <div className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="border-b border-zinc-200 px-6 py-4 dark:border-zinc-800">
-          <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
+      <div className="rounded-xl border border-border bg-card">
+        <div className="border-b border-border px-6 py-4">
+          <h3 className="text-base font-semibold text-foreground">
             All Companies
           </h3>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+          <p className="text-xs text-muted-foreground">
             {companies?.length} total &mdash;{" "}
             {companies?.filter((c) => !c.deleted_at).length} active
           </p>
@@ -78,11 +78,11 @@ export function CompaniesTable({ companies }: CompaniesTableProps) {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-zinc-100 dark:border-zinc-800">
+              <tr className="border-b border-border">
                 {["Company", "Status", "Users", "Created", ""].map((h) => (
                   <th
                     key={h}
-                    className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-500 last:w-10"
+                    className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground last:w-10"
                   >
                     {h}
                   </th>
@@ -93,8 +93,7 @@ export function CompaniesTable({ companies }: CompaniesTableProps) {
               {companies?.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={5}
-                    className="px-6 py-10 text-center text-zinc-400 dark:text-zinc-500"
+                    colSpan={5} className="px-6 py-10 text-center text-muted-foreground"
                   >
                     No companies found.
                   </td>
@@ -106,18 +105,18 @@ export function CompaniesTable({ companies }: CompaniesTableProps) {
                     <tr
                       key={company.id}
                       className={cn(
-                        "transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50",
+                        "transition-colors hover:bg-muted/50",
                         i !== companies.length - 1 &&
-                          "border-b border-zinc-100 dark:border-zinc-800",
+                          "border-b border-border",
                       )}
                     >
                       {/* Company name */}
                       <td className="px-6 py-3">
                         <div className="flex items-center gap-3">
-                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-zinc-100 dark:bg-zinc-800">
-                            <Building2 className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted">
+                            <Building2 className="h-4 w-4 text-muted-foreground" />
                           </div>
-                          <span className="font-medium text-zinc-900 dark:text-zinc-50">
+                          <span className="font-medium text-foreground">
                             {company.name}
                           </span>
                         </div>
@@ -129,8 +128,8 @@ export function CompaniesTable({ companies }: CompaniesTableProps) {
                           className={cn(
                             "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
                             isActive
-                              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
-                              : "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400",
+                              ? "bg-success/10 text-success"
+                              : "bg-muted text-muted-foreground",
                           )}
                         >
                           {isActive ? "Active" : "Inactive"}
@@ -139,14 +138,14 @@ export function CompaniesTable({ companies }: CompaniesTableProps) {
 
                       {/* Users */}
                       <td className="px-6 py-3">
-                        <div className="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
+                        <div className="flex items-center gap-1.5 text-muted-foreground">
                           <Users className="h-3.5 w-3.5" />
                           <span>{company.user_count}</span>
                         </div>
                       </td>
 
                       {/* Created */}
-                      <td className="px-6 py-3 text-zinc-500 dark:text-zinc-400">
+                      <td className="px-6 py-3 text-muted-foreground">
                         {formatDate(company.created_at)}
                       </td>
 
@@ -157,7 +156,7 @@ export function CompaniesTable({ companies }: CompaniesTableProps) {
                             <DropdownMenuTrigger asChild>
                               <button
                                 disabled={isPending}
-                                className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 disabled:cursor-not-allowed disabled:opacity-40 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+                                className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
                               >
                                 {isPending ? (
                                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -169,7 +168,7 @@ export function CompaniesTable({ companies }: CompaniesTableProps) {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem
-                                className="text-red-600 dark:text-red-400 focus:text-red-600 dark:focus:text-red-400"
+                                className="text-destructive focus:text-destructive"
                                 onClick={() => {
                                   setCompanyId(company.id);
                                   setUserId(company.auth_id);
@@ -186,7 +185,7 @@ export function CompaniesTable({ companies }: CompaniesTableProps) {
                             <DropdownMenuTrigger asChild>
                               <button
                                 disabled={isPending}
-                                className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 disabled:cursor-not-allowed disabled:opacity-40 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+                                className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
                               >
                                 {isPending ? (
                                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -198,7 +197,7 @@ export function CompaniesTable({ companies }: CompaniesTableProps) {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem
-                                className="text-green-600 dark:text-green-400 focus:text-green-600 dark:focus:text-green-400"
+                                className="text-success focus:text-success"
                                 onClick={() => {
                                   configureCompany({
                                     companyId: company.id,
@@ -242,7 +241,7 @@ export function CompaniesTable({ companies }: CompaniesTableProps) {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               disabled={isPending}
-              className="bg-red-600 text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-red-600 dark:hover:bg-red-700"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 disabled:cursor-not-allowed disabled:opacity-60"
               onClick={() => {
                 if (companyId) {
                   configureCompany({

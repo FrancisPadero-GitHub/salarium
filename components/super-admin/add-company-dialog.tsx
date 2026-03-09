@@ -88,7 +88,7 @@ export function AddCompanyDialog() {
                 })}
               />
               {errors.company_name && (
-                <p className="text-xs text-red-500">
+                <p className="text-xs text-destructive">
                   {errors.company_name.message}
                 </p>
               )}
@@ -110,7 +110,7 @@ export function AddCompanyDialog() {
                 })}
               />
               {errors.email && (
-                <p className="text-xs text-red-500">{errors.email.message}</p>
+                <p className="text-xs text-destructive">{errors.email.message}</p>
               )}
             </div>
 
@@ -143,7 +143,7 @@ export function AddCompanyDialog() {
                 </Button>
               </div>
               {errors.password && (
-                <p className="text-xs text-red-500">
+                <p className="text-xs text-destructive">
                   {errors.password.message}
                 </p>
               )}
@@ -180,7 +180,7 @@ export function AddCompanyDialog() {
                 </Button>
               </div>
               {errors.confirm_password && (
-                <p className="text-xs text-red-500">
+                <p className="text-xs text-destructive">
                   {errors.confirm_password.message}
                 </p>
               )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useTheme } from "next-themes";
 import { Bar, BarChart, XAxis, YAxis, CartesianGrid, Cell } from "recharts";
 import {
   ChartContainer,
@@ -12,18 +13,24 @@ import { QueryStatePanel } from "@/components/misc/query-state-panel";
 import { useFetchViewJobRow } from "@/hooks/jobs/useFetchJobTable";
 import { useFetchTechSummary } from "@/hooks/technicians/useFetchTechSummary";
 
-const PALETTE = [
-  "var(--chart-1)",
-  "var(--chart-2)",
-  "var(--chart-3)",
-  "var(--chart-4)",
-  "var(--chart-5)",
-  "var(--chart-6, oklch(0.6 0.2 280))",
-  "var(--chart-7, oklch(0.6 0.2 320))",
-  "var(--chart-8, oklch(0.6 0.2 60))",
+// Light mode colors (default) & Dark mode colors
+const PALETTE_LIGHT = ["#e8440a", "#1a7a4a", "#2563eb", "#7c3aed", "#0d9488"];
+const PALETTE_DARK = ["#ff6b3d", "#34d399", "#60a5fa", "#a78bfa", "#2dd4bf"];
+
+// Fallback additional colors for more than 5 entries
+const PALETTE_EXTENDED = [
+  "#f59e0b",
+  "#ec4899",
+  "#8b5cf6",
+  "#06b6d4",
+  "#10b981",
+  "#f97316",
+  "#6366f1",
+  "#14b8a6",
 ];
 
 export function TopJobsChart() {
+  const { theme } = useTheme();
   const {
     data: jobs = [],
     isLoading: isJobsLoading,
@@ -66,15 +73,13 @@ export function TopJobsChart() {
   );
   const categoryColorMap = useMemo(() => {
     const map = new Map<string, string>();
-    let i = 0;
-    for (const d of data) {
-      if (!map.has(d.category)) {
-        map.set(d.category, PALETTE[i % PALETTE.length]);
-        i++;
-      }
-    }
+    const basePalette = theme === "dark" ? PALETTE_DARK : PALETTE_LIGHT;
+    const allColors = [...basePalette, ...PALETTE_EXTENDED];
+    data.forEach((_, index) => {
+      map.set(`entry-${index}`, allColors[index % allColors.length]);
+    });
     return map;
-  }, [data]);
+  }, [data, theme]);
 
   const chartConfig = useMemo(
     () =>
@@ -144,7 +149,9 @@ export function TopJobsChart() {
               {data.map((entry, index) => (
                 <Cell
                   key={`cell-${index}`}
-                  fill={categoryColorMap.get(entry.category) ?? PALETTE[0]}
+                  fill={
+                    categoryColorMap.get(`entry-${index}`) ?? PALETTE_LIGHT[0]
+                  }
                 />
               ))}
             </Bar>

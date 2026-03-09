@@ -53,28 +53,27 @@ function formatDate(iso: string) {
 function getStatusColor(status: string | null): string {
   switch (status) {
     case "open":
-      return "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400";
+      return "bg-primary/10 text-primary";
     case "in_progress":
-      return "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400";
+      return "bg-secondary text-secondary-foreground";
     case "resolved":
-      return "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400";
+      return "bg-success/10 text-success";
     default:
-      return "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400";
+      return "bg-muted text-muted-foreground";
   }
 }
 
 function getPriorityColor(priority: string | null): string {
   switch (priority) {
     case "critical":
-      return "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400";
+      return "bg-destructive/10 text-destructive";
     case "high":
-      return "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400";
     case "medium":
-      return "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400";
+      return "bg-primary/10 text-primary";
     case "low":
-      return "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400";
+      return "bg-success/10 text-success";
     default:
-      return "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400";
+      return "bg-muted text-muted-foreground";
   }
 }
 
@@ -148,20 +147,20 @@ export function FeedbacksTable() {
 
   if (isLoading) {
     return (
-      <div className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="border-b border-zinc-200 px-6 py-4 dark:border-zinc-800">
-          <div className="h-5 w-24 animate-pulse rounded bg-zinc-200 dark:bg-zinc-700" />
-          <div className="mt-1.5 h-3 w-16 animate-pulse rounded bg-zinc-100 dark:bg-zinc-800" />
+      <div className="rounded-xl border border-border bg-card">
+        <div className="border-b border-border px-6 py-4">
+          <div className="h-5 w-24 animate-pulse rounded bg-muted" />
+          <div className="mt-1.5 h-3 w-16 animate-pulse rounded bg-muted/60" />
         </div>
-        <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+        <div className="divide-y divide-border">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="flex items-center gap-4 px-6 py-4">
-              <div className="h-8 w-8 animate-pulse rounded-md bg-zinc-200 dark:bg-zinc-700" />
+              <div className="h-8 w-8 animate-pulse rounded-md bg-muted" />
               <div className="flex-1 space-y-1.5">
-                <div className="h-4 w-48 animate-pulse rounded bg-zinc-200 dark:bg-zinc-700" />
+                <div className="h-4 w-48 animate-pulse rounded bg-muted" />
               </div>
-              <div className="h-5 w-16 animate-pulse rounded-full bg-zinc-200 dark:bg-zinc-700" />
-              <div className="h-5 w-12 animate-pulse rounded-full bg-zinc-100 dark:bg-zinc-800" />
+              <div className="h-5 w-16 animate-pulse rounded-full bg-muted" />
+              <div className="h-5 w-12 animate-pulse rounded-full bg-muted/60" />
             </div>
           ))}
         </div>
@@ -171,7 +170,7 @@ export function FeedbacksTable() {
 
   if (isError) {
     return (
-      <div className="rounded-xl border border-red-200 bg-red-50 p-8 text-center text-sm text-red-600 dark:border-red-900/50 dark:bg-red-900/10 dark:text-red-400">
+      <div className="rounded-xl border border-destructive/20 bg-destructive/10 p-8 text-center text-sm text-destructive">
         Failed to load feedbacks: {error.message}
       </div>
     );
@@ -179,14 +178,14 @@ export function FeedbacksTable() {
 
   return (
     <>
-      <div className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="rounded-xl border border-border bg-card">
         {/* Toolbar */}
-        <div className="flex flex-col gap-3 border-b border-zinc-200 p-4 dark:border-zinc-800 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
+        <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
           <div>
-            <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
+            <h3 className="text-base font-semibold text-foreground">
               Feedbacks
             </h3>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="text-xs text-muted-foreground">
               {filteredFeedbacks.length} of {feedbacks?.length ?? 0} total
             </p>
           </div>
@@ -201,7 +200,7 @@ export function FeedbacksTable() {
               <SlidersHorizontal className="h-3.5 w-3.5" />
               {showFilters ? "Hide Filters" : "Show Filters"}
               {!showFilters && activeFilterCount > 0 && (
-                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-zinc-800 text-[10px] font-semibold text-white dark:bg-zinc-200 dark:text-zinc-900">
+                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground">
                   {activeFilterCount}
                 </span>
               )}
@@ -212,7 +211,7 @@ export function FeedbacksTable() {
                 variant="ghost"
                 size="sm"
                 onClick={resetFilters}
-                className="h-8 gap-1.5 text-xs text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+                className="h-8 gap-1.5 text-xs text-muted-foreground hover:text-foreground"
               >
                 <X className="h-3.5 w-3.5" />
                 Clear filters
@@ -223,7 +222,7 @@ export function FeedbacksTable() {
 
         {/* Filters */}
         {showFilters && (
-          <div className="flex flex-wrap items-center gap-2 border-b border-zinc-200 p-4 dark:border-zinc-800">
+          <div className="flex flex-wrap items-center gap-2 border-b border-border p-4">
             <Input
               placeholder="Search title, description..."
               value={search}
@@ -283,16 +282,16 @@ export function FeedbacksTable() {
         <div className="overflow-x-auto min-h-96">
           <Table>
             <TableHeader>
-              <TableRow className="sticky top-0 border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 hover:bg-white dark:hover:bg-zinc-900">
-                <TableHead className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Title</TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Type</TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Status</TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Priority</TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Submitted</TableHead>
-                <TableHead className="text-center text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Actions</TableHead>
+              <TableRow className="sticky top-0 border-b border-border bg-card hover:bg-card">
+                <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Title</TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Type</TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Status</TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Priority</TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Submitted</TableHead>
+                <TableHead className="text-center text-xs font-semibold uppercase tracking-wide text-muted-foreground">Actions</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+            <TableBody className="divide-y divide-border">
               {filteredFeedbacks.length === 0 ? (
                 <TableRow>
                   <TableCell
@@ -300,8 +299,8 @@ export function FeedbacksTable() {
                     className="px-6 py-12 text-center"
                   >
                     <div className="flex flex-col items-center gap-2">
-                      <MessageSquare className="h-6 w-6 text-zinc-300 dark:text-zinc-600" />
-                      <span className="text-sm text-zinc-400 dark:text-zinc-500">
+                      <MessageSquare className="h-6 w-6 text-muted/60" />
+                      <span className="text-sm text-muted-foreground">
                         {activeFilterCount > 0
                           ? "No feedbacks match the current filters."
                           : "No feedbacks found."}
@@ -314,16 +313,16 @@ export function FeedbacksTable() {
                   <TableRow
                     key={feedback.id}
                     onClick={() => setSelectedFeedback(feedback)}
-                    className="cursor-pointer transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                    className="cursor-pointer transition-colors hover:bg-muted/50"
                   >
                     {/* Title */}
-                    <TableCell className="max-w-xs font-medium text-zinc-800 dark:text-zinc-200 truncate">
+                    <TableCell className="max-w-xs font-medium text-foreground truncate">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-zinc-100 dark:bg-zinc-800">
-                          <MessageSquare className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted">
+                          <MessageSquare className="h-4 w-4 text-muted-foreground" />
                         </div>
                         <span
-                          className="truncate font-medium text-zinc-900 dark:text-zinc-50"
+                          className="truncate font-medium text-foreground"
                           title={feedback.title}
                         >
                           {feedback.title}
@@ -332,7 +331,7 @@ export function FeedbacksTable() {
                     </TableCell>
 
                     {/* Type */}
-                    <TableCell className="whitespace-nowrap text-zinc-700 dark:text-zinc-300">
+                    <TableCell className="whitespace-nowrap text-foreground">
                       <span className="capitalize">
                         {feedback.type.replace(/_/g, " ")}
                       </span>
@@ -363,7 +362,7 @@ export function FeedbacksTable() {
                     </TableCell>
 
                     {/* Submitted */}
-                    <TableCell className="whitespace-nowrap text-zinc-500 dark:text-zinc-400">
+                    <TableCell className="whitespace-nowrap text-muted-foreground">
                       {formatDate(feedback.created_at)}
                     </TableCell>
 
@@ -377,7 +376,7 @@ export function FeedbacksTable() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7 p-0 text-zinc-400 hover:text-zinc-700 dark:text-zinc-500 dark:hover:text-zinc-200"
+                            className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
                             onClick={(e) => e.stopPropagation()}
                           >
                             <MoreHorizontal className="h-4 w-4" />
