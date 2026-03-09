@@ -82,8 +82,7 @@ type DynamicFilter = "all" | (string & {});
 const statusColors: Record<string, string> = {
   done: "bg-success/10 text-success",
   cancelled: "bg-destructive/10 text-destructive",
-  pending:
-    "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+  pending: "bg-primary/10 text-primary",
 };
 
 export function JobsTable() {
@@ -633,7 +632,7 @@ export function JobsTable() {
                         className={cn(
                           "cursor-pointer transition-colors hover:bg-muted/50",
                           isHighlighted &&
-                            "bg-amber-50 ring-1 ring-inset ring-amber-300 dark:bg-amber-950/30 dark:ring-amber-700",
+                            "bg-primary/10 ring-1 ring-inset ring-primary/20",
                           job.work_order_id &&
                             selectedIds.has(job.work_order_id) &&
                             "bg-accent",
@@ -707,7 +706,7 @@ export function JobsTable() {
                         </TableCell>
 
                         {/* Commission */}
-                        <TableCell className="tabular-nums text-amber-600 dark:text-amber-400">
+                        <TableCell className="tabular-nums text-chart-4">
                           {fmt(job.total_commission ?? 0)}
                         </TableCell>
                         {/* Company Net */}
