@@ -19,6 +19,7 @@ export type AuthState = {
   role: string | null;
   session: Session | null;
   company_id: string | null;
+  isAuthenticated: boolean | null;
   isLoading: boolean;
 };
 

@@ -2,18 +2,19 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { Eye, EyeOff, Loader2, Check } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useLogin } from "@/hooks/auth/useLogin";
 import type { LoginFormValues } from "@/types/auth";
+import { useAuth } from "@/components/auth-provider";
 
 export default function LoginPage() {
+  const { isAuthenticated } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
-  const searchParams = useSearchParams();
-  const justRegistered = searchParams.get("registered") === "true";
+  const router = useRouter();
 
   const loginMutation = useLogin();
 
@@ -129,12 +130,6 @@ export default function LoginPage() {
 
           {/* Form Card */}
           <div className="rounded-2xl border border-border bg-card p-8 shadow-sm transition-all hover:shadow-md">
-            {justRegistered && (
-              <div className="mb-6 rounded-lg border border-primary/20 bg-primary/10 px-4 py-3 text-sm text-primary">
-                Account created! Please log in.
-              </div>
-            )}
-
             {serverError && (
               <div className="mb-6 rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
                 {serverError}
@@ -242,17 +237,22 @@ export default function LoginPage() {
 
               {/* Submit */}
               <button
-                type="submit"
-                disabled={loginMutation.isPending}
+                type={isAuthenticated ? "button" : "submit"}
+                onClick={
+                  isAuthenticated ? () => router.push("/dashboard") : undefined
+                }
+                disabled={loginMutation.isPending && !isAuthenticated}
                 className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(var(--primary),0.3)] disabled:pointer-events-none disabled:opacity-50"
               >
-                {loginMutation.isPending ? (
+                {loginMutation.isPending && !isAuthenticated ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
                     Logging in...
                   </>
+                ) : isAuthenticated ? (
+                  "Dashboard"
                 ) : (
-                  "Log in to Dashboard"
+                  "Log in"
                 )}
               </button>
             </form>
