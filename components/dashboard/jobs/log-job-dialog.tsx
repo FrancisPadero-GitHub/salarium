@@ -333,7 +333,7 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
                 </div>
               </div>
 
-              {/* Category & Region */}
+              {/* Category & Region/State */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="job-category">
@@ -352,7 +352,7 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
 
                 <div className="space-y-2">
                   <Label htmlFor="job-region">
-                    Region{" "}
+                    Region/State{" "}
                     <span className="text-muted-foreground text-xs">
                       (optional)
                     </span>

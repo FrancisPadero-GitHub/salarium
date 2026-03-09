@@ -550,7 +550,7 @@ export function NewEstimateDialog({
                 </div>
               </div>
 
-              {/* Category & Region */}
+              {/* Category & Region/State */}
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="grid gap-2">
                   <Label htmlFor="category">Category</Label>
@@ -562,7 +562,7 @@ export function NewEstimateDialog({
                 </div>
 
                 <div className="grid gap-2">
-                  <Label htmlFor="region">Region</Label>
+                  <Label htmlFor="region">Region/State</Label>
                   <Input
                     id="region"
                     placeholder="e.g. North, Downtown"
