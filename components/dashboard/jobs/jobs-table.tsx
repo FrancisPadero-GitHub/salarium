@@ -206,41 +206,62 @@ export function JobsTable() {
   }
 
   // Helpers: update a filter and clear the row selection in the same batch
-  const updateSearch = useCallback((v: string) => {
-    setSearch(v);
-    setSelectedIds(new Set());
-    setCurrentPage(1);
-  }, [setCurrentPage]);
-  const updateStartDate = useCallback((v: string) => {
-    setStartDate(v);
-    setSelectedIds(new Set());
-    setCurrentPage(1);
-  }, [setCurrentPage]);
-  const updateEndDate = useCallback((v: string) => {
-    setEndDate(v);
-    setSelectedIds(new Set());
-    setCurrentPage(1);
-  }, [setCurrentPage]);
-  const updateStatusFilter = useCallback((v: StatusFilter) => {
-    setStatusFilter(v);
-    setSelectedIds(new Set());
-    setCurrentPage(1);
-  }, [setCurrentPage]);
-  const updatePaymentFilter = useCallback((v: DynamicFilter) => {
-    setPaymentFilter(v);
-    setSelectedIds(new Set());
-    setCurrentPage(1);
-  }, [setCurrentPage]);
-  const updateCategoryFilter = useCallback((v: DynamicFilter) => {
-    setCategoryFilter(v);
-    setSelectedIds(new Set());
-    setCurrentPage(1);
-  }, [setCurrentPage]);
-  const updateTechnicianFilter = useCallback((v: DynamicFilter) => {
-    setTechnicianFilter(v);
-    setSelectedIds(new Set());
-    setCurrentPage(1);
-  }, [setCurrentPage]);
+  const updateSearch = useCallback(
+    (v: string) => {
+      setSearch(v);
+      setSelectedIds(new Set());
+      setCurrentPage(1);
+    },
+    [setCurrentPage],
+  );
+  const updateStartDate = useCallback(
+    (v: string) => {
+      setStartDate(v);
+      setSelectedIds(new Set());
+      setCurrentPage(1);
+    },
+    [setCurrentPage],
+  );
+  const updateEndDate = useCallback(
+    (v: string) => {
+      setEndDate(v);
+      setSelectedIds(new Set());
+      setCurrentPage(1);
+    },
+    [setCurrentPage],
+  );
+  const updateStatusFilter = useCallback(
+    (v: StatusFilter) => {
+      setStatusFilter(v);
+      setSelectedIds(new Set());
+      setCurrentPage(1);
+    },
+    [setCurrentPage],
+  );
+  const updatePaymentFilter = useCallback(
+    (v: DynamicFilter) => {
+      setPaymentFilter(v);
+      setSelectedIds(new Set());
+      setCurrentPage(1);
+    },
+    [setCurrentPage],
+  );
+  const updateCategoryFilter = useCallback(
+    (v: DynamicFilter) => {
+      setCategoryFilter(v);
+      setSelectedIds(new Set());
+      setCurrentPage(1);
+    },
+    [setCurrentPage],
+  );
+  const updateTechnicianFilter = useCallback(
+    (v: DynamicFilter) => {
+      setTechnicianFilter(v);
+      setSelectedIds(new Set());
+      setCurrentPage(1);
+    },
+    [setCurrentPage],
+  );
 
   const toggleRow = useCallback((id: string) => {
     setSelectedIds((prev) => {
