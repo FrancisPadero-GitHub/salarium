@@ -200,7 +200,7 @@ export default function DashboardLayout({
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       ) : !isAdmin && isRestrictedRoute ? null : (
-        <div className="flex h-screen overflow-hidden bg-background">
+        <div className="fixed inset-0 flex overflow-hidden bg-background">
           {/* Desktop Sidebar */}
           <aside className="hidden w-60 flex-col border-r border-border bg-card lg:flex">
             <SidebarContent
@@ -261,7 +261,9 @@ export default function DashboardLayout({
               <ModeToggle />
             </header>
 
-            <main className="flex-1 overflow-y-auto p-6">{children}</main>
+            <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-background p-6">
+              {children}
+            </main>
           </div>
 
           {/* Floating toggle button, mobile only */}
