@@ -1,9 +1,6 @@
 import { create } from "zustand";
 import type { Database } from "@/database.types";
 
-type WorkOrderInsert = Database["public"]["Tables"]["work_orders"]["Insert"];
-type JobInsert = Database["public"]["Tables"]["jobs"]["Insert"];
-
 type FormMode = "add" | "edit";
 
 export interface JobFormValues {
@@ -42,29 +39,17 @@ interface JobStore {
   ) => void;
 
   openAdd: () => void;
-  openAddWithPrefill: (data: Partial<JobFormValues>) => void;
   openEdit: (data: JobFormValues & { work_order_id: string }) => void;
   closeDialog: () => void;
   resetForm: () => void;
 
   setIsSubmitting: (value: boolean) => void;
-
-  /** Builds the `AddJobPayload` from the current form state */
-  buildPayload: () => {
-    workOrder: WorkOrderInsert;
-    job: Omit<JobInsert, "work_order_id">;
-  };
 }
-
-const getLocalISOTime = () => {
-  const d = new Date();
-  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-};
 
 export const defaultJobForm: JobFormValues = {
   work_order_id: undefined,
   work_title: "",
-  work_order_date: getLocalISOTime(),
+  work_order_date: "",
   technician_id: "",
   address: "",
   category: "",
@@ -81,7 +66,7 @@ export const defaultJobForm: JobFormValues = {
   tip_amount: 0,
 };
 
-export const useJobStore = create<JobStore>((set, get) => ({
+export const useJobStore = create<JobStore>((set) => ({
   form: defaultJobForm,
   mode: "add",
   isDialogOpen: false,
@@ -100,32 +85,9 @@ export const useJobStore = create<JobStore>((set, get) => ({
       isSubmitting: false,
     }),
 
-  openAddWithPrefill: (data) => {
-    let localDate = data.work_order_date;
-    if (localDate) {
-      const d = new Date(localDate);
-      if (!isNaN(d.getTime())) {
-        localDate = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-      }
-    }
-    set({
-      form: { ...defaultJobForm, ...data, ...(localDate ? { work_order_date: localDate } : {}), work_order_id: undefined },
-      mode: "add",
-      isDialogOpen: true,
-      isSubmitting: false,
-    });
-  },
-
   openEdit: (data) => {
-    let localDate = data.work_order_date;
-    if (localDate) {
-      const d = new Date(localDate);
-      if (!isNaN(d.getTime())) {
-        localDate = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-      }
-    }
     set({
-      form: { ...defaultJobForm, ...data, work_order_date: localDate },
+      form: { ...defaultJobForm, ...data },
       mode: "edit",
       isDialogOpen: true,
       isSubmitting: false,
@@ -145,28 +107,4 @@ export const useJobStore = create<JobStore>((set, get) => ({
     }),
 
   setIsSubmitting: (value) => set({ isSubmitting: value }),
-
-  buildPayload: () => {
-    const f = get().form;
-    const workOrder: WorkOrderInsert = {
-      work_title: f.work_title,
-      work_order_date: new Date(f.work_order_date).toISOString(),
-      technician_id: f.technician_id,
-      address: f.address || null,
-      category: f.category || null,
-      description: f.description || null,
-      notes: f.notes || null,
-      region: f.region || null,
-      contact_no: f.contact_no || null,
-      contact_email: f.contact_email || null,
-    };
-    const job: Omit<JobInsert, "work_order_id"> = {
-      subtotal: f.subtotal,
-      parts_total_cost: f.parts_total_cost,
-      payment_method_id: f.payment_method_id || null,
-      status: f.status,
-      tip_amount: f.tip_amount,
-    };
-    return { workOrder, job };
-  },
 }));

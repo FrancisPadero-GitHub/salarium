@@ -147,7 +147,7 @@ export function JobViewDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[90vh] w-full sm:max-w-4xl flex-col overflow-hidden">
+      <DialogContent className="flex max-h-[90vh] w-full sm:max-w-4xl flex-col">
         <DialogHeader>
           <div className="flex items-start justify-between gap-3 pr-6">
             <div className="min-w-0">
@@ -177,7 +177,7 @@ export function JobViewDialog({
             </span>
           </div>
         </DialogHeader>
-        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto pr-2">
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto pr-2 no-scrollbar">
           {/* Financial summary cards */}
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             <StatCard
