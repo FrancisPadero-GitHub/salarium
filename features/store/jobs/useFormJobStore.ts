@@ -32,12 +32,6 @@ interface JobStore {
   mode: FormMode;
   isDialogOpen: boolean;
   isSubmitting: boolean;
-
-  setFormField: <K extends keyof JobFormValues>(
-    field: K,
-    value: JobFormValues[K],
-  ) => void;
-
   openAdd: () => void;
   openEdit: (data: JobFormValues & { work_order_id: string }) => void;
   closeDialog: () => void;
@@ -46,10 +40,17 @@ interface JobStore {
   setIsSubmitting: (value: boolean) => void;
 }
 
+const getLocalISOTime = () => {
+  const d = new Date();
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+    .toISOString()
+    .slice(0, 16);
+};
+
 export const defaultJobForm: JobFormValues = {
   work_order_id: undefined,
   work_title: "",
-  work_order_date: "",
+  work_order_date: getLocalISOTime(),
   technician_id: "",
   address: "",
   category: "",
@@ -67,27 +68,31 @@ export const defaultJobForm: JobFormValues = {
 };
 
 export const useJobStore = create<JobStore>((set) => ({
-  form: defaultJobForm,
+  form: { ...defaultJobForm },
   mode: "add",
   isDialogOpen: false,
   isSubmitting: false,
 
-  setFormField: (field, value) =>
-    set((state) => ({
-      form: { ...state.form, [field]: value },
-    })),
-
   openAdd: () =>
     set({
-      form: defaultJobForm,
+      form: { ...defaultJobForm, work_order_date: getLocalISOTime() },
       mode: "add",
       isDialogOpen: true,
       isSubmitting: false,
     }),
 
   openEdit: (data) => {
+    let localDate = data.work_order_date;
+    if (localDate) {
+      const d = new Date(localDate);
+      if (!isNaN(d.getTime())) {
+        localDate = new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+          .toISOString()
+          .slice(0, 16);
+      }
+    }
     set({
-      form: { ...defaultJobForm, ...data },
+      form: { ...defaultJobForm, ...data, work_order_date: localDate },
       mode: "edit",
       isDialogOpen: true,
       isSubmitting: false,
@@ -101,7 +106,7 @@ export const useJobStore = create<JobStore>((set) => ({
 
   resetForm: () =>
     set({
-      form: defaultJobForm,
+      form: { ...defaultJobForm },
       mode: "add",
       isSubmitting: false,
     }),

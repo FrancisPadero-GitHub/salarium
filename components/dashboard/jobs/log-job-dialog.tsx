@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { Briefcase } from "lucide-react";
 import {
@@ -117,42 +117,49 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
   });
 
   const technicianId = useWatch({ control, name: "technician_id" });
+  const categoryValue = useWatch({ control, name: "category" });
   const paymentMethodId = useWatch({ control, name: "payment_method_id" });
   const status = useWatch({ control, name: "status" });
 
   // Sync form when dialog opens; resolve payment_method_id from name when editing
-  // useEffect(() => {
-  //   if (!isDialogOpen) return;
+  useEffect(() => {
+    if (!isDialogOpen) return;
 
-  //   let resolvedPaymentMethodId = form.payment_method_id || "";
+    let resolvedPaymentMethodId = form.payment_method_id || "";
 
-  //   // In edit mode v_jobs only supplies the payment method name, not the id.
-  //   // Resolve it once payment methods are loaded.
-  //   if (isEdit && !resolvedPaymentMethodId && form.payment_method) {
-  //     const match = paymentMethods.find(
-  //       (pm) =>
-  //         pm.name.toLowerCase() === (form.payment_method || "").toLowerCase(),
-  //     );
-  //     if (match) resolvedPaymentMethodId = match.id;
-  //   }
+    // In edit mode v_jobs only supplies the payment method name, not the id.
+    // Resolve it once payment methods are loaded.
+    if (isEdit && !resolvedPaymentMethodId && form.payment_method) {
+      const match = paymentMethods.find(
+        (pm) =>
+          pm.name.toLowerCase() === (form.payment_method || "").toLowerCase(),
+      );
+      if (match) resolvedPaymentMethodId = match.id;
+    }
 
-  //   reset({ ...form, payment_method_id: resolvedPaymentMethodId });
-  // }, [
-  //   isDialogOpen,
-  //   paymentMethods.length,
-  //   form,
-  //   reset,
-  //   isEdit,
-  //   paymentMethods,
-  // ]);
+    reset({ ...form, payment_method_id: resolvedPaymentMethodId });
+  }, [
+    isDialogOpen,
+    paymentMethods.length,
+    form,
+    reset,
+    isEdit,
+    paymentMethods,
+  ]);
 
   // Form Controls
   const onSubmit = (data: JobFormValues) => {
     setIsSubmitting(true);
 
+    // `work_order_date` comes from local UI controls without timezone info.
+    // Convert to explicit UTC ISO before persisting to `timestamptz`.
+    const normalizedWorkOrderDate = data.work_order_date
+      ? new Date(data.work_order_date).toISOString()
+      : new Date().toISOString();
+
     const workOrder = {
       work_title: data.work_title,
-      work_order_date: new Date(data.work_order_date).toISOString(),
+      work_order_date: normalizedWorkOrderDate,
       technician_id: data.technician_id,
       address: data.address || null,
       category: data.category || null,
@@ -224,7 +231,7 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
   const displayDate = workOrderDateValue
     ? new Date(workOrderDateValue)
     : undefined;
-  const isDateValid = displayDate && !isNaN(displayDate.getTime() + 6000); // add 6 seconds to account for timezone issues where time may be parsed as the previous day
+  const isDateValid = displayDate && !isNaN(displayDate.getTime());
   const finalDisplayDate = isDateValid ? displayDate : new Date();
 
   const displayTime = isDateValid
@@ -318,13 +325,6 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
           // Prevent auto-focus on close to avoid scroll jump
           event.preventDefault();
         }}
-        // onPointerDownOutside={(e) => {
-        //   // Prevent scroll jump when clicking outside
-        //   e.preventDefault();
-        //   if (!isSubmitting && !isPending) {
-        //     closeDialog();
-        //   }
-        // }}
       >
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit Job" : "Log New Job"}</DialogTitle>
@@ -387,9 +387,12 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
                           <FieldLabel>Category</FieldLabel>
                           <Select
                             disabled={isPending}
-                            {...register("category", {
-                              required: "Category is required",
-                            })}
+                            value={categoryValue}
+                            onValueChange={(v) =>
+                              setValue("category", v, {
+                                shouldDirty: true,
+                              })
+                            }
                           >
                             <SelectTrigger className="w-full">
                               <SelectValue placeholder="Select a category" />
@@ -408,7 +411,7 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
                               ))}
                             </SelectContent>
                           </Select>
-
+                          <input type="hidden" {...register("category")} />
                           <FieldError>
                             {" "}
                             {errors.category && (
@@ -470,6 +473,12 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
                               onChange={handleTimeChange}
                               disabled={isPending}
                               className="appearance-none bg-background [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none w-full"
+                            />
+                            <input
+                              type="hidden"
+                              {...register("work_order_date", {
+                                required: "Date and time are required",
+                              })}
                             />
                           </Field>
                         </div>
@@ -793,15 +802,15 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
                           </Select>
                           <input
                             type="hidden"
-                            {...register("payment_method", {
+                            {...register("payment_method_id", {
                               required: "Payment method is required",
                             })}
                           />
 
                           <FieldError>
-                            {errors.payment_method && (
+                            {errors.payment_method_id && (
                               <p className="text-xs text-red-500">
-                                {errors.payment_method.message}
+                                {errors.payment_method_id.message}
                               </p>
                             )}
                           </FieldError>
