@@ -400,6 +400,12 @@ export function JobsTable() {
     setCurrentPage(1);
   }
 
+  // When a column header is clicked: clear any active filters first, then sort.
+  const handleHeaderClick = (key: SortKey) => {
+    if (activeFilterCount > 0) clearFilters();
+    handleSort(key);
+  };
+
   function SortIcon({ col }: { col: SortKey }) {
     if (sortKey !== col)
       return (
@@ -626,7 +632,7 @@ export function JobsTable() {
                   ).map(({ key, label }) => (
                     <TableHead
                       key={key}
-                      onClick={() => handleSort(key)}
+                      onClick={() => handleHeaderClick(key)}
                       className="sticky top-0 z-20 bg-card cursor-pointer select-none text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground"
                     >
                       {label}
@@ -938,8 +944,8 @@ export function JobsTable() {
             region: viewJob.region ?? "",
             contact_no: viewJob.contact_no ?? "",
             contact_email: viewJob.contact_email ?? "",
-            payment_method_id: "",
-            payment_method: viewJob.payment_method,
+            payment_method_id: "", // POTENTIAL BUG FIX THIS
+            payment_method: viewJob.payment_method, // POTENTIAL BUG FIX THIS
             parts_total_cost: viewJob.parts_total_cost ?? 0,
             subtotal: viewJob.subtotal ?? 0,
             tip_amount: viewJob.tip_amount ?? 0,
