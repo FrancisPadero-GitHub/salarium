@@ -44,6 +44,7 @@ const dbPromoteEstimateToJob = async (
   const { data: jobResult, error: jobError } = await supabase
     .from("jobs")
     .upsert(
+      // I don't know this is upsert, maybe a guard rail if the job already exists
       [
         {
           ...payload.job,
@@ -61,11 +62,12 @@ const dbPromoteEstimateToJob = async (
     throw new Error(jobError.message || "Failed to promote estimate to job");
   }
 
+  // update promoted at now specifically
   const estimateUpdate = {
     ...payload.estimateUpdates,
     promoted_at: now,
   };
-
+  // updates estimate
   const { data: estimateResult, error: estimateError } = await supabase
     .from("estimates")
     .update(estimateUpdate)
@@ -74,6 +76,7 @@ const dbPromoteEstimateToJob = async (
     .select()
     .single();
 
+  // if estimate update fails, delete the job
   if (estimateError) {
     await supabase
       .from("jobs")

@@ -80,7 +80,11 @@ const form: EstimateFormTypes = {
   address: "",
   contact_no: "",
   contact_email: "",
-  work_order_date: new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16),
+  work_order_date: new Date(
+    new Date().getTime() - new Date().getTimezoneOffset() * 60000,
+  )
+    .toISOString()
+    .slice(0, 16),
   notes: "",
   // estimate fields default values
   estimated_amount: 0,
@@ -93,7 +97,9 @@ const mapEstimateToForm = (estimate: EstimateWithNotes): EstimateFormTypes => {
   if (localDate) {
     const d = new Date(localDate);
     if (!isNaN(d.getTime())) {
-      localDate = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+      localDate = new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+        .toISOString()
+        .slice(0, 16);
     }
   }
 
@@ -204,6 +210,7 @@ export function NewEstimateDialog({
     onOpenChange(false);
   };
 
+  // Regular on submit
   const onSubmit = (data: EstimateFormTypes) => {
     const isEditMode = mode === "edit";
     const workOrderId = data.work_order_id || selectedEstimate?.work_order_id;
@@ -282,6 +289,7 @@ export function NewEstimateDialog({
     );
   };
 
+  // Promotion to job
   const handleSubmitPromotion = (jobValues: PromoteEstimateFormValues) => {
     if (!pendingPromotion) return;
 
@@ -312,6 +320,7 @@ export function NewEstimateDialog({
       tip_amount: Number(jobValues.tip_amount) || 0,
       payment_method_id: jobValues.payment_method_id || null,
       status: jobValues.status,
+      name: estimateFormData.handled_by, // grab the handled by and carry it into the jobs table also
     };
 
     if (workOrderId) {
@@ -410,7 +419,8 @@ export function NewEstimateDialog({
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="grid gap-2">
                   <Label htmlFor="work_order_date">
-                    Work Order Date & Time <span className="text-destructive">*</span>
+                    Work Order Date & Time{" "}
+                    <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="work_order_date"
