@@ -59,7 +59,8 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 
-// helpers
+// components
+import { LogJobDialog } from "@/components/dashboard/jobs/log-job-dialog";
 
 const shortId = (value: string | null) => {
   if (!value) return "";
@@ -180,7 +181,7 @@ export function JobsTable() {
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [showFilters, setShowFilters] = useState(true);
+  const [showFilters, setShowFilters] = useState(false); // defaults to hidden, can be toggled with the "Show Filters" button
   const { currentPage, setCurrentPage } = useJobTableStore();
 
   const activeFilterCount = [
@@ -430,6 +431,8 @@ export function JobsTable() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <LogJobDialog />
+
           <Button
             variant="outline"
             size="sm"
@@ -688,6 +691,7 @@ export function JobsTable() {
                       tip_amount: job.tip_amount ?? 0,
                       notes: job.notes ?? "",
                       status: job.status ?? "pending",
+                      name: job.name ?? "",
                     };
 
                     return (
@@ -951,6 +955,7 @@ export function JobsTable() {
             tip_amount: viewJob.tip_amount ?? 0,
             notes: viewJob.notes ?? "",
             status: viewJob.status ?? "pending",
+            name: viewJob.name ?? "",
           });
         }}
         onDelete={() => {

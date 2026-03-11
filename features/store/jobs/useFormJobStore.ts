@@ -24,6 +24,7 @@ export interface JobFormValues {
   /** Name of the payment method – supplied by the view row; used to resolve id on edit */
   payment_method?: string | null;
   status: Database["public"]["Enums"]["job_status_enum"];
+  name: string;
   tip_amount: number;
 }
 
@@ -64,6 +65,7 @@ export const defaultJobForm: JobFormValues = {
   payment_method_id: "",
   payment_method: null,
   status: "pending",
+  name: "",
   tip_amount: 0,
 };
 

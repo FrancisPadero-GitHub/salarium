@@ -19,6 +19,7 @@ import {
   FileText,
   // DollarSign,
   // Wrench,
+  BadgeCheck,
   Star,
   StickyNote,
   Pencil,
@@ -294,6 +295,11 @@ export function JobViewDialog({
               {/* Last Updated */}
               <InfoRow icon={Clock3} label="Last Updated">
                 {fmtDateTime(job.updated_at)}
+              </InfoRow>
+
+              {/* Last Updated */}
+              <InfoRow icon={BadgeCheck} label="Handled by">
+                {job.name ?? "-"}
               </InfoRow>
             </div>
           </div>

@@ -132,7 +132,8 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
     if (isEdit && !resolvedPaymentMethodId && form.payment_method) {
       const match = paymentMethods.find(
         (pm) =>
-          pm.name.toLowerCase() === (form.payment_method || "").toLowerCase(),
+          (pm.name || "").toLowerCase() ===
+          (form.payment_method || "").toLowerCase(),
       );
       if (match) resolvedPaymentMethodId = match.id;
     }
@@ -180,6 +181,7 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
       parts_total_cost: Number(data.parts_total_cost) || 0,
       payment_method_id: data.payment_method_id || null,
       status: data.status,
+      name: data.name,
       tip_amount: Number(data.tip_amount) || 0,
       promoted_at: promotedAt,
     };
@@ -384,7 +386,12 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
                         </Field>
                         {/* Category */}
                         <Field data-invalid={!!errors.category}>
-                          <FieldLabel>Category</FieldLabel>
+                          <FieldLabel>
+                            Category
+                            <span className="text-muted-foreground text-xs">
+                              (optional)
+                            </span>
+                          </FieldLabel>
                           <Select
                             disabled={isPending}
                             value={categoryValue}
@@ -845,6 +852,31 @@ export function LogJobDialog({ showTrigger = true }: LogJobDialogProps) {
                               ))}
                             </SelectContent>
                           </Select>
+                        </Field>
+
+                        {/* Name / Handled by */}
+                        <Field data-invalid={!!errors.name}>
+                          <FieldLabel htmlFor="job-name">
+                            Name / Handled By
+                            <span className="text-red-500">*</span>
+                          </FieldLabel>
+                          <Input
+                            id="job-name"
+                            placeholder="e.g. John Doe"
+                            aria-invalid={!!errors.name}
+                            disabled={isPending}
+                            {...register("name", {
+                              required: "Name required",
+                            })}
+                          />
+                          <FieldError>
+                            {" "}
+                            {errors.name && (
+                              <p className="text-xs text-red-500">
+                                {errors.name.message}
+                              </p>
+                            )}
+                          </FieldError>
                         </Field>
                       </div>
                     </FieldGroup>
