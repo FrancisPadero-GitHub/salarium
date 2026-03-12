@@ -24,22 +24,7 @@ import {
   User,
 } from "lucide-react";
 
-const fmt = (n: number) =>
-  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
-    n,
-  );
-
-const formatDateWithTime = (dateStr: string | null) => {
-  if (!dateStr) return "-";
-  return new Date(dateStr).toLocaleString("en-US", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
-};
+import { fmt, shortId, formatDateWithTime } from "@/lib/helper";
 
 interface ReviewViewDialogProps {
   record: ReviewRecordRow | null;
@@ -67,9 +52,7 @@ function InfoRow({
         <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
           {label}
         </p>
-        <div className="mt-0.5 text-sm text-foreground">
-          {children}
-        </div>
+        <div className="mt-0.5 text-sm text-foreground">{children}</div>
       </div>
     </div>
   );
@@ -171,17 +154,18 @@ export function ReviewViewDialog({
                 <InfoRow icon={ExternalLink} label="Linked Job">
                   <Link
                     href={`/dashboard/jobs?highlight=${record.work_order_id}`}
+                    title="This only works if the row is visible on the paginated data"
                     className="font-mono text-xs text-primary underline-offset-2 hover:underline"
                     onClick={() => onOpenChange(false)}
                   >
-                    {record.work_order_id}
+                    {shortId(record.work_order_id)}
                   </Link>
                 </InfoRow>
               )}
 
               {record.technician_id && (
                 <InfoRow icon={User} label="Technician">
-                  {record.technician_id}
+                  {record.technician_name}
                 </InfoRow>
               )}
             </div>

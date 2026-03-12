@@ -62,21 +62,10 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 
+import { shortId, fmt } from "@/lib/helper";
+
 // components
 import { LogJobDialog } from "@/components/dashboard/jobs/log-job-dialog";
-
-const shortId = (value: string | null) => {
-  if (!value) return "";
-  return value.slice(0, 8);
-};
-
-const fmt = (n: number) => {
-  if (n === 0) return "0";
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(n);
-};
 
 type SortKey =
   | "created_at"

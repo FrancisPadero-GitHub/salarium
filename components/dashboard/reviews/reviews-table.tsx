@@ -57,20 +57,8 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 
-const fmt = (n: number) =>
-  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
-    n,
-  );
-
-const formatDate = (dateStr: string | null) => {
-  if (!dateStr) return "-";
-  const date = new Date(dateStr);
-  return date.toLocaleDateString("en-PH", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-};
+// helper
+import { fmt, formatDate, shortId } from "@/lib/helper";
 
 type SortKey =
   | "created_at"
@@ -504,6 +492,9 @@ export function ReviewsTable({ onEdit, highlightReviewId }: ReviewsTableProps) {
                   Job Name
                 </TableHead>
                 <TableHead className="select-none text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Technician
+                </TableHead>
+                <TableHead className="select-none text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Review Type
                 </TableHead>
                 <TableHead className="select-none text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -580,19 +571,24 @@ export function ReviewsTable({ onEdit, highlightReviewId }: ReviewsTableProps) {
                       {record.work_order_id ? (
                         <Link
                           href={`/dashboard/jobs?highlight=${record.work_order_id}`}
+                          title="This only works if the row is visible on the paginated data"
                           className="text-primary underline-offset-2 hover:underline"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          {record.work_order_id}
+                          {shortId(record.work_order_id)}
                         </Link>
                       ) : (
                         "-"
                       )}
                     </TableCell>
-
                     {/* Job Name */}
                     <TableCell className="whitespace-nowrap font-medium text-foreground">
                       {record.work_title || "-"}
+                    </TableCell>
+
+                    {/* Job Name */}
+                    <TableCell className="whitespace-nowrap font-medium text-foreground">
+                      {record.technician_name || "-"}
                     </TableCell>
 
                     {/* Review Type */}
