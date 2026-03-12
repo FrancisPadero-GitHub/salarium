@@ -158,6 +158,28 @@ export function TechnicianCardsGrid() {
                     {fmt(tech.total_commission_earned ?? 0)}
                   </p>
                 </div>
+                <div>
+                  <p className="text-xs text-muted-foreground/70">Reviews</p>
+                  <p className="mt-0.5 text-sm font-semibold tabular-nums text-muted-foreground">
+                    {fmt(tech.total_review_amount ?? 0)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground/70">
+                    Fully Paid Jobs
+                  </p>
+                  <p className="mt-0.5 text-sm font-semibold tabular-nums text-foreground/80">
+                    {tech.total_fully_paid_jobs ?? 0}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground/70">
+                    Partially Paid Jobs
+                  </p>
+                  <p className="mt-0.5 text-sm font-semibold tabular-nums text-foreground/80">
+                    {tech.total_partial_paid_jobs ?? 0}
+                  </p>
+                </div>
               </div>
 
               {/* Footer */}

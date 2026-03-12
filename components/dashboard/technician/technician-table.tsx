@@ -52,6 +52,9 @@ type MergedTechRow = {
   total_commission_earned: number | null;
   total_parts: number | null;
   total_tips: number | null;
+  total_review_amount: number | null;
+  total_partial_paid_jobs: number | null;
+  total_fully_paid_jobs: number | null;
 };
 
 type SortKey = keyof Pick<
@@ -98,6 +101,9 @@ export function TechnicianTable() {
           gross_revenue: summaryRow?.gross_revenue ?? null,
           total_company_net: summaryRow?.total_company_net ?? null,
           total_commission_earned: summaryRow?.total_commission_earned ?? null,
+          total_review_amount: summaryRow?.total_review_amount ?? null,
+          total_partial_paid_jobs: summaryRow?.total_partial_paid_jobs ?? null,
+          total_fully_paid_jobs: summaryRow?.total_fully_paid_jobs ?? null,
           total_parts: summaryRow?.total_parts ?? null,
           total_tips: summaryRow?.total_tips ?? null,
         };
@@ -224,7 +230,9 @@ export function TechnicianTable() {
 
   function SortIcon({ col }: { col: SortKey }) {
     if (sortKey !== col)
-      return <ChevronsUpDown className="ml-1 inline h-3 w-3 text-muted-foreground/50" />;
+      return (
+        <ChevronsUpDown className="ml-1 inline h-3 w-3 text-muted-foreground/50" />
+      );
     return sortDir === "asc" ? (
       <ChevronUp className="ml-1 inline h-3 w-3 text-foreground" />
     ) : (

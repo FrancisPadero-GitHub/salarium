@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { CalendarDays, Mail, Pencil, Percent, Trash2 } from "lucide-react";
+import { shortId } from "@/lib/helper";
 
 type TechnicianDetail = {
   technician_id: string | null;
@@ -25,6 +26,10 @@ type TechnicianDetail = {
   total_commission_earned: number | null;
   total_parts: number | null;
   total_tips: number | null;
+  // added
+  total_review_amount: number | null;
+  total_partial_paid_jobs: number | null;
+  total_fully_paid_jobs: number | null;
 };
 
 type TechnicianDetailDialogProps = {
@@ -55,13 +60,20 @@ export function TechnicianDetailDialog({
                     .map((n) => n[0])
                     .join("")}
                 </div>
-                <div className="min-w-0">
+                {/* This is the container that needs to grow */}
+                <div className="flex-1 min-w-0 space-y-1">
                   <DialogTitle className="truncate text-lg font-semibold text-foreground">
                     {selectedTech.name || "Unknown"}
                   </DialogTitle>
-                  <p className="mt-0.5 text-sm text-muted-foreground">
-                    {selectedTech.email || "No email"}
-                  </p>
+
+                  <div className="flex w-full justify-between">
+                    <span className="mt-0.5 text-sm text-muted-foreground">
+                      {selectedTech.email || "No email"}
+                    </span>
+                    <span className="mt-0.5 text-sm text-muted-foreground/70">
+                      {shortId(selectedTech.technician_id) || "No ID"}
+                    </span>
+                  </div>
                 </div>
               </div>
             </DialogHeader>
@@ -69,6 +81,21 @@ export function TechnicianDetailDialog({
             <div className="min-h-0 flex-1 space-y-4 overflow-y-auto pr-2">
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {[
+                  {
+                    label: "Completed Jobs",
+                    value: String(selectedTech.total_jobs ?? 0),
+                    className: "text-foreground",
+                  },
+                  {
+                    label: "Fully Paid Jobs",
+                    value: String(selectedTech.total_fully_paid_jobs ?? 0),
+                    className: "text-foreground",
+                  },
+                  {
+                    label: "Partially Paid Jobs",
+                    value: String(selectedTech.total_partial_paid_jobs ?? 0),
+                    className: "text-foreground",
+                  },
                   {
                     label: "Total Gross",
                     value: formatCurrency(selectedTech.gross_revenue ?? 0),
@@ -86,11 +113,7 @@ export function TechnicianDetailDialog({
                     ),
                     className: "text-success",
                   },
-                  {
-                    label: "Jobs",
-                    value: String(selectedTech.total_jobs ?? 0),
-                    className: "text-foreground",
-                  },
+
                   {
                     label: "Parts",
                     value: formatCurrency(selectedTech.total_parts ?? 0),
@@ -99,6 +122,13 @@ export function TechnicianDetailDialog({
                   {
                     label: "Tips",
                     value: formatCurrency(selectedTech.total_tips ?? 0),
+                    className: "text-muted-foreground",
+                  },
+                  {
+                    label: "Reviews",
+                    value: formatCurrency(
+                      selectedTech.total_review_amount ?? 0,
+                    ),
                     className: "text-muted-foreground",
                   },
                 ].map(({ label, value, className }) => (
