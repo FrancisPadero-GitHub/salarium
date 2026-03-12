@@ -3,7 +3,14 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { Eye, EyeOff, Loader2, Check } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  Check,
+  Loader2,
+  ArrowRight,
+  LayoutDashboard,
+} from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import {
@@ -150,7 +157,7 @@ export default function LoginPage() {
               className="space-y-5"
             >
               {/* Email */}
-              <Field>
+              <Field data-invalid={!!errors.email}>
                 <FieldLabel htmlFor="email">Email address</FieldLabel>
                 <FieldContent>
                   <Input
@@ -158,7 +165,7 @@ export default function LoginPage() {
                     type="email"
                     autoComplete="email"
                     placeholder="you@example.com"
-                    aria-invalid={true}
+                    aria-invalid={!!errors.email}
                     aria-describedby="email-error"
                     className={cn(
                       "w-full rounded-xl border bg-background px-4 py-3 text-sm text-foreground placeholder-muted-foreground outline-none transition-all",
@@ -180,7 +187,7 @@ export default function LoginPage() {
               </Field>
 
               {/* Password */}
-              <Field>
+              <Field data-invalid={!!errors.password}>
                 <div className="flex items-center justify-between">
                   <FieldLabel htmlFor="password">Password</FieldLabel>
                   <Link
@@ -195,6 +202,7 @@ export default function LoginPage() {
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
+                      aria-invalid={!!errors.password}
                       autoComplete="current-password"
                       placeholder="••••••••"
                       className={cn(
@@ -231,22 +239,33 @@ export default function LoginPage() {
                 <FieldError errors={[errors.password]} />
               </Field>
 
-              {/* Submit */}
+              {/* Submit / Dashboard Button */}
               <button
                 type={isAuthenticated ? "button" : "submit"}
                 onClick={
                   isAuthenticated ? () => router.push("/dashboard") : undefined
                 }
                 disabled={isPending && !isAuthenticated}
-                className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(var(--primary),0.3)] disabled:pointer-events-none disabled:opacity-50"
+                className={cn(
+                  "mt-2 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3.5 text-sm font-semibold transition-all shadow-sm",
+                  // Standard Login Style
+                  "bg-primary text-primary-foreground hover:-translate-y-0.5 disabled:pointer-events-none disabled:opacity-50",
+                  // Obvious Authenticated Style (Success state)
+                  isAuthenticated &&
+                    "bg-emerald-600 hover:bg-emerald-700 text-white ring-4 ring-emerald-500/20 animate-in fade-in zoom-in duration-300",
+                )}
               >
                 {isPending && !isAuthenticated ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    Logging in...
+                    <span>Logging in...</span>
                   </>
                 ) : isAuthenticated ? (
-                  "Dashboard"
+                  <>
+                    <LayoutDashboard className="h-4 w-4" />
+                    <span>Go to Dashboard</span>
+                    <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </>
                 ) : (
                   "Log in"
                 )}
