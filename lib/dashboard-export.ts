@@ -117,6 +117,7 @@ export interface DashboardExportReport {
   reviewTotals: ReviewTotals;
   reviewTypeRows: ReviewBreakdownRow[];
   paymentMethodRows: ReviewBreakdownRow[];
+  reviewTechnicianRows: ReviewBreakdownRow[];
   reviewMonthlyRows: ReviewMonthlyRow[];
 }
 
@@ -272,6 +273,14 @@ export function buildDashboardExportReport({
     }
   >();
   const paymentMethodAgg = new Map<
+    string,
+    {
+      label: string;
+      reviews: number;
+      totalAmount: number;
+    }
+  >();
+  const reviewTechnicianAgg = new Map<
     string,
     {
       label: string;
@@ -464,6 +473,15 @@ export function buildDashboardExportReport({
     existingMethod.totalAmount += reviewAmount;
     paymentMethodAgg.set(method, existingMethod);
 
+    const existingTechnicianReview = reviewTechnicianAgg.get(techName) ?? {
+      label: techName,
+      reviews: 0,
+      totalAmount: 0,
+    };
+    existingTechnicianReview.reviews += 1;
+    existingTechnicianReview.totalAmount += reviewAmount;
+    reviewTechnicianAgg.set(techName, existingTechnicianReview);
+
     const reviewDate = safeDate(job.review_date ?? job.work_order_date);
     if (reviewDate) {
       const key = `${reviewDate.getFullYear()}-${String(
@@ -546,6 +564,7 @@ export function buildDashboardExportReport({
 
   const reviewTypeRows = toBreakdownRows(reviewTypeAgg);
   const paymentMethodRows = toBreakdownRows(paymentMethodAgg);
+  const reviewTechnicianRows = toBreakdownRows(reviewTechnicianAgg);
 
   const reviewMonthlyRows: ReviewMonthlyRow[] = Array.from(
     reviewMonthAgg.entries(),
@@ -603,6 +622,7 @@ export function buildDashboardExportReport({
     },
     reviewTypeRows,
     paymentMethodRows,
+    reviewTechnicianRows,
     reviewMonthlyRows,
   };
 }
@@ -878,6 +898,13 @@ function buildReviewTotalsSheet(report: DashboardExportReport, XS: any) {
   addBreakdown(
     "PAYMENT METHOD BREAKDOWN",
     report.paymentMethodRows,
+    report.reviewTotals.totalJobsWithReviews,
+    report.reviewTotals.totalReviewAmount,
+  );
+
+  addBreakdown(
+    "TECHNICIAN REVIEW BREAKDOWN",
+    report.reviewTechnicianRows,
     report.reviewTotals.totalJobsWithReviews,
     report.reviewTotals.totalReviewAmount,
   );
@@ -1995,6 +2022,40 @@ export async function exportDashboardReportAsPdf(
       1: { halign: "center", cellWidth: 44 },
       2: { halign: "right", cellWidth: 70 },
       3: { halign: "right", cellWidth: 70 },
+    },
+  });
+
+  const reviewTechnicianStartY =
+    (docX.lastAutoTable?.finalY ?? reviewBreakdownStartY) + 14;
+  tbl(doc, {
+    startY: reviewTechnicianStartY,
+    margin: { left: MARGIN, right: MARGIN },
+    tableWidth: CWIDTH,
+    head: [["Technician", "Reviews", "Total Amount", "Avg Amount"]],
+    body: report.reviewTechnicianRows
+      .slice(0, 10)
+      .map((row) => [
+        row.label,
+        String(row.reviews),
+        fmtCurrency(row.totalAmount),
+        fmtCurrency(row.avgAmount),
+      ]),
+    theme: "grid",
+    headStyles: {
+      fillColor: TEAL_COL,
+      textColor: WHITE,
+      fontStyle: "bold",
+      fontSize: 8,
+      halign: "center",
+    },
+    bodyStyles: { fontSize: 8, textColor: TEXT_DARK },
+    alternateRowStyles: { fillColor: MINT_PALE },
+    styles: { lineWidth: 0.3, lineColor: DIVIDER },
+    columnStyles: {
+      0: { halign: "left", cellWidth: 280 },
+      1: { halign: "center", cellWidth: 72 },
+      2: { halign: "right", cellWidth: 120 },
+      3: { halign: "right", cellWidth: 120 },
     },
   });
 
