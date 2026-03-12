@@ -1,13 +1,16 @@
 "use client";
 
 import {
-  TrendingUp,
-  Briefcase,
-  Users,
-  DollarSign,
-  Percent,
-  Wrench,
+  BadgeDollarSign,
+  FileBadge,
+  PiggyBank,
+  Building2,
   Banknote,
+  Percent,
+  Trophy,
+  BarChart,
+  Factory,
+  Award,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { fmtUSD } from "@/lib/decimal";
@@ -18,22 +21,38 @@ interface DashboardKPIsProps {
   techCount: number;
 }
 
-export function DashboardKPIs({ metrics, techCount }: DashboardKPIsProps) {
+export function DashboardKPIs({ metrics }: DashboardKPIsProps) {
   const kpis = [
     {
-      label: "Gross Revenue",
-      value: fmtUSD(metrics.grossRevenue),
-      icon: DollarSign,
-      sub: `From ${metrics.doneJobs} completed jobs`,
+      label: "Total Jobs",
+      value: metrics.totalJobs.toString(),
+      icon: Trophy,
+      sub: `${metrics.doneJobs} done · ${metrics.pendingJobs} pending`,
       color: "text-secondary-foreground",
       bg: "bg-accent",
     },
     {
-      label: "Company Net",
-      value: fmtUSD(metrics.companyNet),
-      icon: TrendingUp,
-      sub: "After tech payouts & parts",
-      color: "text-secondary-foreground",
+      label: "Gross Revenue",
+      value: fmtUSD(metrics.grossRevenue),
+      icon: BadgeDollarSign,
+      sub: `From ${metrics.doneJobs} completed jobs`,
+      color: "text-foreground",
+      bg: "bg-accent",
+    },
+    {
+      label: "Deposits Received",
+      value: fmtUSD(metrics.totalDeposits),
+      icon: PiggyBank,
+      sub: "Total deposits received",
+      color: "text-[#64748B]",
+      bg: "bg-accent",
+    },
+    {
+      label: "Parts Cost",
+      value: fmtUSD(metrics.partsCost),
+      icon: Factory,
+      sub: "Total parts expense",
+      color: "text-primary",
       bg: "bg-accent",
     },
     {
@@ -41,7 +60,7 @@ export function DashboardKPIs({ metrics, techCount }: DashboardKPIsProps) {
       value: fmtUSD(metrics.netRevenue),
       icon: Banknote,
       sub: "Gross minus parts cost",
-      color: "text-secondary-foreground",
+      color: "text-chart-3",
       bg: "bg-accent",
     },
     {
@@ -49,45 +68,47 @@ export function DashboardKPIs({ metrics, techCount }: DashboardKPIsProps) {
       value: `${metrics.companyNetMarginPct}%`,
       icon: Percent,
       sub: "Company net / gross",
-      color: "text-secondary-foreground",
-      bg: "bg-accent",
-    },
-    {
-      label: "Total Jobs",
-      value: metrics.totalJobs.toString(),
-      icon: Briefcase,
-      sub: `${metrics.doneJobs} done · ${metrics.pendingJobs} pending`,
-      color: "text-secondary-foreground",
+      color: "text-blue-600 dark:text-blue-400",
       bg: "bg-accent",
     },
     {
       label: "Avg Revenue / Job",
       value: fmtUSD(metrics.avgRevenuePerJob),
-      icon: DollarSign,
+      icon: BarChart,
       sub: `Based on ${metrics.doneJobs} done jobs`,
-      color: "text-secondary-foreground",
+      color: "text-amber-600",
       bg: "bg-accent",
     },
     {
-      label: "Parts Cost",
-      value: fmtUSD(metrics.partsCost),
-      icon: Wrench,
-      sub: "Total parts expense",
-      color: "text-secondary-foreground",
+      label: "Company Net",
+      value: fmtUSD(metrics.companyNet),
+      icon: Building2,
+      sub: "After tech payouts & parts",
+      color: "text-success",
       bg: "bg-accent",
     },
+
     {
-      label: "Active Technicians",
-      value: techCount.toString(),
-      icon: Users,
-      sub: "Currently active",
-      color: "text-secondary-foreground",
+      label: "Technician Tips",
+      value: fmtUSD(metrics.totalTips),
+      icon: Award,
+      color: "text-yellow-500 dark:text-yellow-400",
+      bg: "bg-accent",
+    },
+
+    {
+      label: "Reviews",
+      value: fmtUSD(metrics.totalReviewAmount),
+      icon: FileBadge,
+      sub: "Total reviews amount received",
+      color: "text-foreground",
       bg: "bg-accent",
     },
   ];
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+      {" "}
       {kpis.map(({ label, value, icon: Icon, sub, color, bg }) => (
         <div
           key={label}

@@ -202,7 +202,7 @@ export default function DashboardLayout({
       ) : !isAdmin && isRestrictedRoute ? null : (
         <div className="fixed inset-0 flex overflow-hidden bg-background">
           {/* Desktop Sidebar */}
-          <aside className="hidden w-60 flex-col border-r border-border bg-card lg:flex">
+          <aside className="hidden w-60 flex-col border-r border-border bg-sidebar lg:flex">
             <SidebarContent
               companyName={companyName}
               pathname={pathname}
@@ -225,7 +225,7 @@ export default function DashboardLayout({
           {/* Mobile Sidebar Drawer */}
           <aside
             className={cn(
-              "fixed inset-y-0 left-0 z-50 flex w-60 flex-col border-r border-border bg-card transition-transform duration-300 lg:hidden",
+              "fixed inset-y-0 left-0 z-50 flex w-60 flex-col border-r border-border bg-sidebar transition-transform duration-300 lg:hidden",
               sidebarOpen ? "translate-x-0" : "-translate-x-full",
             )}
           >

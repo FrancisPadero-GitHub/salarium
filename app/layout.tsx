@@ -30,7 +30,7 @@ export default function RootLayout({
         <QueryProvider>
           <ThemeProvider
             attribute="class"
-            defaultTheme="system"
+            defaultTheme="teal"
             themes={["light", "dark", "teal", "teal-dark"]}
             disableTransitionOnChange
           >

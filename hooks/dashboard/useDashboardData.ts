@@ -10,18 +10,25 @@ import {
 import { useFetchJobDetailed } from "@/hooks/jobs/useFetchJobs";
 import { useFetchTechSummary } from "@/hooks/technicians/useFetchTechSummary";
 import { useFetchTechnicians } from "@/hooks/technicians/useFetchTechnicians";
-import { d, dSum, dSub, dToNum } from "@/lib/decimal";
+import { d, dSub, dToNum } from "@/lib/decimal";
 
 export interface DashboardMetrics {
   grossRevenue: number;
   netRevenue: number;
   companyNet: number;
+
   totalTips: number;
+  totalDeposits: number;
+  totalReviews: number;
+  totalReviewAmount: number;
+
   partsCost: number;
+
   totalJobs: number;
   doneJobs: number;
   pendingJobs: number;
   cancelledJobs: number;
+
   avgRevenuePerJob: number;
   companyNetMarginPct: number;
 }
@@ -174,21 +181,55 @@ export function useDashboardData() {
     const pendingJobs = jobs.filter((j) => j.status === "pending");
     const cancelledJobs = jobs.filter((j) => j.status === "cancelled");
 
-    const grossRevenue = dSum(doneJobs.map((j) => j.subtotal));
-    const partsCost = dSum(doneJobs.map((j) => j.parts_total_cost));
-    const netRevenue = grossRevenue.minus(partsCost);
-    const totalTips = dSum(doneJobs.map((j) => j.tip_amount));
+    let grossRevenue = d(0);
+    let netRevenue = d(0);
+    let partsCost = d(0);
+    let totalTips = d(0);
+    let totalDeposits = d(0);
 
-    // Company net: sum each job's net * (1 - commissionRate/100)
-    const companyNet = doneJobs.reduce((acc, j) => {
-      const jobNet = dSub(j.subtotal, j.parts_total_cost);
-      const rate = techCommissionMap.get(j.technician_id ?? "") ?? 0;
-      return acc.plus(jobNet.times(d(1).minus(d(rate).dividedBy(100))));
-    }, d(0));
+    let companyNet = d(0);
+
+    let totalReviewAmount = d(0);
+    let totalReviews = 0;
+
+    for (const job of doneJobs) {
+      const subtotal = d(job.subtotal);
+      const parts = d(job.parts_total_cost);
+      const tips = d(job.tip_amount);
+      const deposits = d(job.deposits ?? 0);
+
+      const rate = techCommissionMap.get(job.technician_id ?? "") ?? 0;
+
+      // only count parts cost and technician tips for jobs fully paid
+      if (job.payment_status === "full") {
+        partsCost = partsCost.plus(parts);
+        totalTips = totalTips.plus(tips);
+
+        grossRevenue = grossRevenue.plus(subtotal);
+
+        const jobNet = subtotal.minus(parts);
+        netRevenue = netRevenue.plus(jobNet);
+
+        const companyPart = jobNet.times(d(1).minus(d(rate).dividedBy(100)));
+        companyNet = companyNet.plus(companyPart);
+      }
+
+      if (job.payment_status === "partial") {
+        totalDeposits = totalDeposits.plus(deposits);
+        grossRevenue = grossRevenue.plus(deposits);
+      }
+
+      if (job.review_amount) {
+        totalReviewAmount = totalReviewAmount.plus(d(job.review_amount));
+        totalReviews += 1;
+      }
+    }
 
     const totalDoneJobs = doneJobs.length;
+
     const avgRevenuePerJob =
       totalDoneJobs > 0 ? grossRevenue.dividedBy(totalDoneJobs) : d(0);
+
     const companyNetMarginPct = grossRevenue.isZero()
       ? d(0)
       : companyNet.dividedBy(grossRevenue).times(100);
@@ -197,12 +238,20 @@ export function useDashboardData() {
       grossRevenue: dToNum(grossRevenue),
       netRevenue: dToNum(netRevenue),
       companyNet: dToNum(companyNet),
+
       totalTips: dToNum(totalTips),
+      totalDeposits: dToNum(totalDeposits),
+
+      totalReviews,
+      totalReviewAmount: dToNum(totalReviewAmount),
+
       partsCost: dToNum(partsCost),
+
       totalJobs: jobs.length,
       doneJobs: totalDoneJobs,
       pendingJobs: pendingJobs.length,
       cancelledJobs: cancelledJobs.length,
+
       avgRevenuePerJob: dToNum(avgRevenuePerJob),
       companyNetMarginPct: dToNum(companyNetMarginPct, 1),
     };
@@ -218,14 +267,6 @@ export function useDashboardData() {
       if (!dateStr) continue;
 
       const sortKey = dateStr;
-      // const label = new Date(dateStr + "T00:00:00").toLocaleDateString(
-      //   "en-US",
-      //   {
-      //     month: "short",
-      //     day: "numeric",
-      //   },
-      // );
-
       const existing = map.get(sortKey) ?? { gross: d(0), net: d(0) };
       const rate = techCommissionMap.get(job.technician_id ?? "") ?? 0;
       const jobNet = dSub(job.subtotal, job.parts_total_cost);

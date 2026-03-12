@@ -55,7 +55,7 @@ const paymentColors: Record<string, string> = {
   zelle: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
 };
 
-const paymentStatusColors: Record<string, string> = {
+export const paymentStatusColors: Record<string, string> = {
   full: "bg-success/10 text-success",
   partial:
     "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",

@@ -47,7 +47,10 @@ import { useFetchTechnicians } from "@/hooks/technicians/useFetchTechnicians";
 import { useDelJob } from "@/hooks/jobs/useDelJob";
 import { useBulkDelJobs } from "@/hooks/jobs/useBulkDelJobs";
 import type { ViewJobsRow } from "@/hooks/jobs/useFetchJobTable";
-import { JobViewDialog } from "@/components/dashboard/jobs/job-view-dialog";
+import {
+  JobViewDialog,
+  paymentStatusColors,
+} from "@/components/dashboard/jobs/job-view-dialog";
 import { JobDeleteAlert } from "@/components/dashboard/jobs/job-delete-alert";
 import {
   Pagination,
@@ -88,6 +91,7 @@ type SortKey =
 
 type SortDir = "asc" | "desc";
 type StatusFilter = "all" | "done" | "pending" | "cancelled";
+type PaymentStatusFilter = "all" | "full" | "partial";
 type DynamicFilter = "all" | (string & {});
 
 const PAGE_SIZE = 10;
@@ -173,6 +177,8 @@ export function JobsTable() {
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [paymentStatusFilter, setPaymentStatusFilter] =
+    useState<PaymentStatusFilter>("all");
   const [paymentFilter, setPaymentFilter] = useState<DynamicFilter>("all");
   const [categoryFilter, setCategoryFilter] = useState<DynamicFilter>("all");
   const [technicianFilter, setTechnicianFilter] =
@@ -189,6 +195,7 @@ export function JobsTable() {
     startDate !== "",
     endDate !== "",
     statusFilter !== "all",
+    paymentStatusFilter !== "all",
     paymentFilter !== "all",
     categoryFilter !== "all",
     technicianFilter !== "all",
@@ -234,6 +241,14 @@ export function JobsTable() {
   const updateStatusFilter = useCallback(
     (v: StatusFilter) => {
       setStatusFilter(v);
+      setSelectedIds(new Set());
+      setCurrentPage(1);
+    },
+    [setCurrentPage],
+  );
+  const updatePaymentStatusFilter = useCallback(
+    (v: PaymentStatusFilter) => {
+      setPaymentStatusFilter(v);
       setSelectedIds(new Set());
       setCurrentPage(1);
     },
@@ -320,6 +335,9 @@ export function JobsTable() {
           paymentFilter === "all" ||
           (j.payment_method ?? "").toLowerCase() ===
             paymentFilter.toLowerCase();
+        const matchPaymentStatus =
+          paymentStatusFilter === "all" ||
+          (j.payment_status ?? "").toLowerCase() === paymentStatusFilter;
         const matchCategory =
           categoryFilter === "all" || (j.category ?? "") === categoryFilter;
         const matchTechnician =
@@ -343,6 +361,7 @@ export function JobsTable() {
         return (
           matchSearch &&
           matchStatus &&
+          matchPaymentStatus &&
           matchPayment &&
           matchCategory &&
           matchTechnician &&
@@ -364,6 +383,7 @@ export function JobsTable() {
     jobs,
     search,
     statusFilter,
+    paymentStatusFilter,
     paymentFilter,
     categoryFilter,
     technicianFilter,
@@ -492,11 +512,11 @@ export function JobsTable() {
             value={statusFilter}
             onValueChange={(v) => updateStatusFilter(v as StatusFilter)}
           >
-            <SelectTrigger size="sm" className="w-full sm:w-36">
+            <SelectTrigger size="sm" className="w-fit">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="all">All Job Status</SelectItem>
               <SelectItem value="done">Done</SelectItem>
               <SelectItem value="pending">Pending</SelectItem>
               <SelectItem value="cancelled">Cancelled</SelectItem>
@@ -504,10 +524,26 @@ export function JobsTable() {
           </Select>
 
           <Select
+            value={paymentStatusFilter}
+            onValueChange={(v) =>
+              updatePaymentStatusFilter(v as PaymentStatusFilter)
+            }
+          >
+            <SelectTrigger size="sm" className="w-fit">
+              <SelectValue placeholder="Payment status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Payment Status</SelectItem>
+              <SelectItem value="full">Full</SelectItem>
+              <SelectItem value="partial">Partial</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select
             value={paymentFilter}
             onValueChange={(v) => updatePaymentFilter(v)}
           >
-            <SelectTrigger size="sm" className="w-full sm:w-36">
+            <SelectTrigger size="sm" className="w-fit">
               <SelectValue placeholder="Payment" />
             </SelectTrigger>
             <SelectContent>
@@ -528,7 +564,7 @@ export function JobsTable() {
             value={categoryFilter}
             onValueChange={(v) => updateCategoryFilter(v)}
           >
-            <SelectTrigger size="sm" className="w-full sm:w-36">
+            <SelectTrigger size="sm" className="w-fit">
               <SelectValue placeholder="Category" />
             </SelectTrigger>
             <SelectContent>
@@ -774,12 +810,30 @@ export function JobsTable() {
                           {fmt(job.subtotal ?? 0)}
                         </TableCell>
                         {/* Deposits */}
-                        <TableCell className="tabular-nums text-[#64748B]">
+                        <TableCell
+                          className="tabular-nums text-[#64748B]"
+                          title="Excluded on the totals if fully paid"
+                        >
                           {fmt(job.deposits ?? 0)}
                         </TableCell>
                         {/* Payment Status */}
-                        <TableCell className="tabular-nums">
-                          {job.payment_status ?? "-"}
+                        <TableCell className="text-center">
+                          <div className="flex justify-center">
+                            <span
+                              className={cn(
+                                // The Pill Shape & Centering
+                                "inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize",
+                                // The Dynamic Colors
+                                paymentStatusColors[
+                                  (
+                                    job.payment_status as "full" | "partial"
+                                  ).toLowerCase()
+                                ] ?? "bg-muted text-muted-foreground",
+                              )}
+                            >
+                              {job.payment_status ?? "-"}
+                            </span>
+                          </div>
                         </TableCell>
                         {/* Parts Cost */}
                         <TableCell className="tabular-nums text-primary">
@@ -870,15 +924,15 @@ export function JobsTable() {
           <div className="flex flex-col items-center gap-3 border-t border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="order-2 text-xs text-muted-foreground sm:order-1">
               Showing{" "}
-              <span className="font-medium text-foreground">
+              <span className="font-bold text-foreground">
                 {filtered.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1}
               </span>
-              {" – "}
-              <span className="font-medium text-foreground">
+              {" - "}
+              <span className="font-bold text-foreground">
                 {Math.min(currentPage * PAGE_SIZE, filtered.length)}
               </span>
               {" of "}
-              <span className="font-medium text-foreground">
+              <span className="font-bold text-foreground">
                 {filtered.length}
               </span>
               {" jobs"}
