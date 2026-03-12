@@ -43,19 +43,20 @@ export function JobSummaryCards() {
       bg: "bg-accent",
     },
     {
-      label: "Deposits",
-      value: fmt(totalDeposits),
-      Icon: PiggyBank,
-      color: "text-[#64748B]",
-      valueColor: "text-foreground",
-      bg: "bg-accent",
-    },
-    {
       label: "Gross Revenue",
       value: fmt(grossRevenue),
       Icon: BadgeDollarSign,
       color: "text-secondary-foreground",
       valueColor: "text-foreground",
+      bg: "bg-accent",
+    },
+    {
+      label: "Deposits",
+      title: "Partially paid by customers at time of booking",
+      value: fmt(totalDeposits),
+      Icon: PiggyBank,
+      color: "text-secondary-foreground",
+      valueColor: "text-[#64748B]",
       bg: "bg-accent",
     },
     {
@@ -110,29 +111,32 @@ export function JobSummaryCards() {
         loadingMessage="Loading summary cards..."
       >
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {summaryCards.map(({ label, value, Icon, color, bg, valueColor }) => (
-            <div
-              key={label}
-              className="rounded-xl border border-border bg-card p-4"
-            >
-              <div className="flex items-start justify-between">
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  {label}
-                </p>
-                <div className={cn("rounded-md p-1.5", bg)}>
-                  <Icon className={cn("h-3.5 w-3.5", color)} />
-                </div>
-              </div>
-              <p
-                className={cn(
-                  "mt-2 text-2xl font-bold tabular-nums",
-                  valueColor,
-                )}
+          {summaryCards.map(
+            ({ label, title, value, Icon, color, bg, valueColor }) => (
+              <div
+                key={label}
+                title={title}
+                className="rounded-xl border border-border bg-card p-4"
               >
-                {value}
-              </p>
-            </div>
-          ))}
+                <div className="flex items-start justify-between">
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    {label}
+                  </p>
+                  <div className={cn("rounded-md p-1.5", bg)}>
+                    <Icon className={cn("h-3.5 w-3.5", color)} />
+                  </div>
+                </div>
+                <p
+                  className={cn(
+                    "mt-2 text-2xl font-bold tabular-nums",
+                    valueColor,
+                  )}
+                >
+                  {value}
+                </p>
+              </div>
+            ),
+          )}
         </div>
       </QueryStatePanel>
     </div>
