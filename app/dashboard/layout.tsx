@@ -68,7 +68,7 @@ export default function DashboardLayout({
           {/* Desktop Sidebar */}
           <aside
             className={cn(
-              "hidden flex-col border-r border-sidebar-border bg-sidebar transition-[width] duration-300 ease-in-out lg:flex overflow-hidden",
+              "hidden flex-col border-r border-sidebar-border bg-sidebar transition-[width] duration-300 ease-in-out lg:flex overflow-hidden will-change-[width]",
               desktopCollapsed ? "w-16" : "w-60",
             )}
           >
