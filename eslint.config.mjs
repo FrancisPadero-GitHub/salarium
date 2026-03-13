@@ -13,7 +13,14 @@ const eslintConfig = defineConfig([
   ...nextVitals, // Core web vitals rules
   ...nextTs, // TypeScript rules
   // Ignore build output and env files from linting
-  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts"]),
+  globalIgnores([
+    ".next/**",
+    "out/**",
+    "build/**",
+    "next-env.d.ts",
+    "database.types.ts",
+    "public/**",
+  ]),
 
   {
     // Apply these rules to all TypeScript files
