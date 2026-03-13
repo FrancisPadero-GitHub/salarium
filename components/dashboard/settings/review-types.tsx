@@ -80,7 +80,10 @@ export function ReviewTypesTable() {
 
   const handleEdit = (reviewType: ReviewTypeRow) => {
     setEditingId(reviewType.id);
-    setFormData({ name: reviewType.name, price: reviewType.price.toString() });
+    setFormData({
+      name: reviewType.name || "",
+      price: reviewType.price.toString(),
+    });
     setIsOpen(true);
   };
 
