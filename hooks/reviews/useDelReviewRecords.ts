@@ -93,6 +93,14 @@ export function useDelReviewRecord() {
         queryKey: ["estimates"],
         exact: false,
       });
+      await queryClient.invalidateQueries({
+        queryKey: ["export_dashboard_report"],
+        exact: false,
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["dashboard-metrics"],
+        exact: false,
+      });
     },
     onError: (error) => {
       toast.error(error.message || "Failed to delete review record");

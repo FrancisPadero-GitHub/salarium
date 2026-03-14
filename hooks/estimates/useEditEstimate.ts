@@ -116,6 +116,14 @@ export function useEditEstimate() {
         queryKey: ["technicians"],
         exact: false,
       });
+      await queryClient.invalidateQueries({
+        queryKey: ["export_dashboard_report"],
+        exact: false,
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["dashboard-metrics"],
+        exact: false,
+      });
     },
     onError: (error) => {
       toast.error(

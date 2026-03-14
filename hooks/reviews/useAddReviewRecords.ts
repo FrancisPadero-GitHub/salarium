@@ -79,6 +79,14 @@ export function useAddReviewRecord() {
           queryKey: ["estimates"],
           exact: false,
         }),
+        queryClient.invalidateQueries({
+          queryKey: ["export_dashboard_report"],
+          exact: false,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["dashboard-metrics"],
+          exact: false,
+        }),
       ]);
     },
     onError: (error) => {
