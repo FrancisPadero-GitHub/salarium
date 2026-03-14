@@ -3,15 +3,13 @@
 import { DashboardDateFilter } from "@/components/dashboard/dashboard-date-filter";
 import { DashboardKPIs } from "@/components/dashboard/dashboard-kpis";
 import { RecentJobsList } from "@/components/dashboard/jobs/recent-jobs-list";
-import { DashboardExportButton } from "@/components/dashboard/dashboard-export-button";
 import { FinancialTrendsSection } from "@/components/dashboard/financial/financial-trends-section";
+import { TopJobsChart } from "@/components/dashboard/jobs/top-jobs-chart";
 import { TechnicianPerformanceSection } from "@/components/dashboard/financial/technician-performance-section";
 import { useAuth } from "@/components/auth-provider";
 
 export default function DashboardPage() {
-  const { role, company_id } = useAuth();
-
-  const isCompany = role === "company" || role === "super_admin";
+  const { company_id } = useAuth();
 
   return (
     <div className="space-y-4">
@@ -28,11 +26,6 @@ export default function DashboardPage() {
 
         <div className="flex flex-col gap-3 justify-between xl:flex-row xl:items-start">
           <DashboardDateFilter />
-          {isCompany ? (
-            <div className="self-start">
-              <DashboardExportButton />
-            </div>
-          ) : null}
         </div>
       </div>
 
@@ -41,6 +34,7 @@ export default function DashboardPage() {
         <DashboardKPIs companyId={company_id ?? ""} />
         <FinancialTrendsSection companyId={company_id ?? ""} />
         <TechnicianPerformanceSection companyId={company_id ?? ""} />
+        <TopJobsChart />
         <RecentJobsList />
       </div>
     </div>

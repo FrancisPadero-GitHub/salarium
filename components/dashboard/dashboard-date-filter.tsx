@@ -31,7 +31,10 @@ import {
   useDashboardFilterStore,
   type DateFilterMode,
 } from "@/features/store/dashboard/useDashboardFilterStore";
+import { DashboardExportButton } from "@/components/dashboard/dashboard-export-button";
+
 import { useFetchTechnicians } from "@/hooks/technicians/useFetchTechnicians";
+import { useAuth } from "../auth-provider";
 
 const MONTHS = [
   "January",
@@ -98,6 +101,8 @@ function getISOWeekRange(isoWeek: string) {
 }
 
 export function DashboardDateFilter() {
+  const { role } = useAuth();
+  const isCompany = role === "company" || role === "super_admin";
   const store = useDashboardFilterStore();
   const { data: technicianList } = useFetchTechnicians();
 
@@ -436,6 +441,13 @@ export function DashboardDateFilter() {
               ))}
             </SelectContent>
           </Select>
+        </div>
+        <div className="flex flex-col space-y-1">
+          {isCompany ? (
+            <div className="self-start">
+              <DashboardExportButton />
+            </div>
+          ) : null}
         </div>
 
         {/* Active filter summary badge */}
