@@ -66,14 +66,14 @@ export default function SidebarContent({
         )}
       >
         <div className="relative flex items-center justify-center w-full h-full">
-          <span
+          {/* <span
             className={cn(
-              "absolute top-4 left-28 z-99 text-[9px] font-bold uppercase tracking-widest text-accent-foreground",
+              "absolute top-4 left-28 z-99 text-[9px] font-bold uppercase tracking-widest text-accent-foreground truncate",
               collapsed ? "hidden" : "",
             )}
           >
             {companyName || "No Company"}
-          </span>
+          </span> */}
           <Image
             src="/kt_logo_only.png"
             title="Klicktiv"
